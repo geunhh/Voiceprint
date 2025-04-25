@@ -1,0 +1,36 @@
+@font-face {
+  font-family: "PretendardBold";
+  src: url("/src/assets/fonts/Pretendard-Bold.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("/src/assets/fonts/Pretendard-Medium.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PretendardLight";
+  src: url("/src/assets/fonts/Pretendard-Light.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PretendardSemiBold";
+  src: url("/src/assets/fonts/Pretendard-SemiBold.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.canvas {
+  height: 100dvh; /* 정확히 화면 높이 */
+  overflow-y: auto; /* 내용이 넘칠 때만 스크롤 */
+}
