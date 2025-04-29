@@ -9,7 +9,7 @@ import {
     my_selected,
     temp_default,
     temp_selected
-} from "../../icons";
+} from "../../assets/icons";
 
 interface TabbarProps {
   type: 'Main' | 'Temp' | 'Create' | 'Group' | 'My';
