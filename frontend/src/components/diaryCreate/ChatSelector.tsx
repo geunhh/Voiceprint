@@ -60,7 +60,7 @@ function ChatSelector() {
   const currentCharacter = characters[currentIndex];
 
   return (
-    <div className="flex flex-col items-center bg-white">
+    <div className="flex flex-col items-center justify-center h-[45vh]">
       {/* 캐릭터 영역 */}
       <div className="flex items-center justify-center mt-12">
         {/* 왼쪽 화살표 */}
