@@ -1,26 +1,27 @@
-import React from "react";
-import { Routes, Route, Outlet, Navigate } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import Tabbar from "../assets/components/common/Tabbar";
 
 /* ---------- 더미 페이지 임포트 ---------- */
 import HomePage from "../pages/HomePage";
 import MainPage from "../pages/MainPage";
 
-import DiaryThemePage from "../pages/diary/DiaryThemePage";
-import DiaryFriendPage from "../pages/diary/DiaryFriendPage";
-import DiaryVoicePage from "../pages/diary/DiaryVoicePage";
 import DiaryChatPage from "../pages/diary/DiaryChatPage";
 import DiaryDetailPage from "../pages/diary/DiaryDetailPage";
 import DiaryEditPage from "../pages/diary/DiaryEditPage";
+import DiaryFriendPage from "../pages/diary/DiaryFriendPage";
+import DiaryTempPage from "../pages/diary/DiaryTempPage";
+import DiaryThemePage from "../pages/diary/DiaryThemePage";
+import DiaryVoicePage from "../pages/diary/DiaryVoicePage";
 
-import GroupMainPage from "../pages/group/GroupMainPage";
 import GroupCreatePage from "../pages/group/GroupCreatePage";
 import GroupDetailPage from "../pages/group/GroupDetailPage";
-import GroupEditPage from "../pages/group/GroupEditPage";
 import GroupDiaryDetailPage from "../pages/group/GroupDiaryDetailPage";
+import GroupEditPage from "../pages/group/GroupEditPage";
+import GroupMainPage from "../pages/group/GroupMainPage";
 
-import MyPage from "../pages/my/MyPage";
 import EditProfilePage from "../pages/my/EditProfilePage";
 import MyDiaryDetailPage from "../pages/my/MyDiaryDetailPage";
+import MyPage from "../pages/my/MyPage";
 
 import NotFound from "../pages/NotFound";
 
@@ -29,13 +30,31 @@ const DiaryOutlet = () => <Outlet />;
 const GroupOutlet = () => <Outlet />;
 const MyOutlet = () => <Outlet />;
 
-const Layout = () => (
-  <div className="w-screen min-h-dvh flex justify-center bg-neutral-50">
-    <div className="w-full max-w-[393px] min-h-dvh bg-white shadow-lg">
-      <Outlet /> {/* 자식 라우트가 그려질 자리 */}
+const Layout = () => {
+  const location = useLocation();
+  const path = location.pathname;
+
+  const getCurrentType = (): 'Main' | 'Temp' | 'Create' | 'Group' | 'My' => {
+    if (path.startsWith("/diary/temp")) return "Temp";
+    if (path.startsWith("/diary/setting")) return "Create";
+    if (path.startsWith("/group")) return "Group";
+    if (path.startsWith("/my")) return "My";
+    return "Main";
+  };
+
+  const currentType = getCurrentType();
+
+  return (
+    <div className="w-screen min-h-dvh flex justify-center bg-neutral-50">
+      <div className="w-full max-w-[393px] min-h-screen bg-white shadow-lg flex flex-col">
+        <div className="flex-1 flex flex-col">
+          <Outlet />
+        </div>
+        <Tabbar type={currentType} onClick={() => {}} />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const AppRoutes = () => (
   <Routes>
@@ -50,6 +69,7 @@ const AppRoutes = () => (
         <Route path="setting/friend" element={<DiaryFriendPage />} />
         <Route path="voice" element={<DiaryVoicePage />} />
         <Route path="chat" element={<DiaryChatPage />} />
+        <Route path="temp" element={<DiaryTempPage />} />
         <Route path=":diaryId" element={<DiaryDetailPage />} />
         <Route path=":diaryId/edit" element={<DiaryEditPage />} />
       </Route>
