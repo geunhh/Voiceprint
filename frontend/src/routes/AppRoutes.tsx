@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import Appbar from "../components/common/Appbar";
+// import Appbar from "../components/common/Appbar";
 import Tabbar from "../components/common/Tabbar";
 
 /* ---------- 더미 페이지 임포트 ---------- */
@@ -48,7 +48,7 @@ const Layout = () => {
   return (
     <div className="w-screen min-h-dvh flex justify-center bg-neutral-50">
       <div className="w-full max-w-[393px] min-h-screen bg-white shadow-lg flex flex-col">
-        <Appbar />
+        {/* <Appbar /> */}
         <div className="flex-1 flex flex-col">
           <Outlet />
         </div>
@@ -76,8 +76,8 @@ const AppRoutes = () => (
         <Route path="voice" element={<DiaryVoicePage />} />
         <Route path="chat" element={<DiaryChatPage />} />
         <Route path="temp" element={<DiaryTempPage />} />
+        <Route path="temp/edit" element={<DiaryEditPage />} />
         <Route path=":diaryId" element={<DiaryDetailPage />} />
-        <Route path=":diaryId/edit" element={<DiaryEditPage />} />
       </Route>
 
       {/* ────────────────── Group ────────────────── */}
