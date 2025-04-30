@@ -1,6 +1,48 @@
 import DiaryPreview from "../components/common/DiaryPreview";
+import WeekEmotion from "../components/main/WeekEmotion";
 
 // 임시 데이터
+// 주간 감정 모음
+// 이미지 임시
+import emotion1 from "../assets/temp/emotion1.png";
+import emotion2 from "../assets/temp/emotion2.png";
+import emotion3 from "../assets/temp/emotion3.png";
+import emotion4 from "../assets/temp/emotion4.png";
+import emotion5 from "../assets/temp/emotion5.png";
+import emotion6 from "../assets/temp/emotion6.png";
+// 달력 형태
+const weekEmotions = [
+  {
+    emotion: '행복',
+    emotionImage:emotion1
+  },
+  {
+    emotion: null,
+    emotionImage:emotion6
+  },
+  {
+    emotion: '설렘',
+    emotionImage:emotion2
+  },
+  {
+    emotion: '피로',
+    emotionImage:emotion3
+  },
+  {
+    emotion: '짜증',
+    emotionImage:emotion4
+  },
+  {
+    emotion: '우울',
+    emotionImage:emotion5
+  },
+  {
+    emotion: '설렘',
+    emotionImage:emotion2
+  }
+]
+
+// 최근 말자국 모음
 const diaries = [
   {
     diaryId: 98,
@@ -69,6 +111,12 @@ const diaries = [
 export default function HomePage() {
   return (
     <>
+    {/* 이번 주 기록 */}
+    <p className="ml-4 text-yellow-400 font-semibold">이번 주 기록</p>
+    <div className="p-4">
+    <WeekEmotion emotions={weekEmotions} />
+    </div>
+
     {/* 최근 말자국 모음 */}
     <p className="ml-4 text-yellow-400 font-semibold">최근 말자국</p>
       <div className="mb-16">
