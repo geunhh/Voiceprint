@@ -9,7 +9,7 @@ export default function DiaryVoicePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       {/* 캐릭터 이미지 */}
-      <img src={character.img} alt={character.name} className="w-6 4 h-64" />
+      <img src={character.img} alt={character.name} className="w-64 h-64" />
 
       {/* AI 응답 텍스트 */}
       <div className="mt-8 text-gray-500 text-base text-center">
