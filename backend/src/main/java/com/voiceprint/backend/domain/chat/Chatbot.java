@@ -1,0 +1,39 @@
+package com.voiceprint.backend.domain.chat;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Chatbot {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(length = 30, nullable = false)
+    private String name;
+
+    private String description;
+
+    @Column(length = 512)
+    private String imageUrl;
+
+    @Lob
+    private String prompt;
+
+    private Boolean isDeleted;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    //필요하면 풀고 쓰자.
+//    @OneToMany(mappedBy = "chatbot")
+//    private List<ChatSession> sessions = new ArrayList<>();
+}
