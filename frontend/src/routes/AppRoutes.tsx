@@ -76,8 +76,8 @@ const AppRoutes = () => (
         <Route path="voice" element={<DiaryVoicePage />} />
         <Route path="chat" element={<DiaryChatPage />} />
         <Route path="temp" element={<DiaryTempPage />} />
+        <Route path="temp/edit" element={<DiaryEditPage />} />
         <Route path=":diaryId" element={<DiaryDetailPage />} />
-        <Route path=":diaryId/edit" element={<DiaryEditPage />} />
       </Route>
 
       {/* ────────────────── Group ────────────────── */}

@@ -2,9 +2,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import ProgressBar from "../../components/common/ProgressBar";
 import Button from "../../components/common/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function DiaryVoicePage() {
   const character = useSelector((state: RootState) => state.character);
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 pt-12 pb-36">
@@ -42,7 +44,7 @@ export default function DiaryVoicePage() {
             text="일기 생성하기"
             type="fill"
             size="L"
-            onClick={() => console.log("일기 생성")}
+            onClick={() => navigate("/diary/temp")}
           />
         </div>
       </div>
