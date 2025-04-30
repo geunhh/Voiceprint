@@ -41,7 +41,7 @@ export default function DiaryFriendPage() {
         <ChatSelector onSelect={setSelectedCharacter} />
 
         {/* 버튼 영역 */}
-        <div className="mt-10 flex flex-col items-center gap-4">
+        <div className="mt-12 flex flex-col items-center gap-4">
           {/* 음성 버튼 */}
           <div
             onMouseEnter={() => setHovered("voice")}
