@@ -1,7 +1,13 @@
 import DiaryPreview from "../components/common/DiaryPreview";
+import TodayQuestion from "../components/main/TodayQuestion";
 import WeekEmotion from "../components/main/WeekEmotion";
 
 // 임시 데이터
+// 오늘의 질문
+const todayQuestion = [
+  "최근 나를 가장 몰입하게 만든 소소한 취미나 관심사가 있나요?"
+]
+
 // 주간 감정 모음
 // 이미지 임시
 import emotion1 from "../assets/temp/emotion1.png";
@@ -111,6 +117,11 @@ const diaries = [
 export default function HomePage() {
   return (
     <>
+    {/* 오늘의 질문 */}
+    <div className="mb-2">
+      <TodayQuestion question={todayQuestion}/>
+    </div>
+
     {/* 이번 주 기록 */}
     <p className="ml-4 text-yellow-400 font-semibold">이번 주 기록</p>
     <div className="p-4">
