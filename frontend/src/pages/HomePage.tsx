@@ -1,5 +1,5 @@
 import DiaryPreview from "../components/common/DiaryPreview";
-import WeekEmotion from "../components/main/weekEmotion";
+import WeekEmotion from "../components/main/WeekEmotion";
 
 // 임시 데이터
 // 주간 감정 모음
