@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router';
 import {
-    create,
-    group_default,
-    group_selected,
-    main_default,
-    main_selected,
-    my_default,
-    my_selected,
-    temp_default,
-    temp_selected
+  create,
+  group_default,
+  group_selected,
+  main_default,
+  main_selected,
+  my_default,
+  my_selected,
+  temp_default,
+  temp_selected
 } from "../../assets/icons";
 
 interface TabbarProps {
@@ -22,7 +22,7 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
 
   const tabItems: TabbarProps[] = [
     { type: 'Main', onClick: () => navigate('/'), name: '메인' },
-    { type: 'Temp', onClick: () => navigate('/diary/temp'), name: '임시 저장' },
+    { type: 'Temp', onClick: () => navigate('/diary/temp'), name: '임시' },
     { type: 'Create', onClick: () => navigate('/diary/setting/friend') },
     { type: 'Group', onClick: () => navigate('/group'), name: '그룹' },
     { type: 'My', onClick: () => navigate('/my'), name: '마이' },
@@ -48,14 +48,14 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
   };
 
   return (
-    <div className="flex justify-around items-center h-16 border border-gray-100 border-opacity-60">
+    <div className="flex justify-around items-center h-16 border border-gray-100 border-opacity-60 bg-white">
       {tabItems.map((item) => (
         <div
           key={item.type}
           className={`flex flex-col items-center justify-center flex-1 ${item.type === currentType ? 'text-black' : 'text-gray-400'}`}
           onClick={item.onClick}
         >
-          <div className={`${item.type === 'Create' ?'flex items-center justify-center -mt-16 shadow-md rounded-full' : ''}`}>
+          <div className={`${item.type === 'Create' ?'flex items-center justify-center -mt-16' : ''}`}>
             <img
               src={getIconSource(item.type)}
               alt={item.name}
