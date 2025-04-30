@@ -34,7 +34,7 @@ const Layout = () => {
   const location = useLocation();
   const path = location.pathname;
 
-  const getCurrentType = (): 'Main' | 'Temp' | 'Create' | 'Group' | 'My' => {
+  const getCurrentType = (): "Main" | "Temp" | "Create" | "Group" | "My" => {
     if (path.startsWith("/diary/temp")) return "Temp";
     if (path.startsWith("/diary/setting")) return "Create";
     if (path.startsWith("/group")) return "Group";
@@ -50,7 +50,11 @@ const Layout = () => {
         <div className="flex-1 flex flex-col">
           <Outlet />
         </div>
-        <Tabbar type={currentType} onClick={() => {}} />
+
+        {/* 고정 탭바 */}
+        <div className="fixed bottom-0 w-full max-w-[393px]">
+          <Tabbar type={currentType} onClick={() => {}} />
+        </div>
       </div>
     </div>
   );
