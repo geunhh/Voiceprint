@@ -35,6 +35,9 @@ const Layout = () => {
   const location = useLocation();
   const path = location.pathname;
 
+  // 홈("/") 경로인지 검사해서 탭바를 보여줄지 결정
+  const showTabbar = path !== "/";
+
   const getCurrentType = (): "Main" | "Temp" | "Create" | "Group" | "My" => {
     if (path.startsWith("/diary/temp")) return "Temp";
     if (path.startsWith("/diary/setting")) return "Create";
@@ -54,9 +57,11 @@ const Layout = () => {
         </div>
 
         {/* 고정 탭바 */}
-        <div className="fixed bottom-0 w-full max-w-[393px]">
-          <Tabbar type={currentType} onClick={() => {}} />
-        </div>
+        {showTabbar && (
+          <div className="fixed bottom-0 w-full max-w-[393px]">
+            <Tabbar type={currentType} onClick={() => {}} />
+          </div>
+        )}
       </div>
     </div>
   );
