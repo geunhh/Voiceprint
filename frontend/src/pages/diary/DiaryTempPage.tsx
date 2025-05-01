@@ -36,7 +36,7 @@ export default function DiaryTempPage() {
   const handleSave = () => {
     // TODO: 저장 로직
     console.log("저장할 일기:", diary);
-    navigate("/"); // 예시: 홈으로
+    navigate("/my"); // 마이페이지로
   };
 
   return (
