@@ -12,11 +12,11 @@ interface DiaryEditCardProps {
 }
 
 const badgeColor: Record<string, string> = {
-  행복: "bg-pink-50 text-pink-500 border-pink-200",
-  기쁨: "bg-yellow-50 text-yellow-500 border-yellow-200",
-  슬픔: "bg-blue-50 text-blue-500 border-blue-200",
-  화남: "bg-red-50 text-red-500 border-red-200",
-  그냥그래: "bg-gray-50 text-gray-500 border-gray-200",
+  행복: "bg-pink-50 text-pink-600 border-pink-300",
+  기쁨: "bg-yellow-50 text-yellow-600 border-yellow-300",
+  슬픔: "bg-blue-50 text-blue-600 border-blue-300",
+  화남: "bg-red-50 text-red-600 border-red-300",
+  그냥그래: "bg-gray-50 text-gray-600 border-gray-300",
 };
 
 export default function DiaryEditCard({
