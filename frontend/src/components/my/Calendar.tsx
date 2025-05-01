@@ -35,7 +35,7 @@ interface CalendarProps {
 const emotionIcons: Record<string, string> = {
   행복: emotion1,
   설렘: emotion2,
-  피로: emotion3,
+  피곤: emotion3,
   짜증: emotion4,
   우울: emotion5,
 };
@@ -81,7 +81,7 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
           key={thisDate.toString()}
           onClick={onClick ?? undefined}
           className={`w-10 h-16 text-sm flex flex-col items-center justify-center ${
-            !isCurrent ? "text-gray-300" : ""
+            !isCurrent ? "text-gray-200" : "text-gray-500"
           } ${onClick ? "cursor-pointer" : "cursor-default"}`}
         >
           <div>{formatted}</div>
@@ -109,7 +109,7 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
   return (
     <div className="space-y-2">
       {/* 요일 헤더 */}
-      <div className="flex justify-between text-xs text-gray-500">
+      <div className="flex justify-between text-sm text-gray-500">
         {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
           <div className="w-10 text-center" key={d}>
             {d}

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import ToggleButton from "../../components/my/toggleButton";
+import ToggleButton from "../../components/my/ToggleButton";
 import DiarySummaryCard from "../../components/my/DiarySummaryCard";
 import Calendar from "../../components/my/Calendar";
 import { subMonths, addMonths, format } from "date-fns";
 
 import back from "../../assets/icons/backYellow.png";
 import forward from "../../assets/icons/forwardYellow.png";
+import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 // 임시 데이터
 // 이번 달 일기 목록
@@ -55,11 +56,19 @@ export default function MyPage() {
   const [selected, setSelected] = useState("리스트");
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  const filteredDiaries = diaries.filter((diary) => {
+    const date = new Date(diary.createdAt);
+    return (
+      date.getFullYear() === currentMonth.getFullYear() &&
+      date.getMonth() === currentMonth.getMonth()
+    );
+  });
+
   return (
     <div>
       {/* 달력 및 일기 리스트 */}
-      <p className="ml-4 font-semibold">내 일기장</p>
-      <div className="p-4 space-y-6">
+      <p className="ml-6 font-semibold text-gray-800">내 일기장</p>
+      <div className="px-4  space-y-6">
         <div className="flex justify-between">
           <div className="flex justify-center items-center gap-2">
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
@@ -88,17 +97,26 @@ export default function MyPage() {
         {/* 일기 카드 리스트 */}
         {selected === "리스트" && (
           <div className="flex flex-col items-center space-y-3">
-            {diaries.map((diary) => (
-              <DiarySummaryCard
-                key={diary.diaryId}
-                date={formatDate(diary.createdAt)}
-                title={diary.title}
-                emotion={
-                  diary.emotion as "행복" | "설렘" | "피곤" | "짜증" | "우울"
-                }
-                diaryId={diary.diaryId}
-              />
-            ))}
+            {filteredDiaries.length === 0 ? (
+              <div className="flex h-80 flex-col items-center justify-center">
+                <img src={robotCharacter} alt="" className="h-32" />
+                <p className="text-sm text-gray-400 mt-4">
+                  작성된 일기가 없어요
+                </p>
+              </div>
+            ) : (
+              filteredDiaries.map((diary) => (
+                <DiarySummaryCard
+                  key={diary.diaryId}
+                  date={formatDate(diary.createdAt)}
+                  title={diary.title}
+                  emotion={
+                    diary.emotion as "행복" | "설렘" | "피곤" | "짜증" | "우울"
+                  }
+                  diaryId={diary.diaryId}
+                />
+              ))
+            )}
           </div>
         )}
       </div>
