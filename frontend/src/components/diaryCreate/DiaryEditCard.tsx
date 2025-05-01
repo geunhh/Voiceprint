@@ -1,5 +1,5 @@
 // src/components/diary/DiaryEditCard.tsx
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 interface DiaryEditCardProps {
   dateText: string; // "4월 24일 (목)"
@@ -31,6 +31,12 @@ export default function DiaryEditCard({
   // 내용 길이에 따라 스크롤 필요 여부
   const needsScroll = content.length > maxContentLength;
 
+  // textarea에 자동 포커스
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
   return (
     <div className="w-11/12 mx-auto rounded-xl border-2 border-dashed border-yellow-300 bg-white p-4 space-y-4 shadow-sm">
       {/* 날짜·감정 */}
@@ -56,19 +62,9 @@ export default function DiaryEditCard({
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="제목을 입력하세요"
           className="
-            w-full
-            rounded-lg
-            border
-            border-yellow-200
-            bg-yellow-50
-            px-3 py-2
-            text-gray-600
-            placeholder-gray-400
-            transition
-            focus:border-yellow-400
-            focus:bg-white          /* 포커스 시 배경 흰색 */
-            focus:outline-none
-            focus:shadow-outline
+            w-full rounded-lg border border-yellow-200 bg-yellow-50
+            px-3 py-2 text-gray-600 placeholder-gray-400 transition
+            focus:border-yellow-400 focus:bg-white focus:outline-none focus:shadow-outline
           "
         />
       </div>
@@ -79,27 +75,15 @@ export default function DiaryEditCard({
           내용
         </label>
         <textarea
+          ref={textareaRef}
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
           placeholder="일기 내용을 입력하세요"
           className={`
-            w-full
-            rounded-xl
-            border
-            border-yellow-200
-            bg-yellow-50
-            p-3
-            text-gray-600
-            placeholder-gray-400
-            text-sm
-            leading-relaxed
-            resize-none
-            transition
-            focus:border-yellow-400
-            focus:bg-white          /* 포커스 시 배경 흰색 */
-            focus:outline-none
-            focus:shadow-outline
-            min-h-60
+            w-full rounded-xl border border-yellow-200 bg-yellow-50
+            p-3 text-gray-600 placeholder-gray-400 text-sm leading-relaxed
+            resize-none transition focus:border-yellow-400 focus:bg-white
+            focus:outline-none focus:shadow-outline min-h-60
             ${needsScroll ? "max-h-60 overflow-y-auto" : ""}
           `}
         />
