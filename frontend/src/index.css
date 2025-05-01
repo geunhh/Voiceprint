@@ -1,4 +1,11 @@
 @font-face {
+  font-family: "ONEMobilePOP";
+  src: url("/src/assets/fonts/ONEMobilePOP.ttf") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "PretendardBold";
   src: url("/src/assets/fonts/Pretendard-Bold.woff") format("truetype");
   font-style: normal;

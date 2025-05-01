@@ -5,6 +5,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["Pretendard", "ui-sans-serif", "system-ui"],
+        onemobile: ["ONEMobilePOP", "sans-serif"],
       },
     },
   },
