@@ -14,12 +14,12 @@ const ToggleButton = ({
   onClick,
 }: ToggleButtonProps) => {
   return (
-    <div className="flex w-fit p-1 bg-yellow-50 rounded-full text-base font-medium">
+    <div className="flex w-32 h-7 bg-yellow-50 rounded-full text-sm font-medium self-center">
       {[option1, option2].map((option) => (
         <button
           key={option}
           onClick={() => onClick(option)}
-          className={`px-4 py-2 rounded-full transition-colors ${
+          className={`flex-1 h-full rounded-full transition-colors self-center ${
             selected === option
               ? "bg-yellow-400 text-yellow-50"
               : "text-yellow-400"

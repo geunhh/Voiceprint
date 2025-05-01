@@ -1,6 +1,11 @@
 import { useState } from "react";
 import ToggleButton from "../../components/my/toggleButton";
-import DiarySummaryCard from "../../components/my/ DiarySummaryCard";
+import DiarySummaryCard from "../../components/my/DiarySummaryCard";
+import Calendar from "../../components/my/Calendar";
+import { subMonths, addMonths, format } from "date-fns";
+
+import back from "../../assets/icons/backYellow.png";
+import forward from "../../assets/icons/forwardYellow.png";
 
 // 임시 데이터
 // 이번 달 일기 목록
@@ -48,34 +53,55 @@ function formatDate(iso: string): string {
 
 export default function MyPage() {
   const [selected, setSelected] = useState("리스트");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-center">
-        <ToggleButton
-          option1="리스트"
-          option2="달력"
-          selected={selected}
-          onClick={setSelected}
-        />
-      </div>
-
-      {/* 일기 카드 리스트 */}
-      {selected === "리스트" && (
-        <div className="flex flex-col items-center space-y-3">
-          {diaries.map((diary) => (
-            <DiarySummaryCard
-              key={diary.diaryId}
-              date={formatDate(diary.createdAt)}
-              title={diary.title}
-              emotion={
-                diary.emotion as "행복" | "설렘" | "피곤" | "짜증" | "우울"
-              }
-              diaryId={diary.diaryId}
-            />
-          ))}
+    <div>
+      {/* 달력 및 일기 리스트 */}
+      <p className="ml-4 font-semibold">내 일기장</p>
+      <div className="p-4 space-y-6">
+        <div className="flex justify-between">
+          <div className="flex justify-center items-center gap-2">
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+              <img src={back} alt="이전 달" className="w-6 h-auto" />
+            </button>
+            <span className="text-lg text-yellow-400 font-semibold">
+              {format(currentMonth, "yyyy년 M월")}
+            </span>
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+              <img src={forward} alt="다음 달" className="w-6 h-auto" />
+            </button>
+          </div>
+          <ToggleButton
+            option1="리스트"
+            option2="달력"
+            selected={selected}
+            onClick={setSelected}
+          />
         </div>
-      )}
+
+        {/* 달력 */}
+        {selected === "달력" && (
+          <Calendar currentMonth={currentMonth} diaries={diaries} />
+        )}
+
+        {/* 일기 카드 리스트 */}
+        {selected === "리스트" && (
+          <div className="flex flex-col items-center space-y-3">
+            {diaries.map((diary) => (
+              <DiarySummaryCard
+                key={diary.diaryId}
+                date={formatDate(diary.createdAt)}
+                title={diary.title}
+                emotion={
+                  diary.emotion as "행복" | "설렘" | "피곤" | "짜증" | "우울"
+                }
+                diaryId={diary.diaryId}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
