@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.diary;
 
+import com.voiceprint.backend.domain.auth.Users;
 import com.voiceprint.backend.domain.chat.ChatSession;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,9 +19,9 @@ public class Diary {
     private Long id;
 
     //유저
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id")
-//    private Users user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     //채팅세션
     @OneToOne
