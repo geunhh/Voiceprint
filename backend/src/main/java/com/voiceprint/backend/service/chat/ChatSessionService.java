@@ -102,6 +102,33 @@ public class ChatSessionService {
 
     }
 
+    /**
+     * UserId 에 해당하는 채팅 세션의 모든 메시지 조회
+     */
+    public List<ChatMessageResponseDTO> getMessages(long userId) {
+        try {
+            String redisKey = "chat_session_messages:" + userId;
+            List<Object> rawMessages = redisTemplate.opsForList().range(redisKey, 0, -1);
+            System.out.println(rawMessages);
+
+            if (rawMessages == null) return new ArrayList<>();
+
+            List<ChatMessageResponseDTO> result = new ArrayList<>();
+
+            for (Object msj : rawMessages) {
+                ChatMessage msg = (ChatMessage) msj;
+                result.add(new ChatMessageResponseDTO(msg.getRole(), msg.getMessage()));
+            }
+            return result;
+        }
+        catch (RedisConnectionFailureException e) {
+            log.error("Redis 연결 실패",e);
+            throw new RedisUnavailableException("redis 연결 실패 ");
+        }
+
+    }
+
+
 
     /**
      * 임시 일기 데이터

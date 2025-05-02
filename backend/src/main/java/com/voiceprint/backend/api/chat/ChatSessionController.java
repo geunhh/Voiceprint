@@ -53,5 +53,18 @@ public class ChatSessionController {
         ));
     }
 
+    /**
+     * 진행 중인 대화 메시지 전체 조회
+     */
+    @GetMapping("/messages")
+    public ResponseEntity<CommonResponse<List<ChatMessageResponseDTO>>> getMessages(
+            HttpServletRequest request) {
+        //UserId 받기
+        List<ChatMessageResponseDTO> messages = chatSessionService.getMessages(1L);
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "메시지 조회 성공", messages
+        ));
+
+    }
 
 }
