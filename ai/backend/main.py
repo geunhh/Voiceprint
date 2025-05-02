@@ -11,7 +11,7 @@ import subprocess
 import json
 import openai
 from starlette.websockets import WebSocketState
-import redis
+# import redis
 import asyncio
 from schema import Chat, MyChat
 from typing import Annotated
@@ -188,7 +188,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         print("여기까지됨 2222")
                         await websocket.send_bytes(return_voice)
                         
-
+                        
                 except json.JSONDecodeError:
                     print("잘못된 JSON 형식")
             
