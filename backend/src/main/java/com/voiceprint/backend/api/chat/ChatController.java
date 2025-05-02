@@ -2,6 +2,7 @@ package com.voiceprint.backend.api.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatTextResponseDTO;
 import com.voiceprint.backend.api.chat.dto.ChatTextRequestDTO;
+import com.voiceprint.backend.api.chat.dto.TempDiaryResponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.chat.ChatServcie;
 import com.voiceprint.backend.service.chat.ChatSessionService;
@@ -9,10 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,5 +48,14 @@ public class ChatController {
         chatSessionService.endSession(userId);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "세션 종료 성공", "일기 생성을 시작했습니다. (생성중입니다)"));
+    }
+
+    @GetMapping("/diary/temp")
+    public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> getTempDiary(
+            HttpServletRequest request
+    ) {
+        Long userId = 1L;
+        TempDiaryResponseDTO response = chatSessionService.getTempDiary(userId);
+        return ResponseEntity.ok(new CommonResponse<>(200, "임시 일기 조회",response));
     }
 }

@@ -2,6 +2,8 @@ package com.voiceprint.backend.service.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatMessage;
 import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
+import com.voiceprint.backend.api.chat.dto.TempDiaryResponseDTO;
+import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.domain.auth.UsersRepository;
 import com.voiceprint.backend.domain.auth.Users;
@@ -157,7 +159,7 @@ public class ChatSessionService {
                 // 일기 저장 및 상태 변경
                 redisTemplate.opsForHash().put(sessionKey,"tempDiary",diary);
                 redisTemplate.opsForHash().put(sessionKey,"tempTitle",title);
-                redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now()); //Todo:식간 -6
+                redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now().toString()); //Todo:식간 -6
                 redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
                 redisTemplate.opsForHash().put(sessionKey,"emotion",emotion);
             }
@@ -180,5 +182,22 @@ public class ChatSessionService {
                 "잔디밭에 앉아 수다 떨고 먹는 그 시간이 참 좋았다. 해가 지고 나서는 따릉이를 타고 한강을 달렸다. " +
                 "밤공기 맞으며 자전거 타는 기분, 요즘 같은 날씨에 최고다. " +
                 "평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.";
+    }
+
+    public TempDiaryResponseDTO getTempDiary(Long userId) {
+        String session_key = "chat_session:"+userId;
+
+        // 상태 확인
+        String status = (String) redisTemplate.opsForHash().get(session_key,"status");
+        if (!ChatSessionStatus.DIARY_DONE.name().equals(status)) {
+            throw new ChatSessionNotFoundException("아직 생성된 일기가 없습니다.");
+        }
+
+        String title = (String) redisTemplate.opsForHash().get(session_key,"tempTitle");
+        String diary = (String) redisTemplate.opsForHash().get(session_key,"tempDiary");
+        String createdAt = (String) redisTemplate.opsForHash().get(session_key, "createdAt");
+        String emotion = (String) redisTemplate.opsForHash().get(session_key, "emotion");
+
+        return new TempDiaryResponseDTO(title,diary,createdAt,emotion);
     }
 }
