@@ -1,8 +1,8 @@
+import { addMonths, format, subMonths } from "date-fns";
 import { useState } from "react";
-import ToggleButton from "../../components/my/ToggleButton";
-import DiarySummaryCard from "../../components/my/DiarySummaryCard";
 import Calendar from "../../components/my/Calendar";
-import { subMonths, addMonths, format } from "date-fns";
+import DiarySummaryCard from "../../components/my/DiarySummaryCard";
+import ToggleButton from "../../components/my/ToggleButton";
 
 import back from "../../assets/icons/backYellow.png";
 import forward from "../../assets/icons/forwardYellow.png";
@@ -16,30 +16,35 @@ const diaries = [
     title: "벚꽃놀이",
     createdAt: "2025-04-03T15:00:00",
     emotion: "행복",
+    content:"오늘은 신나는 벚꽃놀이 가는 날~! 너무너무 즐거워워"
   },
   {
     diaryId: 102,
     title: "면접 전날이라 긴장돼",
     createdAt: "2025-04-10T22:00:00",
     emotion: "설렘",
+    content: "일기 내용내용용"
   },
   {
     diaryId: 103,
     title: "과제하다가 새벽 3시...",
     createdAt: "2025-04-11T03:10:00",
     emotion: "피곤",
+    content: "일기 내용내용용"
   },
   {
     diaryId: 104,
     title: "요즘 좀 우울한 것 같아",
     createdAt: "2025-04-15T10:00:00",
     emotion: "우울",
+    content: "일기 내용내용용"
   },
   {
     diaryId: 105,
     title: "짜증나는 일이 있었어",
     createdAt: "2025-04-20T19:00:00",
     emotion: "짜증",
+    content: "일기 내용내용용"
   },
 ];
 
@@ -114,6 +119,7 @@ export default function MyPage() {
                     diary.emotion as "행복" | "설렘" | "피곤" | "짜증" | "우울"
                   }
                   diaryId={diary.diaryId}
+                  content={diary.content}
                 />
               ))
             )}
