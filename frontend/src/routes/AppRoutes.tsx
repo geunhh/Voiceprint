@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import Appbar from "../components/common/Appbar";
+// import Appbar from "../components/common/Appbar";
 import Tabbar from "../components/common/Tabbar";
 
 /* ---------- 더미 페이지 임포트 ---------- */
@@ -35,6 +35,9 @@ const Layout = () => {
   const location = useLocation();
   const path = location.pathname;
 
+  // 홈("/") 경로인지 검사해서 탭바를 보여줄지 결정
+  const showTabbar = path !== "/";
+
   const getCurrentType = (): "Main" | "Temp" | "Create" | "Group" | "My" => {
     if (path.startsWith("/diary/temp")) return "Temp";
     if (path.startsWith("/diary/setting")) return "Create";
@@ -48,15 +51,17 @@ const Layout = () => {
   return (
     <div className="w-screen min-h-dvh flex justify-center bg-neutral-50">
       <div className="w-full max-w-[393px] min-h-screen bg-white shadow-lg flex flex-col">
-        <Appbar />
+        {/* <Appbar /> */}
         <div className="flex-1 flex flex-col">
           <Outlet />
         </div>
 
         {/* 고정 탭바 */}
-        <div className="fixed bottom-0 w-full max-w-[393px]">
-          <Tabbar type={currentType} onClick={() => {}} />
-        </div>
+        {showTabbar && (
+          <div className="fixed bottom-0 w-full max-w-[393px]">
+            <Tabbar type={currentType} onClick={() => {}} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -76,8 +81,8 @@ const AppRoutes = () => (
         <Route path="voice" element={<DiaryVoicePage />} />
         <Route path="chat" element={<DiaryChatPage />} />
         <Route path="temp" element={<DiaryTempPage />} />
+        <Route path="temp/edit" element={<DiaryEditPage />} />
         <Route path=":diaryId" element={<DiaryDetailPage />} />
-        <Route path=":diaryId/edit" element={<DiaryEditPage />} />
       </Route>
 
       {/* ────────────────── Group ────────────────── */}
