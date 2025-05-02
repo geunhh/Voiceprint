@@ -1,6 +1,8 @@
 package com.voiceprint.backend.service.auth;
 
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
+import com.voiceprint.backend.api.auth.dto.GoogleResponse;
+import com.voiceprint.backend.api.auth.dto.OAuth2Response;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +22,31 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        String email = oAuth2User.getAttribute("email");
+        System.out.println(oAuth2User);
         String providerName = userRequest.getClientRegistration().getRegistrationId();
 
-        User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
+        OAuth2Response oAuth2Response = null;
+        if (providerName.equals("google")) {
 
+            oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+        }
+        else if (providerName.equals("kakao")) {
+
+            oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+        }
+        else {
+
+            return null;
+        }
+
+        User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
+        String email = oAuth2Response.getEmail();
+        String name = oAuth2Response.getName();
         User user = userRepository.findByAuthProviderAndEmail(provider, email)
                 .orElseGet(() -> {
                     User newUser = User.builder()
                             .email(email)
-                            .nickname("user_" + UUID.randomUUID().toString().substring(0, 8))
+                            .nickname(name)
                             .authProvider(provider)
                             .isDeleted(false)
                             .build();
