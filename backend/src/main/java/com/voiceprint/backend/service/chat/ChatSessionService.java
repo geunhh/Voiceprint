@@ -82,6 +82,26 @@ public class ChatSessionService {
 
     }
 
+    public ChatSessionStatus getSessionStatus(Long userId) {
+        try {
+            String key = "chat_session:"+userId;
+            String statusData = (String) redisTemplate.opsForHash().get(key,"status");
+            System.out.println("key: "+ key);
+            System.out.println("statusData: "+ statusData);
+
+            if (statusData == null){
+                return null;
+            }
+
+            ChatSessionStatus status = ChatSessionStatus.valueOf(statusData);
+            return status.isOngoing() ? status : null ;
+        } catch (RedisConnectionFailureException e) {
+            log.error("Redis 연결 실패",e);
+            throw new RedisUnavailableException("redis 연결 실패 ");
+        }
+
+    }
+
 
     /**
      * 임시 일기 데이터

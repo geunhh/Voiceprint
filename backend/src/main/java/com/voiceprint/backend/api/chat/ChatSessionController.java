@@ -37,6 +37,21 @@ public class ChatSessionController {
         ));
     }
 
+    /**
+     * 진행 중인 채팅 세션을 확인하는 API
+      */
+    @GetMapping("/status")
+    public ResponseEntity<CommonResponse<String>> getSessionStatus(
+            HttpServletRequest request) {
+        Long userId = 1L ;//Todo: 토큰에서 추출해야 함
+        ChatSessionStatus status = chatSessionService.getSessionStatus(userId);
+
+        String statusName = (status != null) ? status.name() : null;
+        System.out.println("status"+status);
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "세션 상태 조회 성공", statusName
+        ));
+    }
 
 
 }
