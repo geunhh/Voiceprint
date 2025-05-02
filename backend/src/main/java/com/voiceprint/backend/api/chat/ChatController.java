@@ -39,4 +39,16 @@ public class ChatController {
 
     }
 
+    /**
+     * 대화 종료 API
+     */
+    @PostMapping("/end")
+    public ResponseEntity<CommonResponse<String>> endChatSession(
+            HttpServletRequest request) {
+        Long userId = 1L;
+        // 비동기 처리
+        chatSessionService.endSession(userId);
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "세션 종료 성공", "일기 생성을 시작했습니다. (생성중입니다)"));
+    }
 }

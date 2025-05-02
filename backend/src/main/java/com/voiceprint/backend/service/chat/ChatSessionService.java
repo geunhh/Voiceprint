@@ -3,7 +3,7 @@ package com.voiceprint.backend.service.chat;
 import com.voiceprint.backend.api.chat.dto.ChatMessage;
 import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.auth.UsersRepository;
 import com.voiceprint.backend.domain.auth.Users;
 import com.voiceprint.backend.domain.chat.ChatSessionStatus;
 import com.voiceprint.backend.domain.chat.Chatbot;
@@ -27,7 +27,7 @@ public class ChatSessionService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatbotRepository chatbotRepository;
-    private final UserRepository userRepository;
+    private final UsersRepository userRepository; // UserRepsitory 병합시 수정하기
 
     /**
      * 세션을 시작하는 메소드
@@ -128,7 +128,42 @@ public class ChatSessionService {
 
     }
 
+    /**
+     * 채팅 종료 메서드
+     */
+    public void endSession(Long userId) {
+        // 채팅 관련 Redis 키.
+        String sessionKey = "chat_session:"+userId;
+        String messageKey = "chat_session_messages:"+userId;
 
+        // 1. 상태값을 DIARY_CREATING(일기 생성중)으로 갱신
+        redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_CREATING.name());
+
+        // 2. 백그라운드에서 일기 생성 비동기 처리
+        CompletableFuture.runAsync(() -> {
+            try {
+                // Todo : 하기 부분은 FastAPI에서 처리할 예정.
+
+                // Redis에서 메시지 꺼내기
+                List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);
+                String diary = generateDiary(messages);
+                String title = "임시 일기 제목입니다.";
+
+                Thread.sleep(4000); //4초 대기
+
+                // 일기 저장 및 상태 변경
+                redisTemplate.opsForHash().put(sessionKey,"tempDiary",diary);
+                redisTemplate.opsForHash().put(sessionKey,"tempTitle",title);
+                redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
+            }
+            catch (Exception e) {
+                log.error("일기 생성 중 에러발생 : {}",e.getMessage());
+                redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.ERROR.name());
+                // 에러처리 ..
+            }
+        });
+
+    }
 
     /**
      * 임시 일기 데이터

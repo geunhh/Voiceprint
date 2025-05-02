@@ -2,7 +2,7 @@ package com.voiceprint.backend.service.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatbotListResponseDTO;
 import com.voiceprint.backend.api.chat.dto.ChatbotResponseDTO;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.auth.UsersRepository;
 import com.voiceprint.backend.domain.auth.Users;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.chat.ChatbotRepository;
@@ -20,7 +20,7 @@ import java.util.List;
 public class ChatbotService {
 
     private final ChatbotRepository chatbotRepository;
-    private final UserRepository userRepository;
+    private final UsersRepository userRepository;
     public ChatbotListResponseDTO getChatbots(HttpServletRequest request) {
         //유저 정보 조회
         Long userId = 1L;
