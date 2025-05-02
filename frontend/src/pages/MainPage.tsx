@@ -9,45 +9,8 @@ const todayQuestion = [
   "최근 나를 가장 몰입하게 만든 소소한 취미나 관심사가 있나요?",
 ];
 
-// 주간 감정 모음
-// 이미지 임시
-import emotion1 from "../assets/temp/emotion1.png";
-import emotion2 from "../assets/temp/emotion2.png";
-import emotion3 from "../assets/temp/emotion3.png";
-import emotion4 from "../assets/temp/emotion4.png";
-import emotion5 from "../assets/temp/emotion5.png";
-import emotion6 from "../assets/temp/emotion6.png";
-// 달력 형태
-const weekEmotions = [
-  {
-    emotion: "행복",
-    emotionImage: emotion1,
-  },
-  {
-    emotion: null,
-    emotionImage: emotion6,
-  },
-  {
-    emotion: "설렘",
-    emotionImage: emotion2,
-  },
-  {
-    emotion: "피로",
-    emotionImage: emotion3,
-  },
-  {
-    emotion: "짜증",
-    emotionImage: emotion4,
-  },
-  {
-    emotion: "우울",
-    emotionImage: emotion5,
-  },
-  {
-    emotion: "설렘",
-    emotionImage: emotion2,
-  },
-];
+// 주간 감정
+const weekEmotions = ["행복", "짜증", "설렘", "피곤", "우울", null, null];
 
 // 월별 감정 통계
 const monthEmotions = [
@@ -144,7 +107,18 @@ export default function MainPage() {
       {/* 이번 주 기록 */}
       <p className="ml-4 text-yellow-400 font-semibold">이번 주 기록</p>
       <div className="p-4">
-        <WeekEmotion emotions={weekEmotions} />
+        <WeekEmotion
+          emotions={
+            weekEmotions as (
+              | "행복"
+              | "설렘"
+              | "피곤"
+              | "짜증"
+              | "우울"
+              | null
+            )[]
+          }
+        />
       </div>
 
       {/* 이번 달 통계 */}
