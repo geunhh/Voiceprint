@@ -13,7 +13,7 @@ const Button = ({ text, type, size, onClick }: ButtonProps) => {
   const typeStyle =
     type === "fill"
       ? "bg-yellow-500 text-white"
-      : "border-2 border-yellow-500 text-yellow-500";
+      : "border-2 border-yellow-500 text-yellow-200";
 
   let sizeStyle = "";
   switch (size) {

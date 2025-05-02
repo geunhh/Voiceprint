@@ -1,6 +1,7 @@
 // src/components/common/ChatExistModal.tsx
 import React from "react";
-import warningIcon from "../../assets/icons/modal/warning.png"; // 경고 아이콘 이미지 불러오기
+import warningIcon from "../../assets/icons/modal/warning.png";
+import Button from "../common/Button";
 
 interface ChatExistModalProps {
   onClose: () => void;
@@ -39,9 +40,10 @@ export default function ChatExistModal({
           </svg>
         </button>
 
-        <div className="flex flex-col items-center space-y-4">
+        {/* 내용 영역: 모두 가운데 정렬 */}
+        <div className="flex flex-col items-center justify-center space-y-4 text-center my-4">
           {/* warning.png 아이콘 */}
-          <img src={warningIcon} alt="Warning" className="w-12 h-12" />
+          <img src={warningIcon} alt="Warning" className="w-14 h-12" />
 
           {/* 메시지 */}
           <h2 className="text-center text-lg font-semibold text-gray-800">
@@ -49,20 +51,19 @@ export default function ChatExistModal({
           </h2>
 
           {/* 이어하기 (outlined) */}
-          <button
-            onClick={onContinue}
-            className="w-full border border-yellow-500 text-yellow-500 rounded-full py-2 text-base hover:bg-yellow-50 transition"
-          >
-            이어하기
-          </button>
+          <div className="w-full">
+            <Button text="이어하기" type="line" size="L" onClick={onContinue} />
+          </div>
 
           {/* 새로 시작하기 (filled) */}
-          <button
-            onClick={onRestart}
-            className="w-full bg-yellow-500 text-white rounded-full py-2 text-base hover:bg-yellow-600 transition"
-          >
-            새로 시작하기
-          </button>
+          <div className="w-full">
+            <Button
+              text="새로 시작하기"
+              type="fill"
+              size="L"
+              onClick={onRestart}
+            />
+          </div>
         </div>
       </div>
     </div>
