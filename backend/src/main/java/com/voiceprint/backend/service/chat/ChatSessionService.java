@@ -14,6 +14,7 @@ import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -148,13 +149,17 @@ public class ChatSessionService {
                 List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);
                 String diary = generateDiary(messages);
                 String title = "임시 일기 제목입니다.";
+                String emotion = "감정이 들어갈 곳";
 
                 Thread.sleep(4000); //4초 대기
+
 
                 // 일기 저장 및 상태 변경
                 redisTemplate.opsForHash().put(sessionKey,"tempDiary",diary);
                 redisTemplate.opsForHash().put(sessionKey,"tempTitle",title);
+                redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now()); //Todo:식간 -6
                 redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
+                redisTemplate.opsForHash().put(sessionKey,"emotion",emotion);
             }
             catch (Exception e) {
                 log.error("일기 생성 중 에러발생 : {}",e.getMessage());
