@@ -1,24 +1,24 @@
 import {
   addDays,
-  format,
-  startOfMonth,
   endOfMonth,
-  startOfWeek,
   endOfWeek,
-  isSameMonth,
+  format,
   isSameDay,
+  isSameMonth,
   isToday,
+  startOfMonth,
+  startOfWeek,
 } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 
+import createDiary from "../../assets/icons/createDiary.png";
 import emotion1 from "../../assets/temp/emotion1.png";
 import emotion2 from "../../assets/temp/emotion2.png";
 import emotion3 from "../../assets/temp/emotion3.png";
 import emotion4 from "../../assets/temp/emotion4.png";
 import emotion5 from "../../assets/temp/emotion5.png";
 import emotion6 from "../../assets/temp/emotion6.png";
-import createDiary from "../../assets/icons/createDiary.png";
 
 interface Diary {
   diaryId: number;
@@ -80,9 +80,11 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
         <div
           key={thisDate.toString()}
           onClick={onClick ?? undefined}
-          className={`w-10 h-16 text-sm flex flex-col items-center justify-center ${
+          className={`flex-1 text-sm flex flex-col items-center justify-center ${
             !isCurrent ? "text-gray-200" : "text-gray-500"
           } ${onClick ? "cursor-pointer" : "cursor-default"}`}
+          style={{ height: "var(--cell-height, 64px)" }}
+          
         >
           <div>{formatted}</div>
           {icon && (
@@ -99,7 +101,7 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
     }
 
     rows.push(
-      <div key={day.toString()} className="flex justify-between">
+      <div key={day.toString()} className="flex gap-x-6">
         {days}
       </div>
     );
@@ -107,11 +109,11 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 calendar-compact">
       {/* 요일 헤더 */}
-      <div className="flex justify-between text-sm text-gray-500">
+      <div className="flex justify-between text-sm text-gray-500 gap-x-6">
         {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
-          <div className="w-10 text-center" key={d}>
+          <div className="flex-1 text-center" key={d}>
             {d}
           </div>
         ))}

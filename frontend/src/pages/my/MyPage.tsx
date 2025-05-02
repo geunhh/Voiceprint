@@ -3,12 +3,21 @@ import { useState } from "react";
 import Calendar from "../../components/my/Calendar";
 import DiarySummaryCard from "../../components/my/DiarySummaryCard";
 import ToggleButton from "../../components/my/ToggleButton";
+import UserProfile from "../../components/my/UserProfile";
 
 import back from "../../assets/icons/backYellow.png";
 import forward from "../../assets/icons/forwardYellow.png";
 import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 // 임시 데이터
+// 유저 정보
+const user = {
+  userId : 1, 
+  userName: '김혜민',
+  userImage:"https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
+  customThemaId:null
+}
+
 // 이번 달 일기 목록
 const diaries = [
   {
@@ -70,10 +79,19 @@ export default function MyPage() {
   });
 
   return (
-    <div>
+    <div className="mt-5">
+      {/* 유저 정보 */}
+      <div className="p-4 mb-2">
+        <UserProfile 
+          userId={user.userId}
+          userName={user.userName}
+          userImage={user.userImage}
+          customThemaId={user.customThemaId}
+        />
+      </div>
+
       {/* 달력 및 일기 리스트 */}
-      <p className="ml-6 font-semibold text-gray-800">내 일기장</p>
-      <div className="px-4  space-y-6">
+      <div className="px-4 space-y-6">
         <div className="flex justify-between">
           <div className="flex justify-center items-center gap-2">
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
@@ -96,7 +114,14 @@ export default function MyPage() {
 
         {/* 달력 */}
         {selected === "달력" && (
-          <Calendar currentMonth={currentMonth} diaries={diaries} />
+          <div
+          className="
+            w-full
+            flex justify-center
+          "
+        >
+            <Calendar currentMonth={currentMonth} diaries={diaries} />
+          </div>
         )}
 
         {/* 일기 카드 리스트 */}
@@ -125,6 +150,7 @@ export default function MyPage() {
             )}
           </div>
         )}
+
       </div>
     </div>
   );
