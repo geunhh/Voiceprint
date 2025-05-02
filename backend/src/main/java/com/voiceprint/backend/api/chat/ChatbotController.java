@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.chat;
 
+import com.voiceprint.backend.api.chat.dto.ChatbotListResponseDTO;
 import com.voiceprint.backend.api.chat.dto.ChatbotResponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.domain.chat.Chatbot;
@@ -26,12 +27,12 @@ public class ChatbotController {
      * 챗봇 조회 API
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<List<ChatbotResponseDTO>>> getChatbots(HttpServletRequest request) {
-        List<ChatbotResponseDTO> chatbots = chatbotService.getChatbots();
+    public ResponseEntity<CommonResponse<ChatbotListResponseDTO>> getChatbots(HttpServletRequest request) {
+        ChatbotListResponseDTO response = chatbotService.getChatbots(request);
         return ResponseEntity.ok(new CommonResponse<>(
                 200,
                 "챗봇 목록 조회 성공",
-                chatbots
+                response
         ));
     }
 }
