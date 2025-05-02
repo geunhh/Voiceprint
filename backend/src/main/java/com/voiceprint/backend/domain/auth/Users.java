@@ -33,9 +33,15 @@ public class Users {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    // 최근 사용한 테마
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "using_thema_id")
     private DiaryThema usingThema;
+
+    // 내가 만든 커스텀 테마
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "custom_thema_id")
+    private DiaryThema customThema;
 
     @OneToMany(mappedBy = "user")
     private List<Diary> diaries = new ArrayList<>();
