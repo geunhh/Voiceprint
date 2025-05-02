@@ -1,12 +1,14 @@
 // src/pages/diary/DiaryChatPage.tsx
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import ProgressBar from "../../components/common/ProgressBar";
 import ChatList from "../../components/chat/ChatList";
 import ChatInput from "../../components/chat/ChatInput";
 import Button from "../../components/common/Button";
 
 export default function DiaryChatPage() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<
     { from: "ai" | "user"; text: string }[]
   >([{ from: "ai", text: "안녕~ 오늘 하루는 어땠는지 이야기해줘!" }]);
@@ -46,7 +48,7 @@ export default function DiaryChatPage() {
 
   const handleCreate = () => {
     console.log("일기 생성!");
-    // navigate("/diary/temp"); // 예시
+    navigate("/diary/temp"); // 예시
   };
 
   return (
@@ -54,9 +56,20 @@ export default function DiaryChatPage() {
       {/* 상단 공간 (Appbar 높이) */}
       <div className="pt-12" />
 
-      {/* 대화량 ProgressBar */}
-      <div className="w-full max-w-[320px] mx-auto mb-8">
-        <div className="text-gray-500 text-sm mb-1">대화량</div>
+      {/* ─── 대화량 + 일기 생성 버튼 영역 ─── */}
+      <div className="relative w-full max-w-[320px] mx-auto mb-8">
+        {/* 레이블 */}
+        <div className="flex items-center justify-between text-gray-500 text-sm mb-1">
+          대화량{" "}
+          <Button
+            text="일기 생성"
+            type="fill"
+            size="S"
+            onClick={handleCreate}
+          />
+        </div>
+
+        {/* 프로그레스 바 */}
         <ProgressBar label="" progress={45} />
       </div>
 
@@ -74,14 +87,7 @@ export default function DiaryChatPage() {
           loading={loading}
         />
       </div>
-      {/* <div className="fixed bottom-[6rem] left-1/2 -translate-x-1/2 w-[90vw] max-w-[320px]">
-        <Button
-          text="일기 생성하기"
-          type="fill"
-          size="L"
-          onClick={handleCreate}
-        />
-      </div> */}
+
       {/* 하단 안전 패딩(Tabbar 높이) */}
       <div className="pb-24" />
     </div>
