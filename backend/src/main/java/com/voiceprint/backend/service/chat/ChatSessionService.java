@@ -3,8 +3,8 @@ package com.voiceprint.backend.service.chat;
 import com.voiceprint.backend.api.chat.dto.ChatMessage;
 import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
-import com.voiceprint.backend.domain.auth.UsersRepository;
-import com.voiceprint.backend.domain.auth.Users;
+import com.voiceprint.backend.domain.auth.User;
+import com.voiceprint.backend.domain.auth.UserRepository;
 import com.voiceprint.backend.domain.chat.ChatSessionStatus;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.chat.ChatbotRepository;
@@ -27,7 +27,7 @@ public class ChatSessionService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatbotRepository chatbotRepository;
-    private final UsersRepository userRepository; // UserRepsitory 병합시 수정하기
+    private final UserRepository userRepository; // UserRepsitory 병합시 수정하기
 
     /**
      * 세션을 시작하는 메소드
@@ -54,7 +54,7 @@ public class ChatSessionService {
             String prompt = chatbot.getPrompt();
 
             // 3-1. 챗봇 사용 정보 저장
-            Users user = userRepository.findById(userId)
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
             user.setLastChatbot(chatbot);   // 최근 사용한 챗봇 저장
             userRepository.save(user);

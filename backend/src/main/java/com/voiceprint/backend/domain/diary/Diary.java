@@ -1,12 +1,11 @@
 package com.voiceprint.backend.domain.diary;
 
-import com.voiceprint.backend.domain.auth.Users;
+import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.chat.ChatSession;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +20,7 @@ public class Diary {
     //유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Users user;
+    private User user;
 
     //채팅세션
     @OneToOne
