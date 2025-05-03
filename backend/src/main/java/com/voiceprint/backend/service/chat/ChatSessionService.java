@@ -1,8 +1,6 @@
 package com.voiceprint.backend.service.chat;
 
-import com.voiceprint.backend.api.chat.dto.ChatMessage;
-import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
-import com.voiceprint.backend.api.chat.dto.TempDiaryResponseDTO;
+import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.domain.auth.UsersRepository;
@@ -17,10 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -212,5 +207,51 @@ public class ChatSessionService {
                 "tempDiary", "tempTitle", "createdAt", "emotion", "status");
         // 2. 종료 로직 재사용
         endSession(userId);
+    }
+
+    /**
+     * 임시 다이어리 수정 메소드
+     */
+    public UpdateDiaryResult updateTempDiary(Long userId, TempDiaryUpdateRequestDTO request) {
+        String sessionKey = "chat_session:"+userId;
+
+        Map<Object,Object> existing = redisTemplate.opsForHash().entries(sessionKey);
+        System.out.println(existing);
+        // 1. 존재하는가??
+        if (existing == null || existing.isEmpty() || !existing.containsKey("tempDiary")) {
+            throw new ChatSessionNotFoundException("수정할 임시 일기가 존재하지 않습니다.");
+        }
+
+        //2. 기존 데이터 추출
+        String oldTitle = (String) existing.get("tempTitle");
+        String oldDiary = (String) existing.get("tempDiary");
+        String createdAt = (String) existing.get("createdAt");
+        String emotion = (String) existing.get("emotion");
+
+        boolean changed = false; // 변경 감지 변수
+
+        // 3. 변경
+        if (!Objects.equals(request.getTitle(), oldTitle)) {
+            redisTemplate.opsForHash().put(sessionKey, "tempTitle",request.getTitle());
+            changed = true;
+        }
+        if (!Objects.equals(request.getDiary(), oldDiary)) {
+            redisTemplate.opsForHash().put(sessionKey, "tempDiary", request.getDiary());
+            changed = true;
+        }
+
+        if (!changed) {
+            log.info("임시 일기 변경 사항이 없습니다.");
+            return new UpdateDiaryResult(changed, new TempDiaryResponseDTO(oldTitle,oldDiary,createdAt,emotion));
+        }
+
+        log.info("임시 일기가 수정되었습니다.");
+        String updatedTitle = (String) redisTemplate.opsForHash().get(sessionKey, "tempTitle");
+        String updatedDiary = (String) redisTemplate.opsForHash().get(sessionKey, "tempDiary");
+
+        return new UpdateDiaryResult(changed, new TempDiaryResponseDTO(updatedTitle,updatedDiary,createdAt,emotion));
+
+
+
     }
 }

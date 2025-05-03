@@ -1,8 +1,6 @@
 package com.voiceprint.backend.api.chat;
 
-import com.voiceprint.backend.api.chat.dto.ChatTextResponseDTO;
-import com.voiceprint.backend.api.chat.dto.ChatTextRequestDTO;
-import com.voiceprint.backend.api.chat.dto.TempDiaryResponseDTO;
+import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.chat.ChatServcie;
 import com.voiceprint.backend.service.chat.ChatSessionService;
@@ -73,5 +71,30 @@ public class ChatController {
                 .body(new CommonResponse<>(
                         200, "임시 일기 재생성이 시작되었습니다.", null
                 ));
+    }
+
+    /**
+     * 임시 다이어리 수정 API
+     */
+    @PatchMapping("/diary/temp/update")
+    public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> updateTempDiary(
+            @RequestBody @Valid TempDiaryUpdateRequestDTO request,
+            HttpServletRequest httprequest
+    ) {
+
+        Long userId = 1L;
+        UpdateDiaryResult result = chatSessionService.updateTempDiary(userId, request);
+
+        if (!result.isChanged()) {
+            return ResponseEntity.ok(new CommonResponse<>(
+                    200, "변경된 내용이 없습니다.", result.getDiary()
+            ));
+        } else {
+            return ResponseEntity.ok(new CommonResponse<>(
+                    200, "임시 일기 수정 성공", result.getDiary()
+            ));
+
+        }
+
     }
 }
