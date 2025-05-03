@@ -9,6 +9,7 @@ import com.voiceprint.backend.service.chat.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,5 +58,20 @@ public class ChatController {
         Long userId = 1L;
         TempDiaryResponseDTO response = chatSessionService.getTempDiary(userId);
         return ResponseEntity.ok(new CommonResponse<>(200, "임시 일기 조회",response));
+    }
+
+    @PostMapping("/diary/temp/retry")
+    public ResponseEntity<CommonResponse<String>> retryTempDiary(
+            HttpServletRequest request
+    ) {
+        Long userId = 1L;
+
+        chatSessionService.retryTempDiaryGeneration(userId);
+
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(new CommonResponse<>(
+                        200, "임시 일기 재생성이 시작되었습니다.", null
+                ));
     }
 }

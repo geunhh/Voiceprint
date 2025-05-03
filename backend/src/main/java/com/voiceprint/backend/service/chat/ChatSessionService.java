@@ -187,7 +187,7 @@ public class ChatSessionService {
     public TempDiaryResponseDTO getTempDiary(Long userId) {
         String session_key = "chat_session:"+userId;
 
-        // 상태 확인
+        // 현재 상태 확인
         String status = (String) redisTemplate.opsForHash().get(session_key,"status");
         if (!ChatSessionStatus.DIARY_DONE.name().equals(status)) {
             throw new ChatSessionNotFoundException("아직 생성된 일기가 없습니다.");
@@ -198,6 +198,19 @@ public class ChatSessionService {
         String createdAt = (String) redisTemplate.opsForHash().get(session_key, "createdAt");
         String emotion = (String) redisTemplate.opsForHash().get(session_key, "emotion");
 
-        return new TempDiaryResponseDTO(title,diary,createdAt,emotion);
+        return new TempDiaryResponseDTO(title, diary, createdAt, emotion);
+    }
+
+    /**
+     * 일기 생성 재시도 메서드
+     */
+    public void retryTempDiaryGeneration(Long userId) {
+        String sessionKey = "chat_session:" + userId;
+
+        // 1. 기존 임시 일기 관련 필드 삭제
+        redisTemplate.opsForHash().delete(sessionKey,
+                "tempDiary", "tempTitle", "createdAt", "emotion", "status");
+        // 2. 종료 로직 재사용
+        endSession(userId);
     }
 }
