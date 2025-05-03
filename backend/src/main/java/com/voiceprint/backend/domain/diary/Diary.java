@@ -22,10 +22,6 @@ public class Diary {
     @JoinColumn(name = "user_id")
     private User user;
 
-    //채팅세션
-    @OneToOne
-    @JoinColumn(name = "session_id")
-    private ChatSession session;
 
     // 감정
     @ManyToOne(fetch = FetchType.LAZY)
