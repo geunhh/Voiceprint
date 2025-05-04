@@ -55,3 +55,11 @@
     max-height: 320px !important;
   }
 }
+
+/*  아이폰 se인 경우 그룹 카드 크기 축소 */
+@media (max-height: 667px) {
+  .group-card-small {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+}
