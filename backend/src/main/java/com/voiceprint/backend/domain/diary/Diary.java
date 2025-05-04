@@ -48,8 +48,7 @@ public class Diary {
     private Boolean isDeleted = false;
 
     //채팅기록
-    @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "json")
     private String messages;
 
     //생성일시
