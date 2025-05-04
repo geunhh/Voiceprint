@@ -31,7 +31,7 @@ public class User {
     private Integer usingThema;
 
     @Column(nullable = false)
-    @Builder.Default
+    @Builder.Default    // builder 사용에 있어 초기화 되지 않는 문제를 해결
     private Boolean isDeleted = false;
 
     @Column(nullable = false, updatable = false)

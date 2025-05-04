@@ -29,10 +29,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
             response.setHeader("Authorization", "Bearer " + accessToken);
 
+            // refresh 토큰은 쿠키, access는 url로 반환
             Cookie refreshTokenCookie = createCookie("refreshToken", refreshToken);
             response.addCookie(refreshTokenCookie);
 
-            // 프론트엔드로 정확한 리다이렉션
+            // 프론트엔드로 리다이렉션
             response.sendRedirect("http://localhost:5173/login-success?access=" + accessToken);
 
         } catch (Exception e) {

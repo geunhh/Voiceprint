@@ -51,8 +51,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .nickname(name)
                             .authProvider(provider)
                             .isDeleted(false)
-                            .createdAt(LocalDateTime.now())  // 명시적으로 설정
-                            .updatedAt(LocalDateTime.now())  // 명시적으로 설정
+                            .createdAt(LocalDateTime.now())  // not null 설정으로 인한 명시적 설정
+                            .updatedAt(LocalDateTime.now())
                             .build();
                     return userRepository.save(newUser);
                 });
