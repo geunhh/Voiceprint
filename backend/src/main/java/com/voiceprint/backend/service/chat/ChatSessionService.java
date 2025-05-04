@@ -1,5 +1,6 @@
 package com.voiceprint.backend.service.chat;
 
+import com.nimbusds.jose.shaded.gson.Gson;
 import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
@@ -8,11 +9,16 @@ import com.voiceprint.backend.domain.auth.UserRepository;
 import com.voiceprint.backend.domain.chat.ChatSessionStatus;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.chat.ChatbotRepository;
+import com.voiceprint.backend.domain.diary.Diary;
+import com.voiceprint.backend.domain.diary.DiaryRepository;
+import com.voiceprint.backend.domain.diary.Emotion;
+import com.voiceprint.backend.domain.diary.EmotionRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -26,6 +32,8 @@ public class ChatSessionService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatbotRepository chatbotRepository;
     private final UserRepository userRepository; // UserRepsitory 병합시 수정하기
+    private final DiaryRepository diaryRepository;
+    private final EmotionRepository emotionRepository;
 
     /**
      * 세션을 시작하는 메소드
@@ -252,6 +260,64 @@ public class ChatSessionService {
         return new UpdateDiaryResult(changed, new TempDiaryResponseDTO(updatedTitle,updatedDiary,createdAt,emotion));
 
 
+
+    }
+
+    @Transactional
+    public Long confirmDiary(Long userId) {
+        String sessionKey = "chat_session:"+userId;
+        String messageKey = "chat_session_messages:"+userId;
+
+        Map<Object, Object> sessionData = redisTemplate.opsForHash().entries(sessionKey);
+
+        // 예외처리
+        if (sessionData == null || sessionData.isEmpty() || !sessionData.containsKey("tempDiary")) {
+            throw new ChatSessionNotFoundException("임시 일기가 존재하지 않습니다.");
+        }
+
+        // 1.Redis 세션 데이터 파싱
+        String title = (String) sessionData.get("tempTitle");
+        String content = (String) sessionData.get("tempDiary");
+        Object chatbotIdObj = sessionData.get("chatbotId");
+        String emotionStr = (String) sessionData.get("emotion"); // null일 수 있음
+        String prompt = (String) sessionData.get("chatPrompt");
+
+        emotionStr = "슬픔"; // TODO: 임시 데이터
+
+        // 2. Redis 메시지 파싱
+        List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);
+        String messagesJson = new Gson().toJson(messages);
+
+        // 3. DB 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 정보 없음"));
+
+        Emotion emotion = (emotionStr != null)
+                ? emotionRepository.findByName(emotionStr).orElse(null)
+                : null;
+
+        // 4. Diary 생성 및 저장
+        Diary diary = Diary.createDiary(
+                user,emotion,title,content,"임시..",prompt,messagesJson
+        );
+
+        //5. 최근 사용 챗봇 정보 저장
+        Long chatbotId = chatbotIdObj instanceof Number
+                ? ((Number) chatbotIdObj).longValue()
+                : Long.parseLong(String.valueOf(chatbotIdObj));
+
+        Chatbot chatbot = chatbotRepository.findById(chatbotId)
+                .orElseThrow(() -> new RuntimeException("챗봇 정보 없음"));
+        user.setLastChatbot(chatbot);
+//        userRepository.save(user); // user가 이미 영속상태이므로, save 불필요
+        diaryRepository.save(diary);
+
+
+        // Redis 데이터 삭제
+        redisTemplate.delete(sessionKey);
+        redisTemplate.delete(messageKey);
+
+        return diary.getId();
 
     }
 }
