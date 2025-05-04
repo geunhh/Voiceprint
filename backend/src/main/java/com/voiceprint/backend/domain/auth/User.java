@@ -1,6 +1,5 @@
 package com.voiceprint.backend.domain.auth;
 
-import com.voiceprint.backend.domain.chat.ChatSession;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.diary.Diary;
 import jakarta.persistence.*;
@@ -57,8 +56,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Diary> diaries = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<ChatSession> sessions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")
