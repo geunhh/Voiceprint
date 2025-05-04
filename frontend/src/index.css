@@ -63,3 +63,10 @@
     transform-origin: top center;
   }
 }
+
+/* 화면 크기가 700 이하인 경우 그룹 생성 및 수정 페이지 하단 여백 추가 */
+@media (max-height: 740px) {
+  .short-screen-padding {
+    padding-bottom: 6rem;
+  }
+}
