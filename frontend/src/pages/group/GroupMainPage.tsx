@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Button from "../../components/common/Button";
-import GroupCard from "../../components/\bgroup/GroupCard";
+import GroupCard from "../../components/group/GroupCard";
 
 // 임시 데이터
 // 프로필사진 이미지
