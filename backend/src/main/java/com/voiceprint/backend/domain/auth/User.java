@@ -31,13 +31,27 @@ public class User {
     private Integer usingThema;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false;
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    // 유저 생성시 자동 적용
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
 
     @PreUpdate
     public void preUpdate() {

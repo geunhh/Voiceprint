@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -42,6 +43,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
         String email = oAuth2Response.getEmail();
         String name = oAuth2Response.getName();
+
         User user = userRepository.findByAuthProviderAndEmail(provider, email)
                 .orElseGet(() -> {
                     User newUser = User.builder()
@@ -49,6 +51,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .nickname(name)
                             .authProvider(provider)
                             .isDeleted(false)
+                            .createdAt(LocalDateTime.now())  // 명시적으로 설정
+                            .updatedAt(LocalDateTime.now())  // 명시적으로 설정
                             .build();
                     return userRepository.save(newUser);
                 });
