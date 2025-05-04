@@ -146,9 +146,9 @@ export default function GroupCreatePage() {
           </div>
         </div>
 
-        {/* 일기 공유 횟수 */}
+        {/* 일기 공유 요일 */}
         <div className="flex items-center justify-between mt-2">
-          <p className="text-gray-500">지정 기록 횟수</p>
+          <p className="text-gray-500">지정 기록 요일</p>
           <div className="relative" ref={dayPickerRef}>
             <button
               onClick={() => setShowDayPicker((prev) => !prev)}
