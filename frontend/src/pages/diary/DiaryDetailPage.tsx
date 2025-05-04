@@ -1,11 +1,13 @@
+import { useState } from "react";
+import DiaryContent from "../../components/diary/DiaryContent";
+import ChatHistoryModal from "../../components/modal/\bChatHistoryModal";
+
 import emotionTag1 from "../../assets/temp/emotionTag1.png";
 import emotionTag2 from "../../assets/temp/emotionTag2.png";
 import emotionTag3 from "../../assets/temp/emotionTag3.png";
 import emotionTag4 from "../../assets/temp/emotionTag4.png";
 import emotionTag5 from "../../assets/temp/emotionTag5.png";
 import happyCharacter from "../../assets/icons/happyCharacter.png";
-
-import DiaryContent from "../../components/diary/DiaryContent";
 
 // 감정 태그 매핑
 const emotionTagMap: Record<string, string> = {
@@ -30,10 +32,13 @@ const diaryinfo = {
 
 export default function DiaryDetailPage() {
   const emotionTagImage = emotionTagMap[diaryinfo.emotion];
+
   const date = new Date(diaryinfo.createdAt);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
+
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <div>
@@ -58,7 +63,7 @@ export default function DiaryDetailPage() {
       {/* 이전 채팅 기록 버튼 */}
       <div
         className="flex items-center gap-4 mx-auto w-11/12 rounded-2xl bg-yellow-50 p-2"
-        onClick={() => {}}
+        onClick={() => setShowModal(true)}
       >
         <img src={happyCharacter} className="w-20 h-auto" alt="캐릭터" />
         <div className="flex-col start">
@@ -70,6 +75,8 @@ export default function DiaryDetailPage() {
           </p>
         </div>
       </div>
+
+      {showModal && <ChatHistoryModal onClose={() => setShowModal(false)} />}
     </div>
   );
 }
