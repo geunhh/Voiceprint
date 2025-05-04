@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/chat")
@@ -96,5 +98,18 @@ public class ChatController {
 
         }
 
+    }
+
+    @PostMapping("diary/temp/confirm")
+    public ResponseEntity<CommonResponse<Map<String, Long>>> confirmDiary(
+            HttpServletRequest request
+    ) {
+        Long userId = 1L;
+        Long diaryId = chatSessionService.confirmDiary(userId);
+
+        Map<String, Long> data = Map.of("diaryId", diaryId);
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "일기 저장 완료", data
+        ));
     }
 }
