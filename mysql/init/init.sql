@@ -1,5 +1,7 @@
 DROP DATABASE IF EXISTS voiceprint;
-CREATE DATABASE vocieprint HARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+CREATE DATABASE voiceprint
+  CHARACTER SET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
 USE voiceprint;
 
 -- 1) profile_images
