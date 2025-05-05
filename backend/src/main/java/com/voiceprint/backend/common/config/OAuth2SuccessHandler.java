@@ -20,7 +20,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
     @Value("${spring.jwt.redirect.url}")
-    private final String redirectUrl;
+    private String redirectUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
