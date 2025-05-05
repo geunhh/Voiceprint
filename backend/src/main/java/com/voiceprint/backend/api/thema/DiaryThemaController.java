@@ -60,4 +60,20 @@ public class DiaryThemaController {
                 201, "커스템 테마 생성 완료", response
         ));
     }
+
+    @PatchMapping("/extract/{diaryId}")
+    public ResponseEntity<CommonResponse<?>> extractThema(
+            @PathVariable Long diaryId,
+            HttpServletRequest httprequest
+    ) {
+//        Long userId = authService.getUserIdFromRequest(httprequest);
+        Long userId = 1L;
+        log.info("userid: {}", userId);
+
+        diaryThemaService.updateCustomThemaFromDiary(userId,diaryId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "커스텀 테마 수정 완료", null
+        ));
+    }
 }
