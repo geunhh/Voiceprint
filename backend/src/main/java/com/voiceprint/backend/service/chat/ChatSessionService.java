@@ -28,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class ChatSessionService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -39,6 +40,7 @@ public class ChatSessionService {
     /**
      * 세션을 시작하는 메소드
      */
+    @Transactional(readOnly = true)
     public void startSession(Long userId, Long chatbotId) {
         String sessionKey = "chat_session:"+userId;
         String messageKey = "chat_session_messages:" + userId;
@@ -264,7 +266,7 @@ public class ChatSessionService {
 
     }
 
-    @Transactional
+    @Transactional(readOnly = false)
     public Long confirmDiary(Long userId) {
         String sessionKey = "chat_session:"+userId;
         String messageKey = "chat_session_messages:"+userId;
