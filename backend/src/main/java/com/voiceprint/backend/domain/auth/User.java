@@ -2,6 +2,7 @@ package com.voiceprint.backend.domain.auth;
 
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.diary.Diary;
+import com.voiceprint.backend.domain.thema.DiaryThema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -64,8 +65,7 @@ public class User {
     }
 
     // 내가 만든 커스텀 테마
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "custom_thema_id")
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private DiaryThema customThema;
 
     @OneToMany(mappedBy = "user")
