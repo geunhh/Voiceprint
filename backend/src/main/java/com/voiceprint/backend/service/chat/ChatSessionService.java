@@ -4,6 +4,7 @@ import com.nimbusds.jose.shaded.gson.Gson;
 import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
 import com.voiceprint.backend.domain.chat.ChatSessionStatus;
@@ -290,7 +291,7 @@ public class ChatSessionService {
 
         // 3. DB 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저 정보 없음"));
+                .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         Emotion emotion = (emotionStr != null)
                 ? emotionRepository.findByName(emotionStr).orElse(null)
