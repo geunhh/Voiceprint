@@ -40,13 +40,28 @@ public class User {
     private DiaryThema usingThema;
 
     @Column(nullable = false)
+    @Builder.Default    // builder 사용에 있어 초기화 되지 않는 문제를 해결
     private Boolean isDeleted = false;
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+
+    // 유저 생성시 자동 적용
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
 
     // 내가 만든 커스텀 테마
     @OneToOne(fetch = FetchType.LAZY)
@@ -60,6 +75,7 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")
     private Chatbot lastChatbot;
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
