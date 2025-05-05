@@ -1,27 +1,21 @@
 services:
   frontend:
     container_name: frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: voiceprint-frontend:latest
+    image: jokiheum/voiceprint-frontend:latest
     ports:
       - "80:80"
     env_file:
-      - .env
+      - ./frontend.env
     networks:
       - voiceprint-network
 
   backend:
     container_name: backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    image: voiceprint-backend:latest
+    image: jokiheum/voiceprint-backend:latest
     ports:
       - "18080:8080"
     env_file:
-      - .env
+      - ./backend.env
     depends_on:
       mysql:
         condition: service_healthy
@@ -32,11 +26,11 @@ services:
     
   mysql:
     container_name: mysql
-    build:
-      context: ./mysql
-      dockerfile: Dockerfile
+    image: jokiheum/voiceprint-mysql:latest
     ports:
       - "3306:3306"
+    env_file:
+      - ./mysql.env
     volumes:
       - ./mysql-data:/var/lib/mysql
     networks:
