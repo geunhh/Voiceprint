@@ -12,7 +12,9 @@ pipeline {
   stages {
     // GitLab에서 현재 브랜치 코드를 Jenkins 워크스페이스로 내려받음
     stage("Checkout") {
-      checkout scm
+      steps {
+        checkout scm
+      }
     }
     
     // Jenkins credential에 등록한 env 파일 설정
@@ -98,9 +100,9 @@ pipeline {
     }
 
   post {
-      always {
-          echo '배포 파이프라인 종료'
-      }
+    always {
+        echo '배포 파이프라인 종료'
+    }
   }
   }
 }
