@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DiaryContent from "../../components/diary/DiaryContent";
-import ChatHistoryModal from "../../components/modal/\bChatHistoryModal";
+import ChatHistoryModal from "../../components/modal/ChatHistoryModal";
 
 import emotionTag1 from "../../assets/temp/emotionTag1.png";
 import emotionTag2 from "../../assets/temp/emotionTag2.png";
