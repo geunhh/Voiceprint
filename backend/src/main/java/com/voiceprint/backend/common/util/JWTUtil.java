@@ -1,5 +1,6 @@
 package com.voiceprint.backend.common.util;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -62,5 +63,40 @@ public class JWTUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
                 .signWith(key)
                 .compact();
+    }
+
+    /**
+     * Authorization 헤더에서 토큰을 추출
+     * Bearer 토큰 형식을 사용
+     */
+    public String extractTokenFromHeader(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
+    }
+
+    /**
+     * 토큰의 유효성을 검증
+     * 1. 만료 여부 확인
+     * 2. 이메일 존재 여부 확인
+     */
+    public boolean validateToken(String token) {
+        try {
+            Claims claims = getAllClaims(token);
+            return !isExpired(token) && claims.get("email") != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    /**
+     * 토큰에서 모든 클레임 정보를 가져옵니다.
+     */
+    public Claims getAllClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
