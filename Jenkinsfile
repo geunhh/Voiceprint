@@ -98,11 +98,10 @@ pipeline {
         }
       }
     }
-
+  }
   post {
     always {
         echo '배포 파이프라인 종료'
     }
-  }
   }
 }
