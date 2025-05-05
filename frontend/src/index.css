@@ -41,3 +41,9 @@
   height: 100dvh; /* 정확히 화면 높이 */
   overflow-y: auto; /* 내용이 넘칠 때만 스크롤 */
 }
+
+@media (max-height: 667px) {
+  .calendar-compact {
+    --cell-height: 50px; 
+  }
+}

@@ -4,6 +4,7 @@ import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import PageTitle from "../../components/PageTitle";
 import Button from "../../components/common/Button";
 import { useNavigate } from "react-router-dom";
+// import ChatExistModal from "../../components/modal/ChatExistModal";";
 
 // ─── 임시 더미 데이터 ───
 const diary = {
@@ -19,6 +20,9 @@ export default function DiaryTempPage() {
 
   // hover 상태: "edit" or "save" or null
   const [hovered, setHovered] = useState<"edit" | "save" | null>(null);
+
+  // 저장 모달 여부
+  const [modalOpen, setModalOpen] = useState(false);
 
   // 기본: save 버튼이 fill, edit은 line
   // hover 있을 때만 그 버튼이 fill, 나머지는 line
@@ -65,6 +69,7 @@ export default function DiaryTempPage() {
             />
           </div>
 
+          {/* <ChatExistModal /> */}
           {/* 저장 버튼 */}
           <div
             onMouseEnter={() => setHovered("save")}
