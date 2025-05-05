@@ -42,4 +42,18 @@ public class DiaryThema {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    //== 생성메서드 ==//
+    public static DiaryThema creatDiaryThema(
+        User user, String title, String description, String prompt, String example
+    ) {
+        DiaryThema thema = new DiaryThema();
+        thema.setUser(user);
+        thema.setPrompt(prompt);
+        thema.setExample(example);
+        thema.setTitle("나만의 테마");         // 또는 "나만의 테마" 기본값 줄 수도 있음
+        thema.setDescription("사용자 입력 기반 테마");   // 또는 "사용자 입력 기반" 기본값도 가능
+        return thema;
+
+    }
 }
