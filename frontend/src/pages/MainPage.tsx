@@ -4,6 +4,15 @@ import WeekEmotion from "../components/main/WeekEmotion";
 import MonthEmotion from "../components/main/MonthEmotion";
 
 // 임시 데이터
+// 유저 정보
+const user = {
+  userId: 1,
+  userName: "김혜민",
+  userImage:
+    "https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
+  customThemaId: null,
+};
+
 // 오늘의 질문
 const todayQuestion = [
   "최근 나를 가장 몰입하게 만든 소소한 취미나 관심사가 있나요?",
@@ -99,6 +108,17 @@ const diaries = [
 export default function MainPage() {
   return (
     <>
+      {/* 유저 정보 */}
+      <div className="flex mx-4 my-5 p-2 gap-2">
+        <img src={user.userImage} className="rounded-full w-14" />
+        <div className="flex-row self-center">
+          <div className="flex items-end">
+            <p className="text-xl font-semibold">{user.userName}</p>
+            <p className="text-gray-700">님</p>
+          </div>
+          <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
+        </div>
+      </div>
       {/* 오늘의 질문 */}
       <div className="mb-2">
         <TodayQuestion question={todayQuestion} />

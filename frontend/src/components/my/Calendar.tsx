@@ -12,7 +12,7 @@ import {
 import { ko } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 
-import createDiary from "../../assets/icons/createDiary.png";
+import add from "../../assets/icons/add.png";
 import emotion1 from "../../assets/temp/emotion1.png";
 import emotion2 from "../../assets/temp/emotion2.png";
 import emotion3 from "../../assets/temp/emotion3.png";
@@ -66,7 +66,7 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
       let onClick: (() => void) | null = null;
 
       if (isTodayDate) {
-        icon = createDiary;
+        icon = add;
         onClick = () => navigate("/diary/setting/friend");
       } else if (diary) {
         icon = emotionIcons[diary.emotion];
@@ -84,7 +84,6 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
             !isCurrent ? "text-gray-200" : "text-gray-500"
           } ${onClick ? "cursor-pointer" : "cursor-default"}`}
           style={{ height: "var(--cell-height, 64px)" }}
-          
         >
           <div>{formatted}</div>
           {icon && (
