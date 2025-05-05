@@ -10,12 +10,12 @@ pipeline {
   }
 
   stages {
-    // GitLab에서 현재 브랜치 코드를 Jenkins 워크스페이스로 내려받음
-    stage("Checkout") {
-      steps {
-        checkout scm
-      }
-    }
+    // // GitLab에서 현재 브랜치 코드를 Jenkins 워크스페이스로 내려받음
+    // stage("Checkout") {
+    //   steps {
+    //     checkout scm
+    //   }
+    // }
     
     // Jenkins credential에 등록한 env 파일 설정
     stage("Prepare Environment") {
