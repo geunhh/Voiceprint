@@ -3,6 +3,7 @@ package com.voiceprint.backend.service.auth;
 import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,13 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
+
+    @Transactional(readOnly = true)
+    public Long getUserIdFromRequest(HttpServletRequest request){
+        String token = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
+
+        return getUserIdFromAuthHeader(token);
+    }
 
     /**
      * Authorization 헤더에서 토큰을 추출하고, 토큰 유효성을 검증한 후 사용자 ID를 반환합니다.
