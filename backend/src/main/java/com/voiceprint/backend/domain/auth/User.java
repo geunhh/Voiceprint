@@ -20,9 +20,11 @@ public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 프로필 이미지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
     private ProfileImage profileImage;
+
 
     @Column(nullable = false, length = 50)
     private String email;
@@ -35,10 +37,6 @@ public class User {
     @JoinColumn(name = "auth_provider")
     private AuthProvider authProvider;
 
-    // 최근 사용한 테마
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "using_thema_id")
-    private DiaryThema usingThema;
 
     @Column(nullable = false)
     @Builder.Default    // builder 사용에 있어 초기화 되지 않는 문제를 해결
@@ -64,9 +62,14 @@ public class User {
         }
     }
 
-    // 내가 만든 커스텀 테마
+    // 내가 만든 커스텀 테마 (DiaryThema.user로 연결된 역방향
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private DiaryThema customThema;
+
+    // 현재 사용중인 테마 (단방향 연관)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "using_thema_id")
+    private DiaryThema usingThema;
 
     @OneToMany(mappedBy = "user")
     private List<Diary> diaries = new ArrayList<>();

@@ -7,9 +7,7 @@ import com.voiceprint.backend.service.thema.DiaryThemaService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,5 +24,17 @@ public class DiaryThemaController {
         DiaryThemaListResponseDTO response = diaryThemaService.getThemasForUser(userId);
         return ResponseEntity.ok(
                 new CommonResponse<>(200,"일기 테마 조회 성공",response));
+    }
+
+    @PutMapping("/select/{themaId}")
+    public ResponseEntity<CommonResponse<Void>> selectTheam(
+            @PathVariable Long themaId,
+            HttpServletRequest request    ) {
+        Long userId = 1L;
+        diaryThemaService.selectThema(userId,themaId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "사용자 테마 설정 완료", null
+        ));
     }
 }
