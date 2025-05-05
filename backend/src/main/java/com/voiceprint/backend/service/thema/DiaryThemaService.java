@@ -1,5 +1,6 @@
 package com.voiceprint.backend.service.thema;
 
+import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateResponse;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaResponse;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
@@ -18,9 +19,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DiaryThemaService {
     private final DiaryThemaRepository diaryThemaRepository;
     private final UserRepository userRepository;
+    @Transactional(readOnly = true)
     public DiaryThemaListResponseDTO getThemasForUser(Long userId) {
 
         List<DiaryThema> themas = diaryThemaRepository.findByUserIdOrDefault(userId);
@@ -41,7 +44,6 @@ public class DiaryThemaService {
         return new DiaryThemaListResponseDTO(defaultThemas,customThemas);
     }
 
-    @Transactional
     public void selectThema(Long userId, Long themaId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저정보X"));
@@ -57,6 +59,39 @@ public class DiaryThemaService {
 
         // 유저 테마 갱신
         user.setUsingThema(thema);
+
+    }
+
+    public DiaryThemaCreateResponse createCustomThema(Long userId, String exampleDiary) {
+        // 유저 정보 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
+        //AI 서버 호출
+//        airesponse =
+
+        String prompt = "임시 프롬프트입니다.";
+        String example = "임시 예시 일기입니ffff다.";
+
+
+        // 기존 커스텀 테마 확인 후 업데이트
+        DiaryThema existingThema = user.getCustomThema();
+        if (existingThema == null) {
+            // 기존 커스텀 테마가 없는 경우 생성자 호출
+            existingThema = DiaryThema.creatDiaryThema(
+                    user, null, null, prompt, example
+            );
+        }
+        // 있으면, 갱신
+        else {
+            existingThema.setPrompt(prompt);
+            existingThema.setExample(example);
+        }
+
+        DiaryThema saved = diaryThemaRepository.save(existingThema);
+        user.setCustomThema(existingThema);
+        userRepository.save(user);
+
+        return new DiaryThemaCreateResponse(saved.getId(), saved.getExample());
 
     }
 }
