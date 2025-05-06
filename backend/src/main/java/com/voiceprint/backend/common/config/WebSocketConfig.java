@@ -1,6 +1,6 @@
-package com.voiceprint.backend.config;
+package com.voiceprint.backend.common.config;
 
-import com.voiceprint.backend.api.voice.handler.VoiceChatWebSocketHandler;
+import com.voiceprint.backend.api.chat.voice.VoiceChatWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +16,12 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final VoiceChatWebSocketHandler voiceChatHandler;
     // backend 병합 후 주석 해제
-//    private final WebSocketAuthInterceptor authInterceptor;
+    private final WebSocketAuthInterceptor authInterceptor;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(voiceChatHandler, "/ws")
-//                .addInterceptors(authInterceptor)
+                .addInterceptors(authInterceptor)
                 .setAllowedOrigins("*"); // 개발환경에서는 모든 오리진 허용, 운영환경에서는 특정 도메인으로 제한
     }
 

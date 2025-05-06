@@ -2,6 +2,7 @@ package com.voiceprint.backend.api.chat.voice;
 
 import com.voiceprint.backend.api.chat.voice.dto.VoiceSessionResponseDto;
 //import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class VoiceController {
 
-//    private final AuthService authService;
+    private final AuthService authService;
 
     /**
      * 음성 대화 세션 정보를 반환합니다.

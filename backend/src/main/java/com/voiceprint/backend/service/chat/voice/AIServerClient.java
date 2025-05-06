@@ -8,10 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
+import org.springframework.web.reactive.socket.WebSocketSession;
+import org.springframework.web.reactive.socket.WebSocketHandler;
+import reactor.core.publisher.Mono;
 
+import java.net.URI;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,29 +40,37 @@ public class AIServerClient {
     /**
      * AI 서버와 WebSocket 연결 생성
      */
-    public Object connect(Long userId, String clientSessionId) {
-        try {
-            StandardWebSocketClient client = new StandardWebSocketClient();
+    public void connect(Long userId, String clientSessionId) {
+        ReactorNettyWebSocketClient client = new ReactorNettyWebSocketClient();
 
-            AIServerWebSocketHandler handler = new AIServerWebSocketHandler(clientSessionId);
+        String fullUrl = aiServerUrl + "?userId=" + userId;
 
-            // AI 서버에 연결
-            String fullUrl = aiServerUrl + "?userId=" + userId;
-            WebSocketSession aiSession = client.doHandshake(handler, fullUrl).get();
+        client.execute(
+                URI.create(fullUrl),
+                new WebSocketHandler() {
+                    @Override
+                    public Mono<Void> handle(WebSocketSession session) {
+                        // WebSocket 연결이 열렸을 때 처리할 로직 작성
+                        aiSessions.put(clientSessionId, session);
+                        log.info("AI 서버 WebSocket 연결 성공 - 세션 ID: {}", session.getId());
 
-            // 세션 매핑 저장
-            String aiSessionId = aiSession.getId();
-            aiSessions.put(aiSessionId, aiSession);
-            clientToAISessionMap.put(clientSessionId, aiSessionId);
-
-            log.info("AI 서버 연결 성공 - 사용자 ID: {}, 클라이언트 세션: {}, AI 세션: {}",
-                    userId, clientSessionId, aiSessionId);
-
-            return aiSession;
-        } catch (Exception e) {
-            log.error("AI 서버 연결 실패", e);
-            throw new RuntimeException("AI 서버 연결에 실패했습니다.", e);
-        }
+                        // 클라이언트에서 들어온 메시지 중계 설정 등
+                        return session.receive().doOnNext(message -> {
+                            try {
+                                if (message.getType().equals(org.springframework.web.reactive.socket.WebSocketMessage.Type.TEXT)) {
+                                    voiceChatHandler.handleAIServerResponse(clientSessionId, message.getPayloadAsText());
+                                } else {
+                                    voiceChatHandler.handleAIServerResponse(clientSessionId, message.getPayload().asByteBuffer());
+                                }
+                            } catch (Exception e) {
+                                log.error("클라이언트에게 메시지 전달 중 오류 발생", e);
+                            }
+                        }).doOnError(e -> {
+                            log.error("AI 서버 WebSocket 메시지 수신 중 오류", e);
+                        }).then();
+                    }
+                }
+        ).subscribe();
     }
 
     /**
@@ -174,7 +186,7 @@ public class AIServerClient {
         }
 
         @Override
-        protected void handleBinaryMessage(WebSocketSession session, org.springframework.web.socket.BinaryMessage message) throws Exception {
+        protected void handleBinaryMessage(WebSocketSession session, org.springframework.web.socket.BinaryMessage message) throws IOException {
             ByteBuffer buffer = message.getPayload();
             log.debug("AI 서버로부터 바이너리 메시지 수신 - 크기: {}", buffer.remaining());
 

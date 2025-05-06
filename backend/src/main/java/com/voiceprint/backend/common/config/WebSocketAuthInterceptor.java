@@ -1,6 +1,7 @@
-package com.voiceprint.backend.config;
+package com.voiceprint.backend.common.config;
 
 //import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -15,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
-//    private final AuthService authService;
+    private final AuthService authService;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
@@ -27,9 +28,9 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             // 1. 헤더에서 토큰으로 인증
             String authHeader = servletRequest.getServletRequest().getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                Long userId = 1L;
+//                Long userId = 1L;
                 // backend 병합 후 주석 해제
-//                Long userId = authService.getUserIdFromAuthHeader(authHeader);
+                Long userId = authService.getUserIdFromAuthHeader(authHeader);
                 if (userId != null) {
                     attributes.put("userId", userId);
                     return true;
@@ -39,8 +40,8 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             // 2. URL 쿼리 파라미터에서 토큰으로 인증 (WebSocket은 헤더 설정이 제한적일 수 있음)
             String token = servletRequest.getServletRequest().getParameter("token");
             if (token != null) {
-                Long userId = 1L;
-//                Long userId = authService.getUserIdFromToken(token);
+//                Long userId = 1L;
+                Long userId = authService.getUserIdFromToken(token);
                 if (userId != null) {
                     attributes.put("userId", userId);
                     return true;
