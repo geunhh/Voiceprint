@@ -6,6 +6,6 @@ COPY mysql.cnf /etc/mysql/conf.d/custom.cnf
 
 COPY init/ /docker-entrypoint-initdb.d/
 
-EXPOSE 13306
+EXPOSE 3306
 
 

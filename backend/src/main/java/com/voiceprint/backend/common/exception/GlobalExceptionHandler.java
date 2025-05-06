@@ -3,9 +3,10 @@ package com.voiceprint.backend.common.exception;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
+import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
+import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -30,6 +31,26 @@ public class GlobalExceptionHandler {
     public String handleSessionNotFound(ChatSessionNotFoundException e) {
         return e.getMessage();
     }
+
+    @ExceptionHandler(UnauthorizedThemaAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedThema(UnauthorizedThemaAccessException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ThemaNotFoundExceiption.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleUnauthorizedThema(ThemaNotFoundExceiption e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleUnauthorizedThema(UserNotFoundException e) {
+        return e.getMessage();
+    }
+
+
 
     // 공통 응답 생성메서드
 

@@ -1,4 +1,4 @@
-package com.voiceprint.backend.config;
+package com.voiceprint.backend.common.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
