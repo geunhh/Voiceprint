@@ -19,14 +19,14 @@ COPY requirements.txt .
 # pip 업그레이드 및 setuptools 설치
 RUN pip install --upgrade pip setuptools wheel
 
-# 종속성 설치
-RUN pip install -r requirements.txt
+# Python 패키지 설치
+RUN pip install --no-cache-dir -r requirements.txt
 
-# pkg_resources가 올바르게 동작하는지 확인
-RUN python -c "import pkg_resources"
-
-# 애플리케이션 코드 복사
+# 앱 코드 복사
 COPY . .
 
-# 실행
-CMD ["python", "./voice_test_openai.py"]
+# 환경 변수 (로그 버퍼 비우지 않게)
+ENV PYTHONUNBUFFERED=1
+
+# 컨테이너 실행 시 uvicorn으로 FastAPI 실행
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
