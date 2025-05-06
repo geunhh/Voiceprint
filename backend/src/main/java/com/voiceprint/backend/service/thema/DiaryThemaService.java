@@ -17,19 +17,27 @@ import com.voiceprint.backend.domain.diary.DiaryRepository;
 import com.voiceprint.backend.domain.thema.DiaryThema;
 import com.voiceprint.backend.domain.thema.DiaryThemaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class DiaryThemaService {
     private final DiaryThemaRepository diaryThemaRepository;
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
+    private final WebClient fastApiWebClient;
     @Transactional(readOnly = true)
     public DiaryThemaListResponseDTO getThemasForUser(Long userId) {
 
@@ -73,22 +81,37 @@ public class DiaryThemaService {
         // 유저 정보 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
-        //AI 서버 호출
-//        airesponse =
 
-        String prompt = "임시 프롬프트입니다.";
-        String example = "임시 예시 일기입니ffff다.";
+        //FastAPI API 호출
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("prev_diary", exampleDiary);
 
+        Map<String, Object> fastApiResponse = fastApiWebClient.post()
+                .uri("/api/v1/prompt_test")
+                .bodyValue(requestBody)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        resp -> resp.bodyToMono(String.class).flatMap(body -> {
+                            log.error("FastAPI error [{}]: {}", resp.statusCode(), body);
+                            return Mono.error(new RuntimeException("FastAPI 호출 실패"));
+                        })
+                )
+                .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {
+                })
+                .block();
+
+        // FastAPi 응답 파싱
+        String prompt = fastApiResponse.get("prompt").toString();
+        String example = fastApiResponse.get("example").toString();
 
         // 기존 커스텀 테마 확인 후 업데이트
         DiaryThema existingThema = user.getCustomThema();
         if (existingThema == null) {
             // 기존 커스텀 테마가 없는 경우 생성자 호출
             existingThema = DiaryThema.creatDiaryThema(
-                    user, null, null, prompt, example
+                    user, "내 커스텀 테마", "내 일기를 기반으로 작성된 커스텀 테마입니다.", prompt, example
             );
-        }
-        // 있으면, 갱신
+        } // 있으면, 갱신
         else {
             existingThema.setPrompt(prompt);
             existingThema.setExample(example);
@@ -99,7 +122,6 @@ public class DiaryThemaService {
         userRepository.save(user);
 
         return new DiaryThemaCreateResponse(saved.getId(), saved.getExample());
-
     }
 
     @Transactional(readOnly = false)

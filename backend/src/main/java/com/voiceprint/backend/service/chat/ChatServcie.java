@@ -4,11 +4,16 @@ import com.voiceprint.backend.api.chat.dto.ChatMessage;
 import com.voiceprint.backend.api.chat.dto.ChatTextResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -16,6 +21,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatServcie {
+    private final WebClient fastApiWebClient;
     private final RedisTemplate<String, Object> redisTemplate;
     private final Random random = new Random(); // 임시
     private static final List<String> SAMPLE_RESPONSES = List.of( // 임시 메시지 리스트
@@ -28,24 +34,61 @@ public class ChatServcie {
 
 
     public ChatTextResponseDTO processChat(Long userId, String message) {
-        //TODO: FastAPI 파이프라인으로 대체 예정.
+        // requestBody 초기화
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("userid",userId.toString());
+        requestBody.put("chatting",message);
+
+        // 변수 초기화
+        Integer limit_token = 700;  // 글자수 제한
+        String botResponse = "";    // 챗봇 답변
+        Integer total_token = 0;    // 현재 글자수
+
+        try {
+            log.info("FastAPI 챗봇 호출 : {}",message);
+            Map<String, Object> fastApiResponse = fastApiWebClient.post()
+                    .uri("/api/v1/chat")
+                    .bodyValue(requestBody)
+
+                    .retrieve()
+
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            resp -> resp.bodyToMono(String.class).flatMap(body -> {
+                                log.error("FastAPI error [{}]: {}", resp.statusCode(), body);
+                                return Mono.error(new RuntimeException("FastAPI 호출 실패"));
+                            })
+                    )
+                    .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {
+                    })
+                    .block();
+
+            if (fastApiResponse != null) {
+                botResponse = fastApiResponse.get("chatting_response").toString();
+                total_token = Integer.parseInt(fastApiResponse.get("token").toString());
+                log.info("FastAPI 응답 : {}, 토큰 수 : {}", botResponse, total_token);
+            }
+        } catch (Exception e){
+            log.error("FastAPI 호출 및 파싱에서 에러 : {}.",e.getMessage(),e);
+        }
+
+        // Redis 에 저장
         String sessionKey = "chat_session:" +userId;
         String redisKey = "chat_session_messages:" +userId;
+
+        // redis에 현재 토큰수 저장
+        redisTemplate.opsForHash().put(sessionKey,"total_token",total_token);
 
         // 레디스에 유저 request 저장
         ChatMessage userMsg = new ChatMessage("USER",message);
         redisTemplate.opsForList().rightPush(redisKey,userMsg);
 
-        // 임시 답변 생성
-        String botResponse = SAMPLE_RESPONSES.get(random.nextInt(SAMPLE_RESPONSES.size()));
-
         // 레디스에 서버 response 저장
         ChatMessage botMsg = new ChatMessage("SERVER",botResponse);
         redisTemplate.opsForList().rightPush(redisKey,botMsg);
 
-        //1. FastAPI로 요청 전송
+        int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
         //2. 응답 처리
-        return new ChatTextResponseDTO(botResponse,50);
+        return new ChatTextResponseDTO(botResponse,usageRate);
     }
 }
