@@ -1,0 +1,12 @@
+stages:
+  - test
+
+runner-test:
+  stage: test
+  image: alpine:latest
+  tags:
+    - docker
+  only:
+    - develop
+  script:
+    - echo "✅ Self-hosted Docker Runner is working!"
