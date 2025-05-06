@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,8 @@ import java.io.IOException;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
+    @Value("${spring.jwt.redirect.url}")
+    private String redirectUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -34,7 +37,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             response.addCookie(refreshTokenCookie);
 
             // 프론트엔드로 리다이렉션
-            response.sendRedirect("http://localhost:5173/login-success?access=" + accessToken);
+            response.sendRedirect(redirectUrl + "/login-success?access=" + accessToken);
 
         } catch (Exception e) {
             System.out.println("OAuth2 성공 핸들러 오류: " + e.getMessage());
