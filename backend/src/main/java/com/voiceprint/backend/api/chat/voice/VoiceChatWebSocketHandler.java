@@ -87,6 +87,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         Long userId = (Long) session.getAttributes().get("userId");
         // WebM 형식 확인 (프론트엔드에서 WebM으로 인코딩됐는지 확인)
         ByteBuffer buffer = message.getPayload();
+        log.info("📥 바이너리 메시지 수신! 세션: {}, 크기: {}", session.getId(), message.getPayloadLength());
 
         log.debug("바이너리 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 크기: {}", userId, sessionId, buffer.remaining());
 
