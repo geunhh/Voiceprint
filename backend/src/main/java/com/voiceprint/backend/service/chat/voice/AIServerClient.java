@@ -2,16 +2,14 @@ package com.voiceprint.backend.service.chat.voice;
 
 import com.voiceprint.backend.api.chat.voice.VoiceChatWebSocketHandler;
 import jakarta.annotation.PreDestroy;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.Session;
+import jakarta.websocket.WebSocketContainer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.socket.WebSocketMessage;
-import org.springframework.web.reactive.socket.WebSocketSession;
-import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
-import org.springframework.web.reactive.socket.WebSocketHandler;
-import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -24,121 +22,99 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AIServerClient {
 
     @Lazy
-    private VoiceChatWebSocketHandler voiceChatHandler;
+    private final VoiceChatWebSocketHandler voiceChatHandler;
 
     @Value("${ai-server.url}")
     private String aiServerUrl;
 
-    // clientSessionId -> AI 서버 세션 (WebFlux)
-    private final Map<String, WebSocketSession> aiSessions = new ConcurrentHashMap<>();
+    // clientSessionId -> Endpoint
+    private final Map<String, AIServerEndpoint> aiEndpoints = new ConcurrentHashMap<>();
 
     /**
      * AI 서버와 WebSocket 연결
      */
     public void connect(Long userId, String clientSessionId) {
-        ReactorNettyWebSocketClient client = new ReactorNettyWebSocketClient();
-        String fullUrl = aiServerUrl + "?userId=" + userId;
+        try {
+            URI uri = URI.create(aiServerUrl + "?userId=" + userId);
 
-        client.execute(
-                URI.create(fullUrl),
-                new WebSocketHandler() {
-                    @Override
-                    public Mono<Void> handle(WebSocketSession session) {
-                        log.info("AI 서버 WebSocket 연결 성공 - 사용자 ID: {}, 세션 ID: {}", userId, session.getId());
-
-                        aiSessions.put(clientSessionId, session);
-
-                        // 수신한 메시지를 프론트엔드로 중계
-                        return session.receive().doOnNext(message -> {
-                            try {
-                                if (message.getType() == WebSocketMessage.Type.TEXT) {
-                                    String text = message.getPayloadAsText();
-                                    voiceChatHandler.handleAIServerResponse(clientSessionId, text);
-                                } else {
-                                    ByteBuffer binary = message.getPayload().asByteBuffer();
-                                    voiceChatHandler.handleAIServerResponse(clientSessionId, binary);
-                                }
-                            } catch (Exception e) {
-                                log.error("AI 응답 처리 중 오류 발생", e);
-                            }
-                        }).doOnError(error -> {
-                            log.error("AI 서버 수신 중 오류 발생", error);
-                        }).then();
+            AIServerEndpoint endpoint = new AIServerEndpoint(uri, new AIServerEndpoint.MessageHandler() {
+                @Override
+                public void handleText(String message) {
+                    try {
+                        voiceChatHandler.handleAIServerResponse(clientSessionId, message);
+                    } catch (Exception e) {
+                        log.error("텍스트 메시지 처리 오류", e);
                     }
                 }
-        ).subscribe();
+
+                @Override
+                public void handleBinary(ByteBuffer buffer) {
+                    try {
+                        voiceChatHandler.handleAIServerResponse(clientSessionId, buffer);
+                    } catch (Exception e) {
+                        log.error("바이너리 메시지 처리 오류", e);
+                    }
+                }
+            });
+
+            aiEndpoints.put(clientSessionId, endpoint);
+            log.info("AI 서버 연결 성공 - 클라이언트 세션: {}", clientSessionId);
+        } catch (Exception e) {
+            log.error("AI 서버 연결 실패", e);
+        }
     }
 
     /**
-     * AI 서버로 텍스트 메시지 전송
+     * 텍스트 메시지 전송
      */
     public void sendTextMessage(String clientSessionId, Long userId, String message) {
-        WebSocketSession session = aiSessions.get(clientSessionId);
-        if (session != null && session.isOpen()) {
-            try {
-                session.send(Mono.just(session.textMessage(message)))
-                        .doOnError(err -> log.error("AI 서버로 텍스트 전송 중 오류", err))
-                        .subscribe();
-                log.debug("AI 서버로 텍스트 메시지 전송 - 사용자 ID: {}, 세션 ID: {}", userId, clientSessionId);
-            } catch (Exception e) {
-                log.error("텍스트 메시지 전송 예외", e);
-            }
+        AIServerEndpoint endpoint = aiEndpoints.get(clientSessionId);
+        if (endpoint != null) {
+            endpoint.sendText(message);
+            log.debug("텍스트 메시지 전송 - 사용자: {}, 세션: {}", userId, clientSessionId);
         } else {
-            log.warn("AI 세션이 유효하지 않음 - 세션 ID: {}", clientSessionId);
+            log.warn("AI 서버 세션 없음 - 세션: {}", clientSessionId);
         }
     }
 
     /**
-     * AI 서버로 바이너리 메시지 전송
+     * 바이너리 메시지 전송
      */
     public void sendBinaryMessage(String clientSessionId, Long userId, ByteBuffer buffer) {
-        WebSocketSession session = aiSessions.get(clientSessionId);
-        if (session != null && session.isOpen()) {
-            try {
-                session.send(Mono.just(session.binaryMessage(factory -> factory.wrap(buffer))))
-                        .doOnError(err -> log.error("AI 서버로 바이너리 전송 중 오류", err))
-                        .subscribe();
-                log.debug("AI 서버로 바이너리 메시지 전송 - 사용자 ID: {}, 세션 ID: {}, 크기: {}", userId, clientSessionId, buffer.remaining());
-            } catch (Exception e) {
-                log.error("바이너리 메시지 전송 예외", e);
-            }
+        AIServerEndpoint endpoint = aiEndpoints.get(clientSessionId);
+        if (endpoint != null) {
+            endpoint.sendBinary(buffer);
+            log.debug("바이너리 메시지 전송 - 사용자: {}, 세션: {}, 크기: {}", userId, clientSessionId, buffer.remaining());
         } else {
-            log.warn("AI 세션이 유효하지 않음 - 세션 ID: {}", clientSessionId);
+            log.warn("AI 서버 세션 없음 - 세션: {}", clientSessionId);
         }
     }
 
     /**
-     * 오디오 완료 알림
+     * 오디오 처리 완료 통지
      */
     public void notifyAudioComplete(String clientSessionId, Long userId, Map<String, Object> messageMap) {
-        String completeMessage = "{\"action\":\"audio_complete\"}";
-        sendTextMessage(clientSessionId, userId, completeMessage);
+        String message = "{\"action\":\"audio_complete\"}";
+        sendTextMessage(clientSessionId, userId, message);
     }
 
     /**
      * 연결 종료
      */
     public void disconnect(String clientSessionId, Long userId) {
-        WebSocketSession session = aiSessions.remove(clientSessionId);
-        if (session != null && session.isOpen()) {
-            session.close().doOnTerminate(() ->
-                    log.info("AI 서버 연결 종료 - 사용자 ID: {}, 세션 ID: {}", userId, clientSessionId)
-            ).subscribe();
+        AIServerEndpoint endpoint = aiEndpoints.remove(clientSessionId);
+        if (endpoint != null) {
+            endpoint.close();
+            log.info("AI 서버 연결 종료 - 사용자: {}, 세션: {}", userId, clientSessionId);
         }
     }
 
     /**
-     * 애플리케이션 종료 시 세션 정리
+     * 서버 종료 시 정리
      */
     @PreDestroy
     public void cleanUp() {
-        aiSessions.forEach((sessionId, session) -> {
-            if (session != null && session.isOpen()) {
-                session.close()
-                        .doOnError(e -> log.error("AI 서버 연결 종료 실패", e))
-                        .subscribe();
-            }
-        });
-        aiSessions.clear();
+        aiEndpoints.values().forEach(AIServerEndpoint::close);
+        aiEndpoints.clear();
     }
 }
