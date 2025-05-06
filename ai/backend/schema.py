@@ -12,5 +12,5 @@ class MyChat(BaseModel):
     mychat: str
 
 class PromtTest(BaseModel) :
-    user_prompt :str
     prev_diary : str
+

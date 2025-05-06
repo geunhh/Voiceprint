@@ -71,6 +71,17 @@ const AudioRecorder = () => {
       ws.onopen = () => {
         console.log('WebSocket 연결 성공');
         setIsConnected(true);
+        
+        // 웹소켓 연결 후 초기 설정 메시지 전송
+        try {
+          ws.send(JSON.stringify({
+            type: 'init',
+            role: 'user'
+          }));
+          console.log("초기 설정 메시지 전송 완료");
+        } catch (error) {
+          console.error("초기 설정 메시지 전송 실패:", error);
+        }
       };
 
       ws.onmessage = (event) => {
@@ -116,6 +127,11 @@ const AudioRecorder = () => {
   // 오디오 응답 처리 - 즉시 재생
   const handleAudioResponse = async(audioBlob) => {
     try {
+      // 녹음 중이라면 중지 (서버 응답을 받았으므로)
+      if (isRecordingRef.current) {
+        stopRecording(false); // 서버로 데이터 전송 없이 녹음 중지
+      }
+      
       // 기존 URL 정리
       if (audioElementRef.current && audioElementRef.current.src) {
         URL.revokeObjectURL(audioElementRef.current.src);
@@ -126,12 +142,19 @@ const AudioRecorder = () => {
       
       // 오디오 요소에 설정하고 즉시 재생
       if (audioElementRef.current) {
+        console.log("서버 응답 오디오 재생 시작");
         audioElementRef.current.src = url;
         audioElementRef.current.play();
         setIsSpeaking(false); // 응답 재생 시작 시 말하기 상태 초기화
       }
     } catch (error) {
       console.error("오디오 응답 처리 에러:", error);
+      // 오류 발생 시에도 녹음 재시작
+      setTimeout(() => {
+        if (!isRecordingRef.current) {
+          startRecording();
+        }
+      }, 1000);
     }
   };
 
@@ -284,6 +307,7 @@ const AudioRecorder = () => {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // MediaRecorder 옵션 설정
       const options = {
         mimeType: 'audio/webm',
         audioBitsPerSecond: 16000
@@ -301,8 +325,13 @@ const AudioRecorder = () => {
 
       setupVoiceActivityDetection(stream);
 
+      // 데이터 수집 간격 설정 (1초마다 데이터 수집)
+      const dataInterval = 1000; // 1초
+      
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
+          // 중요: 디버깅 로그 추가
+          console.log(`데이터 청크 추가: ${event.data.size} 바이트`);
           audioChunksRef.current.push(event.data);
         }
       };
@@ -333,8 +362,11 @@ const AudioRecorder = () => {
           
           console.log("전체 오디오 데이터를 서버로 전송합니다. 크기:", audioBlob.size, "녹음 시간:", recordDuration, "ms");
           setStatus('전송 중...');
-
+          
           try {
+            // 전송 전에 디버깅 로그 추가
+            console.log("오디오 블롭 전송 시도 중...", audioBlob.size, "바이트", "청크 수:", audioChunksRef.current.length);
+            
             websocketRef.current.send(audioBlob);
             console.log("오디오 블롭 전송 완료");
             
@@ -344,7 +376,7 @@ const AudioRecorder = () => {
               sentCount: prev.sentCount + 1
             }));
 
-            // 오디오 전송 완료 신호 보내기
+            // 오디오 전송 완료 신호 보내기 - 타이밍 간격 늘림
             setTimeout(() => {
               if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
                 websocketRef.current.send(JSON.stringify({
@@ -354,14 +386,27 @@ const AudioRecorder = () => {
                 }));
                 console.log("audio_complete 메시지 전송 완료");
                 setStatus('idle');
+                
+                // 음성 응답이 오면 자동으로 재생되므로 여기서는 녹음 재시작하지 않음
+                // 대신 오디오 요소의 'ended' 이벤트에서 녹음 재시작
               } else {
                 console.error("완료 메시지 전송 실패: 웹소켓 연결 상태 변경됨");
                 setStatus('error');
+                
+                // 에러 발생 시 녹음 재시작
+                setTimeout(() => {
+                  startRecording();
+                }, 2000);
               }
-            }, 100);
+            }, 500); // 500ms로 늘림 (이전 100ms)
           } catch (err) {
             console.error("오디오 데이터 전송 중 오류:", err);
             setStatus('error');
+            
+            // 에러 발생 시 녹음 재시작
+            setTimeout(() => {
+              startRecording();
+            }, 2000);
           }
         } else {
           if (!hasMeaningfulAudio) {
@@ -370,6 +415,12 @@ const AudioRecorder = () => {
             console.log("자동 전송 모드가 비활성화되어 서버 전송을 건너뜁니다.");
           }
           setStatus('idle');
+          
+          // 의미 있는 오디오가 없거나 전송되지 않았을 때 바로 녹음 재시작
+          console.log("오디오 전송 없이 자동 녹음 재시작");
+          setTimeout(() => {
+            startRecording();
+          }, 1000);
         }
 
         // 오디오 컨텍스트 정리
@@ -411,8 +462,9 @@ const AudioRecorder = () => {
         setIsSpeaking(false);
       };
 
-      mediaRecorder.start();
-      console.log("녹음이 시작되었습니다.");
+      // 수정된 부분: 1초마다 데이터 수집하도록 설정
+      mediaRecorder.start(dataInterval);
+      console.log("녹음이 시작되었습니다. 데이터 수집 간격:", dataInterval, "ms");
     } catch (error) {
       console.error("녹음 시작 에러:", error);
       setStatus('error');

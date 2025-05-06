@@ -135,7 +135,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             # 메시지 수신 (바이너리 또는 텍스트)
             message = await websocket.receive()
-            # print(message)
+            print(message)
             
             # 바이너리 데이터 (오디오) 처리
             if "bytes" in message:
@@ -149,6 +149,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     data = json.loads(message["text"])
                     print(f"수신된 JSON 메시지: {data}")
                     
+                    print(audio_buffer)
                     # audio_complete 메시지 처리
                     if data.get("action") == "audio_complete" and audio_buffer:
                         print("오디오 처리 시작")
@@ -167,7 +168,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         else:
                             await websocket.send_json({
                                 "error": "음성 인식 실패"
-                            })
+                            }) 
                         
                         # 버퍼 초기화
                         audio_buffer = None
@@ -265,7 +266,12 @@ async def chat_text(user_key) :
     
     # Now try to access with the correct key
     response  = await chat(chat_history)
-    # 여기서 redis 에 답변을 저장해야 함. 
+    
+
+    # 질문이랑 답변은 내가 받아서 바로 보내면 됨. 
+    # 댑변 저장은 백엔드 쪽에서. 
+
+
     
     if not response :
         raise HTTPException(status_code=500, detail="no response from server")
@@ -276,7 +282,7 @@ async def chat_text(user_key) :
 @app.post("/api/v1/to_diary")
 async def diary(request : MyChat):
     # openai api 로 일기 만들기
-    content = ""
+    content = "" # 이 부분을 redis로 받아서 보낼 것. 
     messages = [
         {"role": "system", "content": f"이 내용으로 일기를 만들어줘.{request.mychat}"},
         {"role": "system", "content": f"이런 양식으로 만들어줘 : {content}"},
@@ -288,13 +294,14 @@ async def diary(request : MyChat):
         return {"code" : 200, "data" : response}
 
 
+pompt_example = "1. 어투 * 일기체: 나에게 쓰는 개인적인 기록 스타일 (예: 오늘 나는...) * 독자 의식형: 블로그나 공유를 위한 스타일 (예: 여러분들도 이런 경험...) * 대화형: 타인과 대화하듯 쓰는 스타일 (예: 너는 어땠어?) * 격식체: 존댓말 위주의 정중한 표현 (예: 오늘은 ~했습니다) * 비격식체: 반말 위주의 편안한 표현 (예: 오늘은 ~했어) 2. 분위기 * 밝고 유쾌: 긍정적이고 활기찬 표현, 웃음 요소가 많음 (이모티콘, ㅋㅋㅋ 등) * 담담하고 평온: 중립적인 감정, 사실 위주 서술 * 슬프고 우울: 부정적 감정, 아쉬움, 후회 등이 드러남 * 화나고 짜증남: 분노, 짜증, 불만 등이 표현됨 * 설레고 기대됨: 기대감, 희망, 설렘 등의 감정이 담김 * 감사하고 만족: 고마움, 충족감, 행복감 등을 표현 * 불안하고 걱정됨: 걱정, 염려, 불안 등의 감정이 포함 3. 주제 * 일상생활: 평범한 일상, 소소한 일들 * 운동/건강: 운동, 다이어트, 건강관리 * 취미활동: 독서, 영화, 게임, 음악 등 취미 * 직장/업무: 일과 관련된 경험, 성과, 고민 * 학업/공부: 학교, 시험, 공부 관련 * 인간관계: 가족, 친구, 연인, 동료와의 관계 * 여행/나들이: 여행, 외출, 나들이 경험 * 음식/요리: 식사, 요리, 맛집 경험 * 패션/뷰티: 옷, 화장품, 외모 관리 * 육아/가족: 아이 키우기, 가족 생활 * 쇼핑/소비: 구매, 쇼핑 경험 * 문화/예술: 공연, 전시회, 예술 활동 * 명상/성찰: 자기 성찰, 깨달음, 철학적 사고 * 사회/시사: 사회 이슈, 시사 관련 생각 * 디지털/IT: 기기, 앱, 디지털 경험 4. 길이  * 초단문: 300자 미만 * 단문: 300자~800자 * 중문: 800자~1500자 * 장문: 1500자~3000자 * 초장문: 3000자 이상 5. 서술 특성 * 시간 흐름: 시간순으로 일어난 일을 서술 * 주제 중심: 특정 주제를 중심으로 생각 전개 * 감정 중심: 감정과 느낌 위주로 서술 * 대화 포함: 대화나 인용문이 많이 포함됨 * 묘사 중심: 상황이나 장면을 생생히 묘사 * 사색 중심: 생각과 성찰 위주의 내용 6. 문체 특징 * 간결체: 짧고 명료한 문장 위주 * 상세체: 자세한 설명과 묘사가 많음 * 구어체: 말하는 듯한 문체, 줄임말 많음 * 문어체: 정제된 표현, 문어적 표현 * 감성체: 감정 표현과 수식어가 풍부 * 이모티콘 사용: 이모티콘, 특수문자 활용 * 관용어 사용: 속담, 관용구 등을 활용"
+diary_example = "아침부터 마음이 이상하게 두근거렸다. 별일도 없는데 왜일까 싶었는데, 어쩌면 오늘따라 바람이 조금 더 부드럽게 느껴지고, 햇살이 조금 더 따뜻하게 내려와서 그런 걸까. 출근길에 마주친 이름 모를 꽃들이 나를 보고 웃는 것 같아서 괜히 혼자 웃음이 났다.오후에는 카페에서 잠깐 일을 했는데, 옆 테이블에서 들려오던 웃음소리와 커피향이 섞여 마음을 간질였다. 오늘은 정말 별일 아닌 것들이 전부 특별하게 느껴졌다.저녁에는 친구랑 약속이 있어서 나갔는데, 걷는 내내 심장이 조금 빨리 뛰는 것 같았다. 오랜만에 만난 친구와의 대화, 밝게 빛나는 거리의 불빛들, 그리고 그 모든 순간들이 나를 설레게 했다. 내일도 이런 기분이 이어졌으면 좋겠다.참, 오늘의 나에게 한마디 — 이 설렘을 잊지 말자."
+
 @app.post("/api/v1/prompt_test")
 async def prompt_test(request : PromtTest) : 
-    try : 
-        response = await llm([{"role" : "system", "content" : "사용자의 요청에 따라 일기를 다시 써줘. 제공된 일기에 있었던 일만 언급해야 해."}, 
-                {"role" : "system", "content" : request.user_prompt }, 
-                {"role" : "user", "content" : request.prev_diary}])
-        print(response)
-    except Exception as e : 
-        print(e)
+    prompt_response = await llm([{"role" : "system", "content" : "아래 기반으로 일기를 만들 때 어떤 프롬프트를 써야 유사한 분위기의 일기를 쓸 수 있을지 알려줄래? 다른 말 없이 딱 프롬프트만 주고, "}, 
+            {"role" : "system", "content" : pompt_example }, 
+            {"role" : "user", "content" : request.prev_diary}])
+    new_diary = await llm([{"role" : "system", "content" : "아래 프롬프트를 기반으로 일기를 새로 생성해줘."},{"role" : "user", "content" : prompt_response},  {"role" : "user", "content" : diary_example}])
+    return { "prompt": prompt_response,"example": new_diary}
     
