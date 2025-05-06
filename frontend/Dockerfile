@@ -1,6 +1,6 @@
 # React 앱 빌드
 
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 의존성 설치
-RUN npm ci
+RUN npm ci --omit=dev
 
 # 전체 소스 복사
 COPY . .
