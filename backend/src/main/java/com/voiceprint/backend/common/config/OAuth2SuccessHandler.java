@@ -31,11 +31,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
 
             String email = user.getUsername();
+            Long userId = user.getUserId();
             String accessToken = jwtUtil.createAccessToken(email);
-            String refreshToken = jwtUtil.createRefreshToken();
+            String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
 
             // Redis에 리프레시 토큰 저장
-            refreshTokenRepository.saveRefreshToken(email, refreshToken);
+            refreshTokenRepository.saveRefreshToken(userId, refreshToken);
 
             response.setHeader("Authorization", "Bearer " + accessToken);
 
@@ -52,7 +53,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private Cookie createCookie(String key, String value) {
+    public Cookie createCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24 * 60 * 60); // 24시간
         cookie.setPath("/");
