@@ -6,6 +6,7 @@ import ProgressBar from "../../components/common/ProgressBar";
 import ChatList from "../../components/chat/ChatList";
 import ChatInput from "../../components/chat/ChatInput";
 import Button from "../../components/common/Button";
+import { useEffect } from "react";
 
 export default function DiaryChatPage() {
   const navigate = useNavigate();
@@ -15,6 +16,35 @@ export default function DiaryChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [limit, setLimit] = useState(0);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/chat/session/messages`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const savedMessages = data.data; // [{ role: 'USER'|'SERVER', message: '...' }, ...]
+        const formatted = savedMessages.map((msg: any) => ({
+          from: msg.role === "USER" ? "user" : "ai",
+          text: msg.message,
+        }));
+
+        console.log(data);
+        setMessages(formatted);
+      } catch (err) {
+        console.error("이전 대화 불러오기 실패:", err);
+      }
+    };
+
+    fetchMessages();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
