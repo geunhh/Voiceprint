@@ -31,22 +31,18 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     // 사용자 ID별 세션 관리 (한 사용자가 여러 세션을 가질 수 있음)
     private final Map<Long, Set<String>> userSessions = new ConcurrentHashMap<>();
     // 세션과 AI 서버 연결 관리
-    private final Map<String, Object> sessionToAIConnection = new ConcurrentHashMap<>();
+//    private final Map<String, Object> sessionToAIConnection = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String sessionId = session.getId();
         Long userId = (Long) session.getAttributes().get("userId");
 
-        // 세션 저장
         sessions.put(sessionId, session);
-
-        // 사용자 ID별 세션 관리
         userSessions.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(sessionId);
 
-        // AI 서버와 연결 (어떤 방식으로 연결하느냐에 따라 구현 다름)
-        Object aiConnection = aiServerClient.connect(userId, sessionId);
-        sessionToAIConnection.put(sessionId, aiConnection);
+        // 연결만 시도하고 더 이상 리턴값 저장은 필요 없음
+        aiServerClient.connect(userId, sessionId);
 
         log.info("WebSocket 연결 성공 - 사용자 ID: {}, 세션 ID: {}", userId, sessionId);
     }
@@ -119,7 +115,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
 
         // AI 서버 연결 종료
         aiServerClient.disconnect(sessionId, userId);
-        sessionToAIConnection.remove(sessionId);
+//        sessionToAIConnection.remove(sessionId);
 
         log.info("WebSocket 연결 종료 - 사용자 ID: {}, 세션 ID: {}, 상태: {}", userId, sessionId, status);
     }
