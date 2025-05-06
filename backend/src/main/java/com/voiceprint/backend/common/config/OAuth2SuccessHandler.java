@@ -2,6 +2,7 @@ package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.common.util.JWTUtil;
+import com.voiceprint.backend.domain.auth.RefreshTokenRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,8 @@ import java.io.IOException;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
+
     @Value("${spring.jwt.redirect.url}")
     private String redirectUrl;
 
@@ -27,8 +30,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         try {
             CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
 
-            String accessToken = jwtUtil.createAccessToken(user.getUsername());
+            String email = user.getUsername();
+            String accessToken = jwtUtil.createAccessToken(email);
             String refreshToken = jwtUtil.createRefreshToken();
+
+            // Redis에 리프레시 토큰 저장
+            refreshTokenRepository.saveRefreshToken(email, refreshToken);
 
             response.setHeader("Authorization", "Bearer " + accessToken);
 
