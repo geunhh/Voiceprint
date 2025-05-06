@@ -72,6 +72,7 @@ const AppRoutes = () => (
     <Route element={<Layout />}>
       {/* 홈 / 메인 */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/login-success" element={<HomePage />} />
       <Route path="/main" element={<MainPage />} />
 
       {/* ────────────────── Diary ────────────────── */}

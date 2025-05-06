@@ -1,10 +1,30 @@
-import React from "react";
-import Button from "../components/common/Button";
+import React, { useEffect } from "react";
 import kakaoIcon from "../assets/icons/kakao.png";
 import googleIcon from "../assets/icons/google.png";
 import bg from "../assets/icons/bg.png";
+import { useNavigate } from "react-router";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
+  //  로그인 성공 후 access 토큰이 쿼리로 들어왔을 때 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get("access");
+
+    if (accessToken) {
+      localStorage.setItem("Authorization", accessToken);
+
+      // URL 정리 (access 파라미터 제거) 후 /main 이동
+      window.history.replaceState({}, "", "/");
+      navigate("/main");
+    }
+  }, [navigate]);
+
+  const handleSocialLogin = (provider: "kakao" | "google") => {
+    window.location.href = `http://localhost:8080/api/v1/user/${provider}`;
+  };
+
   return (
     <div
       className="flex flex-col items-center justify-center min-h-screen px-4 bg-yellow-50"
@@ -35,23 +55,26 @@ export default function HomePage() {
         {/* 소셜 버튼들*/}
         <div className="mt-6 flex flex-col gap-4 w-full max-w-xs">
           <button
+            onClick={() => handleSocialLogin("kakao")}
             className="
               flex items-center justify-center w-full py-3 
-              bg-[#FEE500]          /* 카카오 실제 색상 */
-              text-black rounded-full shadow-md 
+              bg-[#FEE500] text-black rounded-full shadow-md 
               transform transition-transform duration-200 ease-out
               hover:scale-105
             "
-            onClick={() => console.log("카카오 로그인")}
           >
             <img src={kakaoIcon} alt="Kakao" className="w-6 h-6 mr-2" />
             카카오로 시작하기
           </button>
 
           <button
-            className="flex items-center justify-center w-full py-3 bg-white text-black rounded-full shadow-md transform transition-transform duration-200 ease-out
-              hover:scale-105"
-            onClick={() => console.log("구글 로그인")}
+            onClick={() => handleSocialLogin("google")}
+            className="
+              flex items-center justify-center w-full py-3 
+              bg-white text-black rounded-full shadow-md 
+              transform transition-transform duration-200 ease-out
+              hover:scale-105
+            "
           >
             <img src={googleIcon} alt="Google" className="w-6 h-6 mr-2" />
             Google로 시작하기
