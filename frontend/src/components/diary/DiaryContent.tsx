@@ -1,25 +1,36 @@
+import { useEffect, useRef, useState } from "react";
+
 interface DiaryContentProps {
   content: string;
-  maxHeight?: number;
-  minHeight?: number;
 }
 
-function DiaryContent({
-  content,
-  maxHeight = 500,
-  minHeight = 300,
-}: DiaryContentProps) {
+function DiaryContent({ content }: DiaryContentProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isCentered, setIsCentered] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current || !contentRef.current) return;
+
+    const containerHeight = containerRef.current.clientHeight;
+    const contentHeight = contentRef.current.scrollHeight;
+
+    setIsCentered(contentHeight < containerHeight);
+  }, [content]);
+
   return (
     <div
-      className={`
-    diary-content
-    w-11/12 mx-auto rounded-xl border border-yellow-400 bg-white 
-    px-5 py-4 text-gray-700 text-sm leading-relaxed whitespace-pre-line 
-    shadow-sm overflow-y-auto
-  `}
-      style={{ maxHeight, minHeight }}
+      ref={containerRef}
+      className="w-11/12 mx-auto h-[500px] overflow-y-auto rounded-xl border border-yellow-400 bg-white 
+                 px-5 py-4 shadow-sm"
     >
-      {content}
+      <div
+        ref={contentRef}
+        className={`text-sm text-gray-700 leading-relaxed whitespace-pre-line 
+                    text-justify ${isCentered ? "flex items-center justify-center h-full" : ""}`}
+      >
+        {content}
+      </div>
     </div>
   );
 }
