@@ -7,6 +7,7 @@ import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.chat.ChatbotRepository;
+import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,15 +25,18 @@ public class ChatbotService {
 
     private final ChatbotRepository chatbotRepository;
     private final UserRepository userRepository;
-
+    private final AuthService authService;
     public ChatbotListResponseDTO getChatbots(HttpServletRequest request) {
         //유저 정보 조회
-        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
-        // 최근 사용 챗봇
-        Long recentChatbotId = user.getLastChatbot().getId();
 
+        // 최근 사용 챗봇
+        Long recentChatbotId = null;
+        if (user.getLastChatbot() != null) {
+            recentChatbotId = user.getLastChatbot().getId();
+        }
 
         // 챗봇 전체 목록 조회
         List<Chatbot> chatbots = chatbotRepository.findAll();
