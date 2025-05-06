@@ -34,10 +34,11 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     햇살이: chatYellow,
   };
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const Authorization = localStorage.getItem("Authorization");
-  // axios 기본 URL 설정 (localhost:8080)
+
   const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: BASE_URL,
     headers: {
       Authorization: `Bearer ${Authorization}`,
       "Content-Type": "application/json",
@@ -49,11 +50,26 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     async function fetchChatbots() {
       try {
         const res = await api.get("/api/chatbot");
-        setChatbots(res.data.data.chatbots);
+        const { recentChatbotId, chatbots } = res.data.data;
+
+        setChatbots(chatbots);
+
+        // recentChatbotId에 해당하는 챗봇의 index 찾기
+        const index = chatbots.findIndex(
+          (bot: Chatbot) => bot.id === recentChatbotId
+        );
+
+        // 유효한 인덱스일 경우에만 currentIndex 설정
+        if (index !== -1) {
+          setCurrentIndex(index);
+        } else {
+          setCurrentIndex(0); // fallback
+        }
       } catch (err) {
         console.error("챗봇 목록 조회 실패:", err);
       }
     }
+
     fetchChatbots();
   }, []);
 
