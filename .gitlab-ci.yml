@@ -1,12 +1,20 @@
 stages:
-  - test
+  - build
 
-runner-test:
-  stage: test
-  image: alpine:latest
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
   tags:
-    - runner
+   - runner
   only:
-    - develop
+   - develop
+   - merge_requests
+  before_script:
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
   script:
-    - echo "✅ Self-hosted Docker Runner is working!"
+    # frontend 이미지 빌드
+    - docker build -t $DOCKERHUB_USER/frontend:latest frontend
+    # backend 이미지 빌드
+    - docker build -t $DOCKERHUB_USER/backend:latest backend
