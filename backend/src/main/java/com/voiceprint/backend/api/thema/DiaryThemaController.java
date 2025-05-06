@@ -27,7 +27,9 @@ public class DiaryThemaController {
     @GetMapping("/all")
     public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThmeas(
             HttpServletRequest request    ) {
-        Long userId = 1L;
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 일기 테마 전체 조회 / userid : {}",userId);
         DiaryThemaListResponseDTO response = diaryThemaService.getThemasForUser(userId);
         return ResponseEntity.ok(
                 new CommonResponse<>(200,"일기 테마 조회 성공",response));
@@ -37,7 +39,10 @@ public class DiaryThemaController {
     public ResponseEntity<CommonResponse<Void>> selectTheam(
             @PathVariable Long themaId,
             HttpServletRequest request) {
-        Long userId = 1L;
+//        Long userId = 1L;
+
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 일기 테마 선택 / userid : {}",userId);
         diaryThemaService.selectThema(userId,themaId);
 
         return ResponseEntity.ok(new CommonResponse<>(
@@ -50,9 +55,9 @@ public class DiaryThemaController {
             @Valid @RequestBody DiaryThemaCreateRequest request,
             HttpServletRequest httprequest
     ) {
-//        Long userId = authService.getUserIdFromRequest(httprequest);
-        Long userId = 1L;
-        log.info("userid: {}", userId);
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("## 커스텀 테마 생성 / userid : {}",userId);
 
         DiaryThemaCreateResponse response = diaryThemaService.createCustomThema(userId, request.getExampleDiary());
 
@@ -66,10 +71,9 @@ public class DiaryThemaController {
             @PathVariable Long diaryId,
             HttpServletRequest httprequest
     ) {
-//        Long userId = authService.getUserIdFromRequest(httprequest);
-        Long userId = 1L;
-        log.info("userid: {}", userId);
-
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("## 일기에서 테마 추출 / userid : {}",userId);
         diaryThemaService.updateCustomThemaFromDiary(userId,diaryId);
 
         return ResponseEntity.ok(new CommonResponse<>(
