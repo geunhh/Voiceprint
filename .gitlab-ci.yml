@@ -5,7 +5,7 @@ runner-test:
   stage: test
   image: alpine:latest
   tags:
-    - docker
+    - runner
   only:
     - develop
   script:
