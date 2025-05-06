@@ -5,12 +5,14 @@ import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -19,9 +21,8 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public Long getUserIdFromRequest(HttpServletRequest request){
-        String token = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
 
-        return getUserIdFromAuthHeader(token);
+        return getUserIdFromAuthHeader(request.getHeader("Authorization"));
     }
 
     /**
@@ -37,14 +38,17 @@ public class AuthService {
 
         // 토큰 유효성 검증
         if (!jwtUtil.validateToken(token)) {
+            log.error("토큰유효성실패");
             return null;
         }
 
         // 토큰에서 이메일 추출
         String email = jwtUtil.getEmail(token);
         if (email == null) {
+            log.error("이메일 null 출력");
             return null;
         }
+        log.info("email이 정상적으로 추출 : {}",email);
 
         // 이메일로 사용자 조회
         Optional<User> userOptional = userRepository.findByEmail(email);
