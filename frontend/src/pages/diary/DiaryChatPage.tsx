@@ -14,32 +14,40 @@ export default function DiaryChatPage() {
   >([{ from: "ai", text: "안녕~ 오늘 하루는 어땠는지 이야기해줘!" }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const useDummy = true;
+  const [limit, setLimit] = useState(0);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
+
+    // 사용자 메시지 추가
     setMessages((prev) => [...prev, { from: "user", text: input }]);
     setInput("");
     setLoading(true);
 
-    if (useDummy) {
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { from: "ai", text: "더미 응답입니다!" },
-        ]);
-        setLoading(false);
-      }, 500);
-      return;
-    }
-
     try {
-      const { data } = await axios.post("/api/diary/chat", { message: input });
-      setMessages((prev) => [...prev, { from: "ai", text: data.data.reply }]);
-    } catch {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/text`,
+        { message: input },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // console.log(data);
+      const response = data.data.response;
+      const limitVal = data.data.limit;
+
+      // 서버 응답 추가
+      setMessages((prev) => [...prev, { from: "ai", text: response }]);
+      setLimit(limitVal);
+    } catch (err) {
+      console.error("API 오류:", err);
       setMessages((prev) => [
         ...prev,
-        { from: "ai", text: "서버 오류로 더미 응답입니다." },
+        { from: "ai", text: "서버 오류가 발생했어요. 다시 시도해주세요." },
       ]);
     } finally {
       setLoading(false);
@@ -48,7 +56,7 @@ export default function DiaryChatPage() {
 
   const handleCreate = () => {
     console.log("일기 생성!");
-    navigate("/diary/temp"); // 예시
+    navigate("/diary/temp");
   };
 
   return (
@@ -70,7 +78,7 @@ export default function DiaryChatPage() {
         </div>
 
         {/* 프로그레스 바 */}
-        <ProgressBar label="" progress={45} />
+        <ProgressBar label="" progress={limit} />
       </div>
 
       {/* 채팅 리스트 */}
