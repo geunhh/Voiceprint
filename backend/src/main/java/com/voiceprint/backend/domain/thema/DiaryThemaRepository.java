@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DiaryThemaRepository extends JpaRepository<DiaryThema, Long> {
@@ -13,4 +14,5 @@ public interface DiaryThemaRepository extends JpaRepository<DiaryThema, Long> {
     @Query("select d from DiaryThema d where d.user.id IS NULL OR d.user.id = :userId")
     List<DiaryThema> findByUserIdOrDefault(@Param("userId") Long userId);
 
+    Optional<DiaryThema> findByUserId(Long userId);
 }

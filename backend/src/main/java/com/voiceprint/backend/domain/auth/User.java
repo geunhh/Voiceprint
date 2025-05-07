@@ -71,7 +71,7 @@ public class User {
     @JoinColumn(name = "using_thema_id")
     private DiaryThema usingThema;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Diary> diaries = new ArrayList<>();
 
 
