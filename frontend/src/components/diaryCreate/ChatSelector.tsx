@@ -17,7 +17,12 @@ interface Chatbot {
 }
 
 interface ChatSelectorProps {
-  onSelect: (character: { img: string; name: string; tag: string }) => void;
+  onSelect: (character: {
+    id: number;
+    img: string;
+    name: string;
+    tag: string;
+  }) => void;
 }
 
 export default function ChatSelector({ onSelect }: ChatSelectorProps) {
@@ -82,7 +87,12 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     const img = bot.imageUrl || localIcons[bot.name] || "";
     const tag = bot.description.split(",").join(" ");
 
-    onSelect({ img, name: bot.name, tag });
+    onSelect({
+      id: bot.id,
+      img,
+      name: bot.name,
+      tag,
+    });
   }, [chatbots, currentIndex, onSelect]);
 
   const handlePrev = () => {

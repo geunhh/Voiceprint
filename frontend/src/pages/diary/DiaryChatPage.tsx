@@ -6,6 +6,7 @@ import ProgressBar from "../../components/common/ProgressBar";
 import ChatList from "../../components/chat/ChatList";
 import ChatInput from "../../components/chat/ChatInput";
 import Button from "../../components/common/Button";
+import { useEffect } from "react";
 
 export default function DiaryChatPage() {
   const navigate = useNavigate();
@@ -14,41 +15,81 @@ export default function DiaryChatPage() {
   >([{ from: "ai", text: "안녕~ 오늘 하루는 어땠는지 이야기해줘!" }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const useDummy = true;
+  const [limit, setLimit] = useState(0);
 
+  // 페이지 첫 로딩에서 진행중인 대화 정보 불러오기
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/chat/session/messages`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const savedMessages = data.data; // [{ role: 'USER'|'SERVER', message: '...' }, ...]
+        const formatted = savedMessages.map((msg: any) => ({
+          from: msg.role === "USER" ? "user" : "ai",
+          text: msg.message,
+        }));
+
+        console.log(data);
+        setMessages(formatted);
+      } catch (err) {
+        console.error("이전 대화 불러오기 실패:", err);
+      }
+    };
+
+    fetchMessages();
+  }, []);
+
+  // 메시지 보내기 API
   const handleSend = async () => {
     if (!input.trim() || loading) return;
+
+    // 사용자 메시지 추가
     setMessages((prev) => [...prev, { from: "user", text: input }]);
     setInput("");
     setLoading(true);
 
-    if (useDummy) {
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { from: "ai", text: "더미 응답입니다!" },
-        ]);
-        setLoading(false);
-      }, 500);
-      return;
-    }
-
     try {
-      const { data } = await axios.post("/api/diary/chat", { message: input });
-      setMessages((prev) => [...prev, { from: "ai", text: data.data.reply }]);
-    } catch {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/text`,
+        { message: input },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // console.log(data);
+      const response = data.data.response;
+      const limitVal = data.data.limit;
+
+      // 서버 응답 추가
+      setMessages((prev) => [...prev, { from: "ai", text: response }]);
+      setLimit(limitVal);
+    } catch (err) {
+      console.error("API 오류:", err);
       setMessages((prev) => [
         ...prev,
-        { from: "ai", text: "서버 오류로 더미 응답입니다." },
+        { from: "ai", text: "서버 오류가 발생했어요. 다시 보내주시겠어요?" },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
+  // 60퍼센트
   const handleCreate = () => {
     console.log("일기 생성!");
-    navigate("/diary/temp"); // 예시
+    navigate("/diary/temp");
   };
 
   return (
@@ -70,7 +111,21 @@ export default function DiaryChatPage() {
         </div>
 
         {/* 프로그레스 바 */}
-        <ProgressBar label="" progress={45} />
+        <ProgressBar label="" progress={limit} />
+        {/* 안내 멘트 */}
+        {limit >= 90 ? (
+          <div className="text-center text-black text-sm mt-2 font-medium">
+            충분한 이야기가 모였어요! 일기를 만들어보세요.
+          </div>
+        ) : limit >= 60 ? (
+          <div className="text-center text-gray-500 text-sm mt-2 font-medium">
+            이제 곧 일기를 만들어갈 수 있어요!
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm mt-2 font-medium">
+            일기를 위한 소중한 이야기를 더 들려주세요
+          </div>
+        )}
       </div>
 
       {/* 채팅 리스트 */}

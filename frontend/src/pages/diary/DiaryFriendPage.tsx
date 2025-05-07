@@ -17,6 +17,7 @@ export default function DiaryFriendPage() {
 
   const [hovered, setHovered] = useState<"voice" | "chat" | null>("voice");
   const [selectedCharacter, setSelectedCharacter] = useState({
+    id: 0,
     img: "",
     name: "",
     tag: "",
@@ -32,6 +33,16 @@ export default function DiaryFriendPage() {
     return buttonType === "voice" ? "fill" : "line";
   };
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const api = axios.create({
+    baseURL: BASE_URL,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+      "Content-Type": "application/json",
+    },
+  });
+
   const handleVoiceStart = () => {
     dispatch(setCharacter(selectedCharacter));
     navigate("/diary/voice");
@@ -41,23 +52,23 @@ export default function DiaryFriendPage() {
     dispatch(setCharacter(selectedCharacter));
 
     try {
-      const { data } = await axios.get("/api/chat/session/status", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      const status: string | null = data.data;
+      const res = await api.get("/api/chat/session/status");
+      const status: string | null = res.data.data;
+      console.log("현재 세션 상태:", status);
 
-      // 상태가 WAITING 또는 null 이면 바로 채팅 시작
       if (status === null || status === "WAITING") {
+        // 세션 없으면 생성 후 이동
+        await api.post("/api/chat/session/start", {
+          chatbotId: selectedCharacter.id,
+        });
         navigate("/diary/chat");
+      } else if (status === "DIARY_DONE") {
+        navigate("/diary/temp");
       } else {
-        // 이미 대화 중이면 modal 띄우기
         setModalOpen(true);
       }
     } catch (err) {
-      console.error("세션 상태 조회 오류:", err);
-      // 에러나 네트워크 실패 시에도 새 채팅으로 이동
+      console.error("세션 상태 확인 또는 시작 실패:", err);
       navigate("/diary/chat");
     }
   };
@@ -67,13 +78,17 @@ export default function DiaryFriendPage() {
     navigate("/diary/chat");
   };
 
+  //모달 : 새로 시작
   const handleRestart = async () => {
     setModalOpen(false);
     try {
-      // TODO: 백엔드에서 세션 초기화 API가 있다면 호출
-      // await axios.post("/api/chat/session/reset", {}, { headers: { … } });
-    } catch (_) {
-      // 무시
+      console.log("새로운 세션 시작 요청 보냄:", selectedCharacter.id);
+      const res = await api.post("/api/chat/session/start", {
+        chatbotId: selectedCharacter.id,
+      });
+      console.log("세션 시작 성공:", res.data);
+    } catch (err) {
+      console.error("세션 시작 실패:", err);
     }
     navigate("/diary/chat");
   };
