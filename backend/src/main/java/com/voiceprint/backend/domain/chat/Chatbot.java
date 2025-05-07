@@ -26,6 +26,7 @@ public class Chatbot {
     private String imageUrl;
 
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String prompt;
 
     private Boolean isDeleted;

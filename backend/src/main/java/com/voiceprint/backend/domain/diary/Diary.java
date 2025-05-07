@@ -33,6 +33,7 @@ public class Diary {
 
     //내용
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     //썸네일 이미지
@@ -41,6 +42,7 @@ public class Diary {
 
     //일기프롬프트
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String prompt;
 
     //삭제여부

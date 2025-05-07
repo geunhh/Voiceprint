@@ -2,11 +2,13 @@ package com.voiceprint.backend.api.chat;
 
 import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.dto.CommonResponse;
+import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.chat.ChatServcie;
 import com.voiceprint.backend.service.chat.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +17,13 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/chat")
 public class ChatController {
 
     private final ChatServcie chatServcie;
     private final ChatSessionService chatSessionService;
-
+    private final AuthService authService;
     /**
      * Text 채팅 API
      */
@@ -29,8 +32,10 @@ public class ChatController {
             @RequestBody @Valid ChatTextRequestDTO request,
             HttpServletRequest httprequest
             ){
-        Long userId = 1L; //Todo: 토큰 추출로 바꾸기
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("## 채팅 / userid : {}",userId);
         ChatTextResponseDTO response = chatServcie.processChat(userId, request.getMessage());
+        log.info("답변 : {}",response.getResponse());
 
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "성공", response
@@ -44,7 +49,9 @@ public class ChatController {
     @PostMapping("/end")
     public ResponseEntity<CommonResponse<String>> endChatSession(
             HttpServletRequest request) {
-        Long userId = 1L;
+
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 채팅 세션 종료 / userid : {}",userId);
         // 비동기 처리
         chatSessionService.endSession(userId);
         return ResponseEntity.ok(new CommonResponse<>(
@@ -55,8 +62,11 @@ public class ChatController {
     public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> getTempDiary(
             HttpServletRequest request
     ) {
-        Long userId = 1L;
+
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 임시 일기 조회 / userid : {}",userId);
         TempDiaryResponseDTO response = chatSessionService.getTempDiary(userId);
+        log.info("## 일기 : {} ",response.getDiary());
         return ResponseEntity.ok(new CommonResponse<>(200, "임시 일기 조회",response));
     }
 
@@ -64,8 +74,9 @@ public class ChatController {
     public ResponseEntity<CommonResponse<String>> retryTempDiary(
             HttpServletRequest request
     ) {
-        Long userId = 1L;
 
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 임시 일기 재생성 / userid : {}",userId);
         chatSessionService.retryTempDiaryGeneration(userId);
 
         return ResponseEntity
@@ -83,8 +94,9 @@ public class ChatController {
             @RequestBody @Valid TempDiaryUpdateRequestDTO request,
             HttpServletRequest httprequest
     ) {
-
-        Long userId = 1L;
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("## 임시 채팅 수정 / userid : {}",userId);
         UpdateDiaryResult result = chatSessionService.updateTempDiary(userId, request);
 
         if (!result.isChanged()) {
@@ -95,16 +107,16 @@ public class ChatController {
             return ResponseEntity.ok(new CommonResponse<>(
                     200, "임시 일기 수정 성공", result.getDiary()
             ));
-
         }
-
     }
 
     @PostMapping("diary/temp/confirm")
     public ResponseEntity<CommonResponse<Map<String, Long>>> confirmDiary(
             HttpServletRequest request
     ) {
-        Long userId = 1L;
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 일기 확정!! / userid : {}",userId);
         Long diaryId = chatSessionService.confirmDiary(userId);
 
         Map<String, Long> data = Map.of("diaryId", diaryId);
