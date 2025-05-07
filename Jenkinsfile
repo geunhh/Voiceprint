@@ -79,7 +79,7 @@ pipeline {
     // 위에서 build 한 docker image push
     stage("Push Docker Images") {
       steps {
-        withDockerRegistry([credentialsId: 'docker-hub-token', url: '']) {
+        withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
           sh "docker push ${FRONTEND_IMAGE}"
           sh "docker push ${BACKEND_IMAGE}"
           sh "docker push ${MYSQL_IMAGE}"
