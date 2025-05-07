@@ -84,3 +84,10 @@
     max-height: 300px !important;
   }
 }
+
+/* 화면 크기가 915 이하인 경우 정보 수정 페이지 하단 여백 추가 */
+@media (max-height: 915px) {
+  .thema-list-padding {
+    padding-bottom: 7rem;
+  }
+}
