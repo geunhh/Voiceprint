@@ -1,0 +1,76 @@
+services:
+  frontend:
+    container_name: frontend
+    image: jokiheum/voiceprint-frontend:latest
+    ports:
+      - "80:80"
+    env_file:
+      - ./frontend.env
+    networks:
+      - voiceprint-network
+
+  backend:
+    container_name: backend
+    image: jokiheum/voiceprint-backend:latest
+    ports:
+      - "18080:8080"
+    env_file:
+      - ./backend.env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - voiceprint-network
+
+  fastapi:
+    container_name: fastapi
+    image: jokiheum/voiceprint-fastapi:latest
+    ports:
+      -"8000:8000"
+    env_file:
+      - ./fastapi.env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - voiceprint-network
+    
+
+    
+  mysql:
+    container_name: mysql
+    image: jokiheum/voiceprint-mysql:latest
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./mysql.env
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - voiceprint-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"] # mysql이 healthy 한 지 판단
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    container_name: redis
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+  
+volumes:
+  mysql-data:
+    name: mysql-data
+
+networks:
+  voiceprint-network:                
+    name: voiceprint-network         
+    driver: bridge
