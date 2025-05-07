@@ -1,12 +1,15 @@
 // src/pages/diary/DiaryChatPage.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+
 import ProgressBar from "../../components/common/ProgressBar";
 import ChatList from "../../components/chat/ChatList";
 import ChatInput from "../../components/chat/ChatInput";
 import Button from "../../components/common/Button";
-import { useEffect } from "react";
+
+import DiaryCreatingModal from "../../components/modal/DiaryCreatingModal";
+import DiaryCreateFailModal from "../../components/modal/DiaryCreateFailModal";
 
 export default function DiaryChatPage() {
   const navigate = useNavigate();
@@ -17,7 +20,11 @@ export default function DiaryChatPage() {
   const [loading, setLoading] = useState(false);
   const [limit, setLimit] = useState(0);
 
-  // 페이지 첫 로딩에서 진행중인 대화 정보 불러오기
+  // 모달 상태
+  const [creatingModalOpen, setCreatingModalOpen] = useState(false);
+  const [failModalOpen, setFailModalOpen] = useState(false);
+
+  // 대화 불러오기
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -31,13 +38,12 @@ export default function DiaryChatPage() {
           }
         );
 
-        const savedMessages = data.data; // [{ role: 'USER'|'SERVER', message: '...' }, ...]
+        const savedMessages = data.data;
         const formatted = savedMessages.map((msg: any) => ({
           from: msg.role === "USER" ? "user" : "ai",
           text: msg.message,
         }));
 
-        console.log(data);
         setMessages(formatted);
       } catch (err) {
         console.error("이전 대화 불러오기 실패:", err);
@@ -47,11 +53,9 @@ export default function DiaryChatPage() {
     fetchMessages();
   }, []);
 
-  // 메시지 보내기 API
+  // 메시지 전송
   const handleSend = async () => {
     if (!input.trim() || loading) return;
-
-    // 사용자 메시지 추가
     setMessages((prev) => [...prev, { from: "user", text: input }]);
     setInput("");
     setLoading(true);
@@ -68,38 +72,60 @@ export default function DiaryChatPage() {
         }
       );
 
-      // console.log(data);
       const response = data.data.response;
       const limitVal = data.data.limit;
 
-      // 서버 응답 추가
       setMessages((prev) => [...prev, { from: "ai", text: response }]);
       setLimit(limitVal);
     } catch (err) {
       console.error("API 오류:", err);
       setMessages((prev) => [
         ...prev,
-        { from: "ai", text: "서버 오류가 발생했어요. 다시 보내주시겠어요?" },
+        { from: "ai", text: "서버 오류가 발생했어요. 다시 시도해 주세요." },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 60퍼센트
-  const handleCreate = () => {
-    console.log("일기 생성!");
-    navigate("/diary/temp");
+  // 일기 생성 요청
+  const handleCreate = async () => {
+    setCreatingModalOpen(true);
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/end`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // 성공 → 생성 완료 페이지로 이동
+      navigate("/diary/temp");
+    } catch (err) {
+      console.error("일기 생성 실패:", err);
+      setCreatingModalOpen(false);
+      setFailModalOpen(true); // 실패 모달 열기
+    }
   };
+
+  // const handleCreate = async () => {
+  //   setCreatingModalOpen(true);
+
+  //   // 실제 axios 요청 생략하고 성공한 것처럼 처리
+  //   setTimeout(() => {
+  //     setCreatingModalOpen(false);
+  //     navigate("/diary/temp"); // 성공 시 이동
+  //   }, 3000); // 2초 후 이동 (로딩 효과 확인용)
+  // };
 
   return (
     <div className="flex flex-col h-screen bg-white">
-      {/* 상단 공간 (Appbar 높이) */}
       <div className="pt-12" />
 
-      {/* ─── 대화량 + 일기 생성 버튼 영역 ─── */}
       <div className="relative w-full max-w-[320px] mx-auto mb-8">
-        {/* 레이블 */}
         <div className="flex items-center justify-between text-gray-500 text-sm mb-1">
           대화량{" "}
           <Button
@@ -109,8 +135,6 @@ export default function DiaryChatPage() {
             onClick={handleCreate}
           />
         </div>
-
-        {/* 프로그레스 바 */}
         <ProgressBar label="" progress={limit} />
         {/* 안내 멘트 */}
         {limit >= 90 ? (
@@ -128,12 +152,10 @@ export default function DiaryChatPage() {
         )}
       </div>
 
-      {/* 채팅 리스트 */}
-      <div className="flex-1 w-full max-w-[320px] mx-auto overflow-y-auto ">
+      <div className="flex-1 w-full max-w-[320px] mx-auto overflow-y-auto">
         <ChatList messages={messages} />
       </div>
 
-      {/* 입력창 고정*/}
       <div className="w-full max-w-[320px] mx-auto py-4 border-gray-200">
         <ChatInput
           value={input}
@@ -143,7 +165,18 @@ export default function DiaryChatPage() {
         />
       </div>
 
-      {/* 하단 안전 패딩(Tabbar 높이) */}
+      {/* 모달들 */}
+      {creatingModalOpen && <DiaryCreatingModal />}
+      {failModalOpen && (
+        <DiaryCreateFailModal
+          onClose={() => setFailModalOpen(false)}
+          onRetry={() => {
+            setFailModalOpen(false);
+            handleCreate();
+          }}
+        />
+      )}
+
       <div className="pb-24" />
     </div>
   );
