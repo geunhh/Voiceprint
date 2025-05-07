@@ -1,5 +1,6 @@
 import { useState } from "react";
 import profileImageEdit from "../../assets/icons/edit.png";
+import ThemaList from "../../components/common/ThemaList";
 import ProfileEditModal from "../../components/modal/ProfileEditModal";
 
 // 유저 정보
@@ -36,6 +37,13 @@ export default function EditProfilePage() {
         <p className="font-semibold text-2xl text-center mt-3">
           {user.userName}
         </p>
+      </div>
+
+      {/* 테마 변경 */}
+      <div className="mt-5 mb-0 thema-list-padding">
+        <p className="ml-4 font-semibold text-gray-500">일기 테마 수정하기</p>
+        {/* 테마 리스트 */}
+        <ThemaList />
       </div>
 
       {/* 프로필 수정 모달 */}

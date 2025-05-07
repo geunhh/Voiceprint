@@ -3,7 +3,7 @@ import closeIcon from "../../assets/icons/close.png";
 import profileSelect from "../../assets/icons/profileSelect.png";
 import Button from "../common/Button";
 
-// 임시 프로필 이미지 
+// 임시 프로필 이미지
 import profile1 from "../../assets/temp/profile1.png";
 import profile2 from "../../assets/temp/profile2.png";
 import profile3 from "../../assets/temp/profile3.png";
@@ -17,7 +17,7 @@ import profile9 from "../../assets/temp/profile9.png";
 interface ProfileEditProps {
   userName: string;
   userImage: string;
-  onClose: ()=> void;
+  onClose: () => void;
 }
 
 const profileList = [
@@ -37,13 +37,13 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center">
-        <div className="w-4/5 rounded-xl bg-white flex flex-col items-center py-6 relative">
+      <div className="w-4/5 max-w-[320px] rounded-xl bg-white flex flex-col items-center py-6 relative">
         {/* 닫기 버튼 */}
         <img
-            src={closeIcon}
-            alt="닫기버튼"
-            className="w-6 absolute top-4 right-4 cursor-pointer"
-            onClick={onClose}
+          src={closeIcon}
+          alt="닫기버튼"
+          className="w-6 absolute top-4 right-4 cursor-pointer"
+          onClick={onClose}
         />
 
         {/* 제목 */}
@@ -51,54 +51,49 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
 
         {/* 선택된 프로필 */}
         <div className="w-28 h-28 rounded-full flex items-center justify-center mb-2">
-            <img
+          <img
             src={selectedImage}
             alt="선택된 프로필"
             className="w-28 h-28 object-contain rounded-full"
-            />
+          />
         </div>
 
         {/* 이름 */}
-        <input 
-            type="text" 
-            className="text-lg text-center font-semibold border-b-2 mb-6 w-2/5" 
-            placeholder={userName} 
+        <input
+          type="text"
+          className="text-lg text-center font-semibold border-b-2 mb-6 w-2/5"
+          placeholder={userName}
         />
 
         {/* 프로필 이미지 목록 */}
         <div className="grid grid-cols-3 gap-4 mb-6 px-4">
-            {profileList.map((img, idx) => (
+          {profileList.map((img, idx) => (
             <div
-                key={idx}
-                className={`relative w-20 h-20 rounded-full flex items-center justify-center cursor-pointer `}
-                onClick={() => setSelectedImage(img)}
+              key={idx}
+              className={`relative w-20 h-20 rounded-full flex items-center justify-center cursor-pointer `}
+              onClick={() => setSelectedImage(img)}
             >
-                <img
+              <img
                 src={img}
                 alt={`프로필${idx}`}
                 className="w-20 h-20 object-contain"
-                />
-                {selectedImage === img && (
+              />
+              {selectedImage === img && (
                 <img
-                    src={profileSelect}
-                    alt="선택됨"
-                    className="absolute -top-1 right-0 w-7 h-7"
+                  src={profileSelect}
+                  alt="선택됨"
+                  className="absolute -top-1 right-0 w-7 h-7"
                 />
-                )}
+              )}
             </div>
-            ))}
+          ))}
         </div>
 
         {/* 저장 버튼 */}
         <div className="w-full px-6 mt-auto flex justify-center">
-            <Button
-            type="fill"
-            size="M"
-            text="저장"
-            onClick={onClose}
-            />
+          <Button type="fill" size="M" text="저장" onClick={onClose} />
         </div>
-        </div>
+      </div>
     </div>
   );
 }

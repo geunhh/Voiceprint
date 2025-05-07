@@ -1,6 +1,6 @@
 import closeIcon from "../../assets/icons/close.png";
-import ChatList from "../chat/ChatList";
 import { ChatBubbleProps } from "../chat/ChatBubble";
+import ChatList from "../chat/ChatList";
 
 interface ChatHistoryModalProps {
   onClose: () => void;
@@ -41,7 +41,7 @@ const messages: ChatBubbleProps[] = [
 function ChatHistoryModal({ onClose }: ChatHistoryModalProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center">
-      <div className="w-4/5 rounded-xl bg-white flex flex-col py-6 relative max-h-[90vh] overflow-y-auto">
+      <div className="w-4/5 max-w-[320px] rounded-xl bg-white flex flex-col py-6 relative max-h-[90vh] overflow-y-auto">
         {/* 닫기 버튼 */}
         <img
           src={closeIcon}
