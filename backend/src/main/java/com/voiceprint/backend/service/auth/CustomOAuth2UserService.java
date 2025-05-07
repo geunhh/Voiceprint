@@ -32,8 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         else if (providerName.equals("kakao")) {
-
-            oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+            // 카카오 DTO
         }
         else {
 
