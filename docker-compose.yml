@@ -28,7 +28,7 @@ services:
     container_name: fastapi
     image: jokiheum/voiceprint-fastapi:latest
     ports:
-      -"8000:8000"
+      - "8000:8000"
     env_file:
       - ./fastapi.env
     depends_on:
