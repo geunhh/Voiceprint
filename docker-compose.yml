@@ -3,7 +3,7 @@ services:
     container_name: frontend
     image: jokiheum/voiceprint-frontend:latest
     ports:
-      - "80:80"
+      - "81:80"
     env_file:
       - ./frontend.env
     networks:
