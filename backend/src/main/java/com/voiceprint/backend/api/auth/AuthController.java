@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.auth;
 
+import com.voiceprint.backend.api.auth.dto.ProfileResponse;
 import com.voiceprint.backend.api.auth.dto.TokenResponse;
 import com.voiceprint.backend.api.auth.dto.UserResponse;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;
@@ -11,10 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,6 +24,17 @@ import java.util.Map;
 public class AuthController {
     private final AuthService authService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    /**
+     * 유저 프로필 조회
+     * 최근 일기 리스트로 응답
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<CommonResponse<ProfileResponse>> getProfile(HttpServletRequest request) {
+        Long userId = authService.getUserIdFromRequest(request);
+        ProfileResponse response = authService.getProfile(userId);
+        return ResponseEntity.ok(new CommonResponse<>(200,"프로필 조회 완료", response));
+    }
 
     /**
      * 액세스 토큰 재발급
