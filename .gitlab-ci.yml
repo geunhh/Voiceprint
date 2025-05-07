@@ -1,12 +1,15 @@
 stages:
   - build
 
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
 build:
   stage: build
   image: docker:latest
   services:
     - name: docker:dind
-    - alias: docker
   tags:
    - runner
   only:
@@ -17,5 +20,7 @@ build:
   script:
     # frontend 이미지 빌드
     - docker build -t $DOCKERHUB_USER/frontend:latest frontend
+    - docker push    $DOCKERHUB_USER/frontend:latest
     # backend 이미지 빌드
     - docker build -t $DOCKERHUB_USER/backend:latest backend
+    - docker push    $DOCKERHUB_USER/backend:latest
