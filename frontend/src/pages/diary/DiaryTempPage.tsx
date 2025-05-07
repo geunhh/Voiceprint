@@ -1,46 +1,119 @@
 /* src/pages/diary/DiaryTempPage.tsx */
-import react, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import PageTitle from "../../components/PageTitle";
 import Button from "../../components/common/Button";
 import { useNavigate } from "react-router-dom";
-// import ChatExistModal from "../../components/modal/ChatExistModal";";
+import axios from "axios";
 
-// ─── 임시 더미 데이터 ───
-const diary = {
-  title: "오늘 회의 기록",
-  dateText: "4월 26일 (토)",
-  emotion: "슬픔" as const,
-  content:
-    "오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다.오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있",
-};
+interface Diary {
+  title: string;
+  dateText: string;
+  emotion: "행복" | "기쁨" | "슬픔" | "화남" | "그냥그래";
+  content: string;
+}
 
 export default function DiaryTempPage() {
   const navigate = useNavigate();
 
-  // hover 상태: "edit" or "save" or null
-  const [hovered, setHovered] = useState<"edit" | "save" | null>(null);
+  const [hovered, setHovered] = useState<"edit" | "save" | "rewrite" | null>(
+    null
+  );
+  const [diary, setDiary] = useState<Diary | null>(null);
 
-  // 저장 모달 여부
-  const [modalOpen, setModalOpen] = useState(false);
-
-  // 기본: save 버튼이 fill, edit은 line
-  // hover 있을 때만 그 버튼이 fill, 나머지는 line
-  const getButtonType = (btn: "edit" | "save") => {
+  const getButtonType = (btn: "edit" | "save" | "rewrite") => {
     if (hovered) {
       return hovered === btn ? "fill" : "line";
     }
     return btn === "save" ? "fill" : "line";
   };
 
-  const handleEdit = () => {
-    // 기존 일기 데이터를 편집 페이지에 넘겨줍니다
-    navigate("edit", { state: diary });
+  const fetchDiary = async () => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { title, diary: content, createdAt, emotion } = data.data;
+      const date = new Date(createdAt);
+      const dateText = `${date.getMonth() + 1}월 ${date.getDate()}일 (${"일월화수목금토"[date.getDay()]})`;
+
+      setDiary({ title, content, emotion, dateText });
+    } catch (err) {
+      console.error("임시 일기 불러오기 실패:", err);
+    }
   };
-  const handleSave = () => {
-    // TODO: 저장 로직
-    console.log("저장할 일기:", diary);
-    navigate("/my"); // 마이페이지로
+
+  useEffect(() => {
+    fetchDiary();
+  }, []);
+
+  const handleEdit = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/retry`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert("일기를 다시 생성하고 있어요! 잠시 후 다시 확인해 주세요.");
+    } catch (err) {
+      console.error("일기 재생성 실패:", err);
+      alert("일기 재생성에 실패했습니다.");
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/diaries/confirm`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const { diaryId } = res.data.data;
+      navigate(`/diary/${diaryId}`);
+    } catch (err) {
+      console.error("일기 저장 실패:", err);
+      alert("일기 저장에 실패했습니다.");
+    }
+  };
+
+  const handleRewrite = async () => {
+    try {
+      const updated = await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/update`,
+        {
+          title: "제목을 수정해보았어요",
+          diary: "일기 내용을 이렇게 바꿨어요!",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert("수정이 완료되었습니다.");
+      fetchDiary();
+    } catch (err) {
+      console.error("일기 수정 실패:", err);
+      alert("일기 수정에 실패했습니다.");
+    }
   };
 
   return (
@@ -51,26 +124,33 @@ export default function DiaryTempPage() {
           subtitle="대화를 통해 완성된 일기를 확인해보세요"
         />
 
-        {/* 일기 카드 */}
-        <DiaryEntryCard {...diary} />
+        {diary && <DiaryEntryCard {...diary} />}
 
-        {/* 버튼 영역 */}
         <div className="mt-6 flex justify-center items-center gap-4">
-          {/* 수정 버튼 */}
           <div
             onMouseEnter={() => setHovered("edit")}
             onMouseLeave={() => setHovered("save")}
           >
             <Button
-              text="수정"
+              text="재생성"
               type={getButtonType("edit")}
               size="M"
               onClick={handleEdit}
             />
           </div>
 
-          {/* <ChatExistModal /> */}
-          {/* 저장 버튼 */}
+          <div
+            onMouseEnter={() => setHovered("rewrite")}
+            onMouseLeave={() => setHovered("save")}
+          >
+            <Button
+              text="수정"
+              type={getButtonType("rewrite")}
+              size="M"
+              onClick={handleRewrite}
+            />
+          </div>
+
           <div
             onMouseEnter={() => setHovered("save")}
             onMouseLeave={() => setHovered("save")}
