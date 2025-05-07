@@ -2,11 +2,13 @@ package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.common.util.JWTUtil;
+import com.voiceprint.backend.domain.auth.RefreshTokenRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -18,14 +20,23 @@ import java.io.IOException;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${spring.jwt.redirect.url}")
+    private String redirectUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         try {
             CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
 
-            String accessToken = jwtUtil.createAccessToken(user.getUsername());
-            String refreshToken = jwtUtil.createRefreshToken();
+            String email = user.getUsername();
+            Long userId = user.getUserId();
+            String accessToken = jwtUtil.createAccessToken(email);
+            String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
+
+            // Redis에 리프레시 토큰 저장
+            refreshTokenRepository.saveRefreshToken(userId, refreshToken);
 
             response.setHeader("Authorization", "Bearer " + accessToken);
 
@@ -34,7 +45,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             response.addCookie(refreshTokenCookie);
 
             // 프론트엔드로 리다이렉션
-            response.sendRedirect("http://localhost:5173/login-success?access=" + accessToken);
+            response.sendRedirect(redirectUrl + "/login-success?access=" + accessToken);
 
         } catch (Exception e) {
             System.out.println("OAuth2 성공 핸들러 오류: " + e.getMessage());
@@ -42,7 +53,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private Cookie createCookie(String key, String value) {
+    public Cookie createCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24 * 60 * 60); // 24시간
         cookie.setPath("/");
