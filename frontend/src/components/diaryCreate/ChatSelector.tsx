@@ -55,6 +55,12 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     async function fetchChatbots() {
       try {
         const res = await api.get("/api/chatbot");
+
+        if (!res.data || !res.data.data) {
+          console.error("챗봇 데이터가 비어있습니다:", res.data);
+          return;
+        }
+
         const { recentChatbotId, chatbots } = res.data.data;
 
         setChatbots(chatbots);
