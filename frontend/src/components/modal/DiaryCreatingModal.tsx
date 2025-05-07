@@ -1,16 +1,16 @@
 import React from "react";
-import spinnerIcon from "../../assets/icons/modal/spinner.gif"; // 로딩용 gif or svg 아이콘 경로 확인
-import { useNavigate } from "react-router-dom";
+import spinnerIcon from "../../assets/icons/modal/spinner.gif";
 import Button from "../common/Button";
 
-export default function DiaryCreatingModal() {
-  const navigate = useNavigate();
+interface DiaryCreatingModalProps {
+  showConfirm: boolean;
+  onConfirm: () => void;
+}
 
-  // 확인 버튼 -> 일기 임시 저장 페이지로 이동하겠금
-  const handleConfirm = () => {
-    navigate("/diary/temp");
-  };
-
+export default function DiaryCreatingModal({
+  showConfirm,
+  onConfirm,
+}: DiaryCreatingModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-8 w-[85vw] max-w-sm flex flex-col items-center justify-center space-y-6 text-center">
@@ -24,10 +24,12 @@ export default function DiaryCreatingModal() {
         </h2>
         <p className="text-sm text-gray-500">잠시만 기다려주세요!</p>
 
-        {/* 확인 버튼 */}
-        <div className="w-full">
-          <Button text="확인" type="fill" size="L" onClick={handleConfirm} />
-        </div>
+        {/* ✅ 2초 후 표시되는 버튼 */}
+        {showConfirm && (
+          <div className="w-full">
+            <Button text="확인" type="fill" size="L" onClick={onConfirm} />
+          </div>
+        )}
       </div>
     </div>
   );
