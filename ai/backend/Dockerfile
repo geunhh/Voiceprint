@@ -32,6 +32,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+COPY requirements.txt .
+RUN pip install --upgrade pip setuptools wheel \
++ && pip install --no-cache-dir -r requirements.txt
 
 # Builder에서 설치한 패키지만 복사
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
