@@ -5,7 +5,8 @@ build:
   stage: build
   image: docker:latest
   services:
-    - docker:dind
+    - name: docker:dind
+    - alias: docker
   tags:
    - runner
   only:
