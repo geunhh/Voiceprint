@@ -2,6 +2,7 @@ package com.voiceprint.backend.service.diary;
 
 import com.voiceprint.backend.api.diary.dto.DiaryDetailResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
+import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -92,5 +95,37 @@ public class DiaryService {
                 )).toList();
 
         return new DiaryListWithCursorDTO(response, nextCursor);
+    }
+
+    public DiaryMontlyListDTO getMonthlyDiaries(HttpServletRequest request, int year, int month) {
+        // 유저 정보 추출 및 확인
+        Long userId = authService.getUserIdFromRequest(request);
+        log.debug("userId : {}",userId);
+
+
+        // 날짜 초기화
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        log.debug("startDate : {}, endDate : {}",startDate,endDate);
+
+        List<Diary> diaries = diaryRepository.findByUserIdAndDateRange(
+                userId,
+                startDate.atStartOfDay(),
+                endDate.atTime(LocalTime.MAX) );
+
+        log.debug("diaries : {}",diaries);
+
+        List<DiarySummaryResponseDTO> result = diaries.stream()
+                .map(d -> new DiarySummaryResponseDTO(
+                        d.getId(),
+                        d.getTitle(),
+                        d.getContent(),
+                        d.getEmotion() != null? d.getEmotion().getName() : null,
+                        d.getCreatedAt().toString(),
+                        null
+                )).toList();
+
+        return new DiaryMontlyListDTO(result);
     }
 }
