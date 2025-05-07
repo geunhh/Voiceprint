@@ -17,6 +17,7 @@ export default function DiaryChatPage() {
   const [loading, setLoading] = useState(false);
   const [limit, setLimit] = useState(0);
 
+  // 페이지 첫 로딩에서 진행중인 대화 정보 불러오기
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -46,6 +47,7 @@ export default function DiaryChatPage() {
     fetchMessages();
   }, []);
 
+  // 메시지 보내기 API
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
@@ -77,13 +79,14 @@ export default function DiaryChatPage() {
       console.error("API 오류:", err);
       setMessages((prev) => [
         ...prev,
-        { from: "ai", text: "서버 오류가 발생했어요. 다시 시도해주세요." },
+        { from: "ai", text: "서버 오류가 발생했어요. 다시 보내주시겠어요?" },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
+  // 60퍼센트
   const handleCreate = () => {
     console.log("일기 생성!");
     navigate("/diary/temp");
@@ -109,6 +112,20 @@ export default function DiaryChatPage() {
 
         {/* 프로그레스 바 */}
         <ProgressBar label="" progress={limit} />
+        {/* 안내 멘트 */}
+        {limit >= 90 ? (
+          <div className="text-center text-black text-sm mt-2 font-medium">
+            충분한 이야기가 모였어요! 일기를 만들어보세요.
+          </div>
+        ) : limit >= 60 ? (
+          <div className="text-center text-gray-500 text-sm mt-2 font-medium">
+            이제 곧 일기를 만들어갈 수 있어요!
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm mt-2 font-medium">
+            일기를 위한 소중한 이야기를 더 들려주세요
+          </div>
+        )}
       </div>
 
       {/* 채팅 리스트 */}

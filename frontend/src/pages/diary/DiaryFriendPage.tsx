@@ -82,11 +82,13 @@ export default function DiaryFriendPage() {
   const handleRestart = async () => {
     setModalOpen(false);
     try {
-      await api.post("/api/chat/session/start", {
+      console.log("새로운 세션 시작 요청 보냄:", selectedCharacter.id);
+      const res = await api.post("/api/chat/session/start", {
         chatbotId: selectedCharacter.id,
       });
+      console.log("세션 시작 성공:", res.data);
     } catch (err) {
-      console.log("세션 시작 실패:", err);
+      console.error("세션 시작 실패:", err);
     }
     navigate("/diary/chat");
   };

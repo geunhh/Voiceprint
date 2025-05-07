@@ -19,7 +19,7 @@ const Button = ({ text, type, size, onClick, color }: ButtonProps) => {
         : "bg-yellow-500 text-white"
       : isMint
         ? "border-2 border-mint text-mint"
-        : "border-2 border-yellow-500 text-yellow-200";
+        : "border-2 border-yellow-500 text-yellow-500";
 
   let sizeStyle = "";
   switch (size) {

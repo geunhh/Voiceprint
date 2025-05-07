@@ -21,7 +21,7 @@ export default function ChatBubble({ from, text }: ChatBubbleProps) {
       <div
         className={`px-4 py-2 rounded-xl max-w-[80%] whitespace-pre-wrap text-sm ${
           from === "ai"
-            ? "bg-emerald-50 text-gray-800"
+            ? "bg-lightmint text-gray-800"
             : "bg-yellow-100 text-gray-800"
         }`}
       >
