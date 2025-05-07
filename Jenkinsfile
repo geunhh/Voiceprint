@@ -105,6 +105,7 @@ pipeline {
           ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
             cd ${DEPLOY_PATH} &&
             docker compose down --remove-orphans &&
+            docker compose up -d --build
             docker compose pull &&
             docker compose up -d &&
             docker image prune -f &&
