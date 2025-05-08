@@ -28,6 +28,7 @@ public class ChatbotController {
      */
     @GetMapping
     public ResponseEntity<CommonResponse<ChatbotListResponseDTO>> getChatbots(HttpServletRequest request) {
+        log.info("챗봇 조회 API 호출");
         ChatbotListResponseDTO response = chatbotService.getChatbots(request);
         return ResponseEntity.ok(new CommonResponse<>(
                 200,

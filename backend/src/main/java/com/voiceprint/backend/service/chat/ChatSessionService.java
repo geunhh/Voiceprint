@@ -119,13 +119,17 @@ public class ChatSessionService {
     /**
      * UserId 에 해당하는 채팅 세션의 모든 메시지 조회
      */
-    public List<ChatMessageResponseDTO> getMessages(long userId) {
+    public ChatMessageListWithTokenDTO getMessages(long userId) {
         try {
+            // Redis Key.
             String redisKey = "chat_session_messages:" + userId;
-            List<Object> rawMessages = redisTemplate.opsForList().range(redisKey, 0, -1);
-            System.out.println(rawMessages);
+            String sessionKey = "chat_session:"+userId;
 
-            if (rawMessages == null) return new ArrayList<>();
+            // 1. 채팅 로그 조회
+            List<Object> rawMessages = redisTemplate.opsForList().range(redisKey, 0, -1);
+            log.debug("채팅로그 {} ", rawMessages);
+
+            if (rawMessages == null) return new ChatMessageListWithTokenDTO(new ArrayList<>(),0);
 
             List<ChatMessageResponseDTO> result = new ArrayList<>();
 
@@ -133,7 +137,25 @@ public class ChatSessionService {
                 ChatMessage msg = (ChatMessage) msj;
                 result.add(new ChatMessageResponseDTO(msg.getRole(), msg.getMessage()));
             }
-            return result;
+
+            // 2. 글자수 토큰 추출
+            Integer token = (Integer) redisTemplate.opsForHash().get(sessionKey,"total_token");
+
+            int total_token = (token != null) ? token : 0;
+            log.debug("token {}",total_token);
+
+            // 3-1. 글자수 토큰이 0인 경우 return
+            if (total_token == 0) {
+                return new ChatMessageListWithTokenDTO(result, 0) ;
+
+            }
+
+            // 3-2. 글자수 토큰이 0이 아닌 경우 퍼센테이지 return
+
+            int limit_token = 700;  // 글자수 제한
+            int usageRate = (int) Math.round((double) total_token / limit_token * 100);
+
+            return new ChatMessageListWithTokenDTO(result, usageRate) ;
         }
         catch (RedisConnectionFailureException e) {
             log.error("Redis 연결 실패",e);
