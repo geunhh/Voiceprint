@@ -1,14 +1,14 @@
-import ImageEdit from "../../assets/icons/edit.png";
 import Add from "../../assets/icons/add.png";
+import ImageEdit from "../../assets/icons/edit.png";
 
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import Button from "../../components/common/Button";
+import { DayPicker } from "../../components/group/DayPicker";
+import ImageUploader from "../../components/group/ImageUploader";
 import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
-import ImageUploader from "../../components/group/ImageUploader";
-import { DayPicker } from "../../components/group/DayPicker";
-import { useNavigate } from "react-router";
-import { useState } from "react";
-import { useRef, useEffect } from "react";
+import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
 // 유저 정보
 const user = {
@@ -19,6 +19,9 @@ const user = {
   customThemaId: null,
 };
 
+// 초대 링크
+const inviteLink = "www.voice_print/group/invite/1234";
+
 export default function GroupCreatePage() {
   const navigate = useNavigate();
   const [isOn, setIsOn] = useState(false); // 알림 설정 관련 토글버튼 상태
@@ -28,6 +31,8 @@ export default function GroupCreatePage() {
   const [showDayPicker, setShowDayPicker] = useState(false); // 알림 요일 선택을 위한 데이피커 표시 여부
   const dayPickerRef = useRef<HTMLDivElement>(null);
   const [groupImageUrl, setGroupImageUrl] = useState<string>(""); // 그룹 이미지 업로드 상태
+
+  const [modalOpen, setModalOpen] = useState(false); // 초대 모달 표시 여부
 
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -113,7 +118,12 @@ export default function GroupCreatePage() {
             <p className="font-semibold text-gray-500">{user.userName}</p>
           </div>
           {/* 초대하기 버튼 */}
-          <img src={Add} alt="초대하기" className="w-12 h-12" />
+          <img
+            src={Add}
+            alt="초대하기"
+            className="w-12 h-12"
+            onClick={() => setModalOpen(true)}
+          />
         </div>
       </div>
 
@@ -190,6 +200,14 @@ export default function GroupCreatePage() {
           }}
         />
       </div>
+
+      {/* 그룹 초대 모달 */}
+      {modalOpen && (
+        <GroupInviteModal
+          link={inviteLink}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
