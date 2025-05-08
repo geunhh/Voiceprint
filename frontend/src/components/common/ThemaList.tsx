@@ -39,7 +39,7 @@ function ThemaList() {
     callback?: () => void;
   } | null>(null);
 
-  // 테마 리스트 요청하기
+  // 테마 목록 가져오기
   useEffect(() => {
     const fetchThemas = async () => {
       try {
@@ -52,12 +52,35 @@ function ThemaList() {
             },
           }
         );
-        setThemas(res.data.data);
+
+        const { default_themas, custom_themas } = res.data.data;
+
+        // 커스텀 테마가 없으면 빈 입력창 하나 생성
+        const customWithFallback =
+          custom_themas.length === 0
+            ? [
+                {
+                  id: 9999,
+                  title: "내 커스텀 테마",
+                  description: "나만의 스타일로 일기를 써보세요!",
+                  example: "",
+                },
+              ]
+            : custom_themas;
+
+        setThemas({
+          default_themas,
+          custom_themas: customWithFallback,
+        });
       } catch (err) {
         console.error("테마 목록 조회 실패:", err);
-        setAlert({ message: "테마 목록을 불러오지 못했습니다.", type: "fail" });
+        setAlert({
+          message: "테마 목록을 불러오지 못했습니다.",
+          type: "fail",
+        });
       }
     };
+
     fetchThemas();
   }, []);
 
@@ -78,13 +101,64 @@ function ThemaList() {
     }
   };
 
-  // 테마 선택 보내기
+  const handleExampleSubmit = (id: number, value: string) => {
+    setExamples((prev) => ({ ...prev, [id]: value }));
+    setSelectedId(id);
+  };
+
   const handleSubmit = async () => {
     if (selectedId === null) {
       setAlert({ message: "테마를 선택해주세요.", type: "fail" });
       return;
     }
 
+    const selected = [...themas.custom_themas, ...themas.default_themas].find(
+      (t) => t.id === selectedId
+    );
+
+    // 커스텀 테마 생성
+    if (selected?.id === 9999 && examples[selected.id]) {
+      try {
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/api/thema/create`,
+          { exampleDiary: examples[selected.id] },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const { themaId, example } = res.data.data;
+
+        setExamples((prev) => ({ ...prev, [themaId]: example }));
+        setSelectedId(themaId);
+
+        setThemas((prev) => ({
+          ...prev,
+          custom_themas: [
+            { id: themaId, title: "내 커스텀 테마", description: "", example },
+            ...prev.custom_themas.filter((t) => t.id !== 9999),
+          ],
+        }));
+
+        setAlert({
+          message: "커스텀 테마가 생성되었어요!",
+          type: "success",
+          callback: () => navigate("/diary/setting/friend"),
+        });
+        return;
+      } catch (err) {
+        setAlert({
+          message: "커스텀 테마 생성에 실패했어요.",
+          type: "fail",
+        });
+        return;
+      }
+    }
+
+    // 기존 테마 선택
     try {
       await axios.put(
         `${import.meta.env.VITE_API_BASE_URL}/api/thema/select/${selectedId}`,
@@ -100,59 +174,16 @@ function ThemaList() {
       setAlert({
         message: "테마가 성공적으로 설정되었습니다.",
         type: "success",
-        callback: () => navigate("/diary/setting/friend"), // 챗봇 선택으로 이동
+        callback: () => navigate("/diary/setting/friend"),
       });
     } catch (err: any) {
       const status = err?.response?.status;
-
       let message = "서버 오류가 발생했습니다.";
       if (status === 400) message = "유효하지 않은 테마입니다.";
       else if (status === 403) message = "해당 테마를 설정할 수 없습니다.";
       else if (status === 404) message = "존재하지 않는 테마입니다.";
 
       setAlert({ message, type: "fail" });
-    }
-  };
-
-  // 커스텀 일기 생성 post 요청 보내기
-  const handleExampleSubmit = async (id: number, diaryText: string) => {
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/thema/create`,
-        { exampleDiary: diaryText },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const { themaId, example } = res.data.data;
-      setExamples((prev) => ({ ...prev, [themaId]: example }));
-      setSelectedId(themaId);
-
-      // 전체 목록 재조회 (또는 직접 추가)
-      const updated = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/thema/all`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setThemas(updated.data.data);
-
-      setAlert({
-        message: "커스텀 테마가 생성되었어요!",
-        type: "success",
-      });
-    } catch (err) {
-      setAlert({
-        message: "테마 생성 실패: 너무 짧은 예시거나 오류가 발생했어요.",
-        type: "fail",
-      });
     }
   };
 
