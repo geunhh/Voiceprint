@@ -1,5 +1,4 @@
 // src/components/common/ChatExistModal.tsx
-import React from "react";
 import warningIcon from "../../assets/icons/modal/warning.png";
 import Button from "../common/Button";
 
@@ -18,7 +17,7 @@ export default function ChatExistModal({
     // 전체 화면을 덮는 반투명 오버레이
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {/* 흰색 모달 박스 */}
-      <div className="relative bg-white rounded-2xl p-6 w-[85vw] max-w-sm">
+      <div className="relative bg-white rounded-2xl p-6 w-4/5 max-w-[320px]">
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
