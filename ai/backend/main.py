@@ -354,7 +354,8 @@ async def diary(request: MyChat):
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
     ]
-    response = chat(messages)
+    response = await chat(messages)
+    print(response)
     if not response : 
         raise HTTPException(status_code=500, detail="no response from server")
     else : 
@@ -373,6 +374,6 @@ async def prompt_test(request : PromtTest) :
     prompt_response = await llm([{"role" : "system", "content" : "아래 기반으로 일기를 만들 때 어떤 프롬프트를 써야 유사한 분위기의 일기를 쓸 수 있을지 알려줄래? 다른 말 없이 딱 프롬프트만 주고, "}, 
             {"role" : "system", "content" : pompt_example }, 
             {"role" : "user", "content" : request.prev_diary}])
-    new_diary = await llm([{"role" : "system", "content" : "아래 프롬프트를 기반으로 일기를 새로 생성해줘."},{"role" : "user", "content" : prompt_response},  {"role" : "user", "content" : diary_example}])
+    new_diary = await llm([{"role" : "system", "content" : "아래 프롬프트를 기반으로 일기의 분위기를 바꿔서 700자 이내로 재구성해줘."},{"role" : "user", "content" : prompt_response},  {"role" : "user", "content" : diary_example}])
     return { "prompt": prompt_response,"example": new_diary}
     

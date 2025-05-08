@@ -8,9 +8,19 @@ class Message(BaseModel):
 class Chat(BaseModel):
     message: List[Message]
 
+class ChatResponse(BaseModel) :
+    userid : int
+    chatting : str
+
+
 class MyChat(BaseModel):
-    mychat: str
+    # mychat: str
+    userid : int
 
 class PromtTest(BaseModel) :
     prev_diary : str
+
+class ChatSaveTest(BaseModel) :
+    user_id : int
+    chat_history : list
 
