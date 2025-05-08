@@ -37,7 +37,7 @@ export default function DiaryEditPage() {
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
-      await axios.put(
+      await axios.patch(
         `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/update`,
         { title, diary: content },
         {

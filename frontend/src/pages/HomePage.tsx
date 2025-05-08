@@ -22,7 +22,8 @@ export default function HomePage() {
   }, [navigate]);
 
   const handleSocialLogin = (provider: "kakao" | "google") => {
-    window.location.href = `http://localhost:8080/api/v1/user/${provider}`;
+    const VITE_API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+    window.location.href = `${VITE_API_BASE_URL}/api/v1/user/${provider}`;
   };
 
   return (

@@ -8,6 +8,7 @@ import ChatSelector from "../../components/diaryCreate/ChatSelector";
 import PageTitle from "../../components/PageTitle";
 import Button from "../../components/common/Button";
 import ChatExistModal from "../../components/modal/ChatExistModal";
+import AlertModal from "../../components/modal/AlertModal";
 
 import { setCharacter } from "../../store/characterSlice";
 
@@ -25,6 +26,11 @@ export default function DiaryFriendPage() {
 
   // modal open 여부
   const [modalOpen, setModalOpen] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "info";
+    callback?: () => void;
+  } | null>(null);
 
   const getButtonType = (buttonType: "voice" | "chat") => {
     if (hovered) {
@@ -57,13 +63,24 @@ export default function DiaryFriendPage() {
       console.log("현재 세션 상태:", status);
 
       if (status === null || status === "WAITING") {
-        // 세션 없으면 생성 후 이동
         await api.post("/api/chat/session/start", {
           chatbotId: selectedCharacter.id,
         });
         navigate("/diary/chat");
       } else if (status === "DIARY_DONE") {
         navigate("/diary/temp");
+      } else if (status === "DIARY_CREATING") {
+        setAlert({
+          message: "잠시만요! 일기 생성 중",
+          type: "info",
+          callback: () => navigate("/main"),
+        });
+      } else if (status === "DIARY_SAVED") {
+        setAlert({
+          message: "이미 오늘 일기를 생성했습니다!",
+          type: "info",
+          callback: () => navigate("/my"),
+        });
       } else {
         setModalOpen(true);
       }
@@ -142,6 +159,17 @@ export default function DiaryFriendPage() {
           onContinue={handleContinue}
           onRestart={handleRestart}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {alert && (
+        <AlertModal
+          message={alert.message}
+          type={"success"} // 기본값 대체용
+          onClose={() => {
+            setAlert(null);
+            if (alert.callback) alert.callback();
+          }}
         />
       )}
     </>
