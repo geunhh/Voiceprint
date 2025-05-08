@@ -30,7 +30,7 @@ const Button = ({ text, type, size, onClick, color }: ButtonProps) => {
       sizeStyle = "h-11 w-28 text-sm";
       break;
     case "L":
-      sizeStyle = "h-11 w-64 text-base";
+      sizeStyle = "h-11 w-64 text-base font-semibold";
       break;
   }
 

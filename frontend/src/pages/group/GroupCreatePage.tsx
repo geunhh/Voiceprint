@@ -20,7 +20,7 @@ const user = {
 };
 
 // 초대 링크
-const inviteLink = "www.voice_print/group/invite/1234";
+const inviteLink = "www.voice_print/group/1/invite/1234";
 
 export default function GroupCreatePage() {
   const navigate = useNavigate();
