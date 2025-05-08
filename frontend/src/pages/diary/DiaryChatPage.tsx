@@ -31,6 +31,7 @@ export default function DiaryChatPage() {
   } | null>(null);
 
   // 대화 불러오기
+  // 대화 불러오기
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -44,13 +45,16 @@ export default function DiaryChatPage() {
           }
         );
 
-        const savedMessages = data.data;
+        const savedMessages = data.data.chatlog;
+        const token = data.data.curToken;
+
         const formatted = savedMessages.map((msg: any) => ({
           from: msg.role === "USER" ? "user" : "ai",
           text: msg.message,
         }));
 
         setMessages(formatted);
+        setLimit(token); // 초기 curToken을 limit으로 설정
       } catch (err) {
         console.error("이전 대화 불러오기 실패:", err);
       }
