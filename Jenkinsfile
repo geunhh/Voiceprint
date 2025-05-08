@@ -110,6 +110,7 @@ pipeline {
           scp -o StrictHostKeyChecking=no mysql/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/mysql.env
           scp -o StrictHostKeyChecking=no ai/backend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/fastapi.env
           scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml
+          ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} 'rm -rf ${DEPLOY_PATH}/voiceprint.conf'
           scp -o StrictHostKeyChecking=no voiceprint.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/voiceprint.conf
           # 2. 원격 접속 후 배포
           ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
