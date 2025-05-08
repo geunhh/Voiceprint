@@ -1,6 +1,16 @@
 pipeline {
   agent any
 
+  triggers {
+    gitlab(
+      triggersOnPush: true,
+      triggerOnMergeRequest: true,
+      branchFilterType: 'NameBasedFilter',
+      includeBranches: 'release'
+    )
+  }
+
+
   environment {
     FRONTEND_IMAGE = "jokiheum/voiceprint-frontend:latest"
     BACKEND_IMAGE = "jokiheum/voiceprint-backend:latest"
