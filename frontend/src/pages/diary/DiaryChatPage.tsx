@@ -23,6 +23,7 @@ export default function DiaryChatPage() {
   // 모달 상태
   const [creatingModalOpen, setCreatingModalOpen] = useState(false);
   const [failModalOpen, setFailModalOpen] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // 대화 불러오기
   useEffect(() => {
@@ -91,6 +92,8 @@ export default function DiaryChatPage() {
   // 일기 생성 요청
   const handleCreate = async () => {
     setCreatingModalOpen(true);
+    setShowConfirm(false); // 버튼은 초기에는 숨김
+
     try {
       await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/chat/end`,
@@ -102,24 +105,29 @@ export default function DiaryChatPage() {
           },
         }
       );
-      // 성공 → 생성 완료 페이지로 이동
-      navigate("/diary/temp");
+
+      // ⏱ 2초 후 버튼 보여줌
+      setTimeout(() => {
+        setShowConfirm(true);
+      }, 2000);
+
+      // ⏱ 4초 후 자동 이동
+      setTimeout(() => {
+        setCreatingModalOpen(false);
+        navigate("/diary/temp");
+      }, 4000);
     } catch (err) {
       console.error("일기 생성 실패:", err);
       setCreatingModalOpen(false);
-      setFailModalOpen(true); // 실패 모달 열기
+      setFailModalOpen(true);
     }
   };
 
-  // const handleCreate = async () => {
-  //   setCreatingModalOpen(true);
-
-  //   // 실제 axios 요청 생략하고 성공한 것처럼 처리
-  //   setTimeout(() => {
-  //     setCreatingModalOpen(false);
-  //     navigate("/diary/temp"); // 성공 시 이동
-  //   }, 3000); // 2초 후 이동 (로딩 효과 확인용)
-  // };
+  // 확인 버튼 클릭 시
+  const handleConfirm = () => {
+    setCreatingModalOpen(false);
+    navigate("/diary/temp");
+  };
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -166,7 +174,12 @@ export default function DiaryChatPage() {
       </div>
 
       {/* 모달들 */}
-      {creatingModalOpen && <DiaryCreatingModal />}
+      {creatingModalOpen && (
+        <DiaryCreatingModal
+          showConfirm={showConfirm}
+          onConfirm={handleConfirm}
+        />
+      )}
       {failModalOpen && (
         <DiaryCreateFailModal
           onClose={() => setFailModalOpen(false)}
