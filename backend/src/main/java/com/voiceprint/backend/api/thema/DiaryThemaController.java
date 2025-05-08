@@ -3,6 +3,7 @@ package com.voiceprint.backend.api.thema;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateRequest;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateResponse;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
+import com.voiceprint.backend.api.thema.dto.UsingDiaryThemaResponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.domain.thema.DiaryThemaRepository;
 import com.voiceprint.backend.service.auth.AuthService;
@@ -80,4 +81,22 @@ public class DiaryThemaController {
                 200, "커스텀 테마 수정 완료", null
         ));
     }
+
+    /**
+     * 유저 UsingThema 조회 API
+     */
+    @GetMapping("/using")
+    public ResponseEntity<CommonResponse<UsingDiaryThemaResponseDTO>> getUsingThema(
+            HttpServletRequest request
+    ) {
+        log.info("### UsingThema 조회 API 호출");
+        Long userId = authService.getUserIdFromRequest(request);
+        UsingDiaryThemaResponseDTO response = diaryThemaService.getUsingThema(userId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "현재 사용 중인 테마 ID 조회 성공", response
+        ));
+
+    }
+
 }
