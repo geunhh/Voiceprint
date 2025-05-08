@@ -1,10 +1,21 @@
 pipeline {
   agent any
 
+  triggers {
+    gitlab(
+      triggerOnPush: true,
+      triggerOnMergeRequest: true,
+      branchFilterType: 'NameBasedFilter',
+      includeBranchesSpec: 'release'
+    )
+  }
+
+
   environment {
     FRONTEND_IMAGE = "jokiheum/voiceprint-frontend:latest"
     BACKEND_IMAGE = "jokiheum/voiceprint-backend:latest"
     MYSQL_IMAGE = "jokiheum/voiceprint-mysql:latest"
+    FASTAPI_IMAGE = "jokiheum/voiceprint-fastapi:latest"
     DEPLOY_HOST = "ubuntu@k12b106.p.ssafy.io"
     DEPLOY_PATH = "/home/ubuntu/voiceprint"
   }
@@ -23,13 +34,15 @@ pipeline {
         withCredentials([
           file(credentialsId: 'env-backend', variable: 'BACKEND_ENV'),
           file(credentialsId: 'env-frontend', variable: 'FRONTEND_ENV'),
-          file(credentialsId: 'env-mysql', variable: 'MYSQL_ENV')
+          file(credentialsId: 'env-mysql', variable: 'MYSQL_ENV'),
+          file(credentialsId: 'env-fastapi', variable: 'FASTAPI_ENV')
         ]) {
           script {
             // 각각의 파일 내용을 읽어서 해당 위치에 저장
             writeFile file: 'backend/.env', text: readFile(BACKEND_ENV)
             writeFile file: 'frontend/.env', text: readFile(FRONTEND_ENV)
             writeFile file: 'mysql/.env', text: readFile(MYSQL_ENV)
+            writeFile file: 'ai/backend/.env', text: readFile(FASTAPI_ENV)
           }
         }
       }
@@ -52,6 +65,15 @@ pipeline {
         }
       }
     }
+    
+    // fastapi docker image build
+    stage("Build Fastapi Docker Image") {
+      steps {
+        dir('ai/backend') {
+          sh "docker build -t ${FASTAPI_IMAGE} ."
+        }
+      }
+    }
 
     // Mysql docker image build
     stage("Build Mysql Docker Image") {
@@ -62,13 +84,16 @@ pipeline {
       }
     }
 
+
+
     // 위에서 build 한 docker image push
     stage("Push Docker Images") {
       steps {
-        withDockerRegistry([credentialsId: 'docker-hub-token', url: '']) {
+        withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
           sh "docker push ${FRONTEND_IMAGE}"
           sh "docker push ${BACKEND_IMAGE}"
           sh "docker push ${MYSQL_IMAGE}"
+          sh "docker push ${FASTAPI_IMAGE}"
         }
       }
     }
@@ -83,16 +108,18 @@ pipeline {
           scp -o StrictHostKeyChecking=no backend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/backend.env
           scp -o StrictHostKeyChecking=no frontend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/frontend.env
           scp -o StrictHostKeyChecking=no mysql/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/mysql.env
+          scp -o StrictHostKeyChecking=no ai/backend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/fastapi.env
           scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml
-
+          scp -o StrictHostKeyChecking=no voiceprint.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/voiceprint.conf
           # 2. 원격 접속 후 배포
           ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
             cd ${DEPLOY_PATH} &&
             docker compose down --remove-orphans &&
+            docker compose up -d --build
             docker compose pull &&
             docker compose up -d &&
             docker image prune -f &&
-            rm -f backend.env frontend.env mysql.env
+            rm -f backend.env frontend.env mysql.env fastapi.env
           '
           """
         }

@@ -16,7 +16,7 @@ function TimePicker({ selectedTime, onChange }: TimePickerProps) {
         <button
           key={time}
           onClick={() => onChange(time)}
-          className={`w-full text-left px-2 py-1 text-sm hover:bg-mint hover:text-white text-center ${
+          className={`w-full px-2 py-1 text-sm hover:bg-mint hover:text-white text-center ${
             selectedTime === time ? "bg-darkmint text-white" : ""
           }`}
         >

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import axios from "axios";
 import {
   create,
   group_default,
@@ -20,10 +21,35 @@ interface TabbarProps {
 const Tabbar = ({ type: currentType }: TabbarProps) => {
   const navigate = useNavigate();
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const handleCreateClick = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/thema/using`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const themaId = res.data.data?.themaId;
+
+      //조회가 null이면 theme, 아니라면 챗봇 선택 페이지
+      if (themaId === null) {
+        navigate("/diary/setting/theme");
+      } else {
+        navigate("/diary/setting/friend");
+      }
+    } catch (err) {
+      console.error("테마 조회 실패:", err);
+      navigate("/diary/setting/theme"); // fallback
+    }
+  };
+
   const tabItems: TabbarProps[] = [
     { type: "Main", onClick: () => navigate("/main"), name: "메인" },
     { type: "Temp", onClick: () => navigate("/diary/temp"), name: "임시" },
-    { type: "Create", onClick: () => navigate("/diary/setting/friend") },
+    { type: "Create", onClick: handleCreateClick },
     { type: "Group", onClick: () => navigate("/group"), name: "그룹" },
     { type: "My", onClick: () => navigate("/my"), name: "마이" },
   ];
@@ -52,11 +78,17 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
       {tabItems.map((item) => (
         <div
           key={item.type}
-          className={`flex flex-col items-center justify-center flex-1 ${item.type === currentType ? "text-black" : "text-gray-400"}`}
+          className={`flex flex-col items-center justify-center flex-1 ${
+            item.type === currentType ? "text-black" : "text-gray-400"
+          }`}
           onClick={item.onClick}
         >
           <div
-            className={`${item.type === "Create" ? "flex items-center justify-center -mt-16" : ""}`}
+            className={`${
+              item.type === "Create"
+                ? "flex items-center justify-center -mt-16"
+                : ""
+            }`}
           >
             <img
               src={getIconSource(item.type)}

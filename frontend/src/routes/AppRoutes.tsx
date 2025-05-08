@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 // import Appbar from "../components/common/Appbar";
+import { Toaster } from "react-hot-toast";
 import Tabbar from "../components/common/Tabbar";
 
 /* ---------- 더미 페이지 임포트 ---------- */
@@ -18,6 +19,7 @@ import GroupCreatePage from "../pages/group/GroupCreatePage";
 import GroupDetailPage from "../pages/group/GroupDetailPage";
 import GroupDiaryDetailPage from "../pages/group/GroupDiaryDetailPage";
 import GroupEditPage from "../pages/group/GroupEditPage";
+import GroupInvitePage from "../pages/group/GroupInvitePage";
 import GroupMainPage from "../pages/group/GroupMainPage";
 
 import EditProfilePage from "../pages/my/EditProfilePage";
@@ -51,6 +53,7 @@ const Layout = () => {
   return (
     <div className="w-screen min-h-dvh flex justify-center bg-neutral-50">
       <div className="w-full max-w-[393px] min-h-screen bg-white shadow-lg flex flex-col">
+        <Toaster position="top-center" />
         {/* <Appbar /> */}
         <div className="flex-1 flex flex-col">
           <Outlet />
@@ -96,6 +99,7 @@ const AppRoutes = () => (
           path=":groupId/diary/:diaryId"
           element={<GroupDiaryDetailPage />}
         />
+        <Route path=":groupId/invite/:inviteId" element={<GroupInvitePage />} />
       </Route>
 
       {/* ────────────────── My (마이페이지) ────────────────── */}
