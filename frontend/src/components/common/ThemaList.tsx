@@ -1,6 +1,6 @@
 // src/components/common/ThemaList.tsx
-import { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import themaCharacter1 from "../../assets/icons/themaCharacter1.png";
@@ -8,9 +8,9 @@ import themaCharacter2 from "../../assets/icons/themaCharacter2.png";
 import themaCharacter3 from "../../assets/icons/themaCharacter3.png";
 import themaCharacter4 from "../../assets/icons/themaCharacter4.png";
 
+import AlertModal from "../modal/AlertModal";
 import Button from "./Button";
 import ThemaItem from "./ThemaItem";
-import AlertModal from "../modal/AlertModal";
 
 interface Thema {
   id: number;
@@ -20,8 +20,8 @@ interface Thema {
 }
 
 interface ThemaListResponse {
-  default_themes: Thema[];
-  custom_themes: Thema[];
+  default_themas: Thema[];
+  custom_themas: Thema[];
 }
 
 function ThemaList() {
@@ -30,8 +30,8 @@ function ThemaList() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [examples, setExamples] = useState<{ [id: number]: string }>({});
   const [themas, setThemas] = useState<ThemaListResponse>({
-    default_themes: [],
-    custom_themes: [],
+    default_themas: [],
+    custom_themas: [],
   });
   const [alert, setAlert] = useState<{
     message: string;
@@ -39,6 +39,7 @@ function ThemaList() {
     callback?: () => void;
   } | null>(null);
 
+  // 테마 리스트 요청하기
   useEffect(() => {
     const fetchThemas = async () => {
       try {
@@ -64,10 +65,6 @@ function ThemaList() {
     setSelectedId((prev) => (prev === id ? null : id));
   };
 
-  const handleExampleSubmit = (id: number, value: string) => {
-    setExamples((prev) => ({ ...prev, [id]: value }));
-  };
-
   const getThemaCharacterImage = (id: number) => {
     switch (id) {
       case 1:
@@ -81,6 +78,7 @@ function ThemaList() {
     }
   };
 
+  // 테마 선택 보내기
   const handleSubmit = async () => {
     if (selectedId === null) {
       setAlert({ message: "테마를 선택해주세요.", type: "fail" });
@@ -116,10 +114,52 @@ function ThemaList() {
     }
   };
 
+  // 커스텀 일기 생성 post 요청 보내기
+  const handleExampleSubmit = async (id: number, diaryText: string) => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/thema/create`,
+        { exampleDiary: diaryText },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { themaId, example } = res.data.data;
+      setExamples((prev) => ({ ...prev, [themaId]: example }));
+      setSelectedId(themaId);
+
+      // 전체 목록 재조회 (또는 직접 추가)
+      const updated = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/thema/all`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setThemas(updated.data.data);
+
+      setAlert({
+        message: "커스텀 테마가 생성되었어요!",
+        type: "success",
+      });
+    } catch (err) {
+      setAlert({
+        message: "테마 생성 실패: 너무 짧은 예시거나 오류가 발생했어요.",
+        type: "fail",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col items-center px-4 py-2">
       <div className="w-full mb-5">
-        {themas.default_themes.map((thema) => (
+        {themas.default_themas.map((thema) => (
           <ThemaItem
             key={thema.id}
             id={thema.id}
@@ -132,7 +172,7 @@ function ThemaList() {
           />
         ))}
 
-        {themas.custom_themes.map((thema) => (
+        {themas.custom_themas.map((thema) => (
           <ThemaItem
             key={thema.id}
             id={thema.id}
