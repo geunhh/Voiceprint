@@ -3,7 +3,6 @@ package com.voiceprint.backend.common.filter;
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +19,6 @@ import java.io.IOException;
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -45,11 +43,13 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));
-
         // 인증 객체 생성 및 설정
-        CustomOAuth2User customUser = new CustomOAuth2User(user);
+        CustomOAuth2User customUser = new CustomOAuth2User(
+                User.builder()
+                        .email(email)
+                        .authProvider(User.AuthProvider.google) // 기본값. 실제 프로젝트에선 userService로 사용자 조회 필요
+                        .build()
+        );
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(customUser, null, customUser.getAuthorities())
