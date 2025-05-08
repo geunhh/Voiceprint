@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AIServerClient {
 
     @Lazy
-    private final VoiceChatWebSocketHandler voiceChatHandler;
+    private VoiceChatWebSocketHandler voiceChatHandler;
 
     @Value("${ai-server.url}")
     private String aiServerUrl;
