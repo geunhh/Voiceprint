@@ -5,6 +5,7 @@ import PageTitle from "../../components/PageTitle";
 import Button from "../../components/common/Button";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import AlertModal from "../../components/modal/AlertModal";
 
 interface Diary {
   title: string;
@@ -28,6 +29,12 @@ export default function DiaryTempPage() {
     return btn === "save" ? "fill" : "line";
   };
 
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "fail";
+  } | null>(null);
+
+  // 임시 일기 데이터 조회
   const fetchDiary = async () => {
     try {
       const { data } = await axios.get(
@@ -54,6 +61,7 @@ export default function DiaryTempPage() {
     fetchDiary();
   }, []);
 
+  // 임시 일기 재생성
   const handleEdit = async () => {
     try {
       await axios.post(
@@ -66,17 +74,24 @@ export default function DiaryTempPage() {
           },
         }
       );
-      alert("일기를 다시 생성하고 있어요! 잠시 후 다시 확인해 주세요.");
+      setAlert({
+        message: "일기를 다시 생성하고 있어요!",
+        type: "success",
+      });
     } catch (err) {
       console.error("일기 재생성 실패:", err);
-      alert("일기 재생성에 실패했습니다.");
+      setAlert({
+        message: "일기 재생성에 실패했어요!",
+        type: "fail",
+      });
     }
   };
 
+  // 일기 생성(확정) post 요청
   const handleSave = async () => {
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/diaries/confirm`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/confirm`,
         {},
         {
           headers: {
@@ -89,30 +104,10 @@ export default function DiaryTempPage() {
       navigate(`/diary/${diaryId}`);
     } catch (err) {
       console.error("일기 저장 실패:", err);
-      alert("일기 저장에 실패했습니다.");
-    }
-  };
-
-  const handleRewrite = async () => {
-    try {
-      const updated = await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/update`,
-        {
-          title: "제목을 수정해보았어요",
-          diary: "일기 내용을 이렇게 바꿨어요!",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      alert("수정이 완료되었습니다.");
-      fetchDiary();
-    } catch (err) {
-      console.error("일기 수정 실패:", err);
-      alert("일기 수정에 실패했습니다.");
+      setAlert({
+        message: "일기 저장에 실패했습니다.",
+        type: "fail",
+      });
     }
   };
 
@@ -123,46 +118,36 @@ export default function DiaryTempPage() {
           title="생성된 일기 확인하기"
           subtitle="대화를 통해 완성된 일기를 확인해보세요"
         />
-
         {diary && <DiaryEntryCard {...diary} />}
 
-        <div className="mt-6 flex justify-center items-center gap-4">
-          <div
-            onMouseEnter={() => setHovered("edit")}
-            onMouseLeave={() => setHovered("save")}
-          >
-            <Button
-              text="재생성"
-              type={getButtonType("edit")}
-              size="M"
-              onClick={handleEdit}
+        {/* 재생성 버튼 (상대적 위치) */}
+        <div className="flex justify-end mt-6 mr-6">
+          <button onClick={handleEdit} title="다시 생성">
+            <img
+              src="/src/assets/icons/button/arrowButton.png"
+              alt="재생성"
+              className="w-5 h-5 hover:scale-110 transition-transform"
             />
-          </div>
-
-          <div
-            onMouseEnter={() => setHovered("rewrite")}
-            onMouseLeave={() => setHovered("save")}
-          >
-            <Button
-              text="수정"
-              type={getButtonType("rewrite")}
-              size="M"
-              onClick={handleRewrite}
-            />
-          </div>
-
-          <div
-            onMouseEnter={() => setHovered("save")}
-            onMouseLeave={() => setHovered("save")}
-          >
-            <Button
-              text="저장"
-              type={getButtonType("save")}
-              size="M"
-              onClick={handleSave}
-            />
-          </div>
+          </button>
         </div>
+        {/* 수정/저장 버튼 영역 */}
+        <div className="mt-6 flex flex-row justify-center items-center gap-4">
+          <Button
+            text="수정"
+            type="line"
+            size="M"
+            onClick={() => navigate("edit", { state: diary })}
+          />
+          <Button text="저장" type="fill" size="M" onClick={handleSave} />
+        </div>
+
+        {alert && (
+          <AlertModal
+            message={alert.message}
+            type={alert.type}
+            onClose={() => setAlert(null)}
+          />
+        )}
       </div>
     </div>
   );

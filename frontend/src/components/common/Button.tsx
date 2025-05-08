@@ -6,9 +6,17 @@ interface ButtonProps {
   size: "S" | "M" | "L";
   onClick: () => void;
   color?: "mint"; // 선택적으로 색상 변경
+  disabled?: boolean;
 }
 
-const Button = ({ text, type, size, onClick, color }: ButtonProps) => {
+const Button = ({
+  text,
+  type,
+  size,
+  onClick,
+  color,
+  disabled = false,
+}: ButtonProps) => {
   const baseStyle = "rounded-xl";
   const isMint = color === "mint";
 
@@ -34,11 +42,15 @@ const Button = ({ text, type, size, onClick, color }: ButtonProps) => {
       break;
   }
 
+  const disabledStyle = disabled
+    ? "opacity-50 cursor-not-allowed"
+    : "hover:scale-105";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`${baseStyle} ${typeStyle} ${sizeStyle}`}
+      className={`${baseStyle} ${typeStyle} ${sizeStyle} ${disabledStyle}`}
     >
       {text}
     </button>
