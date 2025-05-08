@@ -45,7 +45,7 @@ public class VoiceController {
                 .wsUrl("ws://localhost:8080/ws?token=" + token)
                 .userId(userId)
                 .build();
-
+        System.out.printf("######wsUrl= "+"ws://localhost:8080/ws?token=" + token);
         return ResponseEntity.ok(responseDto);
     }
 }
