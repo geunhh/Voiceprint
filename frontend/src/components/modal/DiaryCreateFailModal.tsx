@@ -1,5 +1,4 @@
 // src/components/modal/DiaryCreateFailModal.tsx
-import React from "react";
 import warningIcon from "../../assets/icons/modal/warning.png";
 import Button from "../common/Button";
 
@@ -14,7 +13,7 @@ export default function DiaryCreateFailModal({
 }: DiaryCreateFailModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="relative bg-white rounded-2xl p-6 w-[85vw] max-w-sm">
+      <div className="relative bg-white rounded-2xl p-6 w-4/5 max-w-[320px]">
         <div className="flex flex-col items-center justify-center space-y-4 text-center my-4">
           <img src={warningIcon} alt="Warning" className="w-14 h-12" />
           <h2 className="text-center text-lg font-semibold text-gray-800">

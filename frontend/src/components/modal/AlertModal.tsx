@@ -1,7 +1,6 @@
-import React from "react";
-import Button from "../common/Button";
 import happyIcon from "../../assets/icons/happyCharacter.png";
 import questionIcon from "../../assets/icons/questionCharacter.png";
+import Button from "../common/Button";
 
 interface AlertModalProps {
   message: string;
@@ -18,7 +17,7 @@ export default function AlertModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="relative bg-white rounded-2xl p-6 w-[85vw] max-w-sm">
+      <div className="relative bg-white rounded-2xl p-6 w-4/5 max-w-[320px]">
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
