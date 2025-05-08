@@ -6,6 +6,7 @@ import Button from "../../components/common/Button";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AlertModal from "../../components/modal/AlertModal";
+import arrowButton from "../../assets/icons/button/arrowButton.png";
 
 interface Diary {
   title: string;
@@ -124,7 +125,7 @@ export default function DiaryTempPage() {
         <div className="flex justify-end mt-6 mr-6">
           <button onClick={handleEdit} title="다시 생성">
             <img
-              src="/src/assets/icons/button/arrowButton.png"
+              src={arrowButton}
               alt="재생성"
               className="w-5 h-5 hover:scale-110 transition-transform"
             />
