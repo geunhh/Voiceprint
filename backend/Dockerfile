@@ -16,7 +16,7 @@ WORKDIR /app
 
 COPY --from=build /home/gradle/src/build/libs/*SNAPSHOT.jar app.jar
 
-EXPOSE 18080 19090
+EXPOSE 8080
 
 # 실행 명령
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
