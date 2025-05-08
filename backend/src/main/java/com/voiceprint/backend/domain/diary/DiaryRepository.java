@@ -22,4 +22,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             @Param("userId") Long userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Long userId);
 }
