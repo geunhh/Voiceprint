@@ -1,18 +1,22 @@
 package com.voiceprint.backend.service.auth;
 
+import com.voiceprint.backend.api.auth.dto.ProfileImageResponse;
 import com.voiceprint.backend.api.auth.dto.TokenResponse;
+import com.voiceprint.backend.common.dto.CommonResponse;
+import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.util.JWTUtil;
-import com.voiceprint.backend.domain.auth.RefreshTokenRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.auth.*;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,6 +26,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ProfileImageRepository profileImageRepository;
 
     /**
      * 리프레시 토큰을 검증하고 새로운 액세스 토큰과 리프레시 토큰을 발급합니다.
@@ -196,5 +201,18 @@ public class AuthService {
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
+    }
+
+    public List<ProfileImageResponse> getProfileImages() {
+        // DB에서 모든 프로필 이미지 정보를 조회
+        List<ProfileImage> images = profileImageRepository.findAll();
+        // 빈 목록일 경우 빈 리스트 반환
+        if (images.isEmpty()) {
+            throw new ProfileImageNotFoundException("프로필 이미지가 없습니다.");
+        }
+        // 이미지 정보를 DTO로 변환하여 반환
+        return images.stream()
+                .map(image -> new ProfileImageResponse(image.getId(), image.getTitle(),image.getImageUrl()))
+                .collect(Collectors.toList());
     }
 }

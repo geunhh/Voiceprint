@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.auth;
 
+import com.voiceprint.backend.api.auth.dto.ProfileImageResponse;
 import com.voiceprint.backend.api.auth.dto.TokenResponse;
 import com.voiceprint.backend.api.auth.dto.UserResponse;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequestMapping("/api/v1/user")
@@ -26,6 +28,14 @@ import java.util.Map;
 public class AuthController {
     private final AuthService authService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @GetMapping("/profileimage")
+    public ResponseEntity<CommonResponse<List<ProfileImageResponse>>> getProfileImage() {
+        List<ProfileImageResponse> profileImages = authService.getProfileImages();
+        return ResponseEntity.ok(new CommonResponse<>(200, "프로필 이미지 조회 완료", profileImages));
+    }
+
+
 
     /**
      * 액세스 토큰 재발급
