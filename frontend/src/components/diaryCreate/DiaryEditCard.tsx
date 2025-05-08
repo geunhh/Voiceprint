@@ -1,22 +1,29 @@
 // src/components/diary/DiaryEditCard.tsx
 import React, { useEffect, useRef } from "react";
 
+// 감정 태그 이미지 import
+import emotionTag1 from "../../assets/temp/emotionTag1.png";
+import emotionTag2 from "../../assets/temp/emotionTag2.png";
+import emotionTag3 from "../../assets/temp/emotionTag3.png";
+import emotionTag4 from "../../assets/temp/emotionTag4.png";
+import emotionTag5 from "../../assets/temp/emotionTag5.png";
+
 interface DiaryEditCardProps {
-  dateText: string; // "4월 24일 (목)"
-  emotion: "행복" | "기쁨" | "슬픔" | "화남" | "그냥그래";
+  dateText: string;
+  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
   title: string;
   content: string;
   onTitleChange: (newTitle: string) => void;
   onContentChange: (newContent: string) => void;
-  maxContentLength?: number; // 스크롤 기준 글자 수(기본 160자)
+  maxContentLength?: number;
 }
 
-const badgeColor: Record<string, string> = {
-  행복: "bg-pink-50 text-pink-600 border-pink-300",
-  기쁨: "bg-yellow-50 text-yellow-600 border-yellow-300",
-  슬픔: "bg-blue-50 text-blue-600 border-blue-300",
-  화남: "bg-red-50 text-red-600 border-red-300",
-  그냥그래: "bg-gray-50 text-gray-600 border-gray-300",
+const emotionTagMap: Record<string, string> = {
+  행복: emotionTag1,
+  설렘: emotionTag2,
+  피곤: emotionTag3,
+  짜증: emotionTag4,
+  우울: emotionTag5,
 };
 
 export default function DiaryEditCard({
@@ -28,14 +35,14 @@ export default function DiaryEditCard({
   onContentChange,
   maxContentLength = 160,
 }: DiaryEditCardProps) {
-  // 내용 길이에 따라 스크롤 필요 여부
   const needsScroll = content.length > maxContentLength;
-
-  // textarea에 자동 포커스
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
+
+  const emotionImage = emotionTagMap[emotion];
 
   return (
     <div className="w-11/12 mx-auto rounded-xl border-2 border-dashed border-yellow-300 bg-white p-4 space-y-4 shadow-sm">
@@ -44,11 +51,13 @@ export default function DiaryEditCard({
         <span className="text-lg font-semibold text-yellow-500">
           {dateText}
         </span>
-        <span
-          className={`px-3 py-0.5 text-sm rounded-full border ${badgeColor[emotion]}`}
-        >
-          {emotion}
-        </span>
+        {emotionImage && (
+          <img
+            src={emotionImage}
+            alt={emotion}
+            className="w-12 h-5 object-contain"
+          />
+        )}
       </div>
 
       {/* 제목 입력 */}
@@ -61,11 +70,7 @@ export default function DiaryEditCard({
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="제목을 입력하세요"
-          className="
-            w-full rounded-lg border border-yellow-200 bg-yellow-50
-            px-3 py-2 text-gray-600 placeholder-gray-400 transition
-            focus:border-yellow-400 focus:bg-white focus:outline-none focus:shadow-outline
-          "
+          className="w-full rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-gray-600 placeholder-gray-400 transition focus:border-yellow-400 focus:bg-white focus:outline-none focus:shadow-outline"
         />
       </div>
 

@@ -17,7 +17,12 @@ interface Chatbot {
 }
 
 interface ChatSelectorProps {
-  onSelect: (character: { img: string; name: string; tag: string }) => void;
+  onSelect: (character: {
+    id: number;
+    img: string;
+    name: string;
+    tag: string;
+  }) => void;
 }
 
 export default function ChatSelector({ onSelect }: ChatSelectorProps) {
@@ -50,6 +55,12 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     async function fetchChatbots() {
       try {
         const res = await api.get("/api/chatbot");
+
+        if (!res.data || !res.data.data) {
+          console.error("챗봇 데이터가 비어있습니다:", res.data);
+          return;
+        }
+
         const { recentChatbotId, chatbots } = res.data.data;
 
         setChatbots(chatbots);
@@ -82,7 +93,12 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     const img = bot.imageUrl || localIcons[bot.name] || "";
     const tag = bot.description.split(",").join(" ");
 
-    onSelect({ img, name: bot.name, tag });
+    onSelect({
+      id: bot.id,
+      img,
+      name: bot.name,
+      tag,
+    });
   }, [chatbots, currentIndex, onSelect]);
 
   const handlePrev = () => {
