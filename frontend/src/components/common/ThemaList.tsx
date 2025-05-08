@@ -100,7 +100,7 @@ function ThemaList() {
       setAlert({
         message: "테마가 성공적으로 설정되었습니다.",
         type: "success",
-        callback: () => navigate("/diary/friend"), // 챗봇 선택으로 이동
+        callback: () => navigate("/diary/setting/friend"), // 챗봇 선택으로 이동
       });
     } catch (err: any) {
       const status = err?.response?.status;
