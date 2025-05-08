@@ -1,46 +1,114 @@
 /* src/pages/diary/DiaryTempPage.tsx */
-import react, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import PageTitle from "../../components/PageTitle";
 import Button from "../../components/common/Button";
 import { useNavigate } from "react-router-dom";
-// import ChatExistModal from "../../components/modal/ChatExistModal";";
+import axios from "axios";
+import AlertModal from "../../components/modal/AlertModal";
 
-// ─── 임시 더미 데이터 ───
-const diary = {
-  title: "오늘 회의 기록",
-  dateText: "4월 26일 (토)",
-  emotion: "슬픔" as const,
-  content:
-    "오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다.오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다. 오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있",
-};
+interface Diary {
+  title: string;
+  dateText: string;
+  emotion: "행복" | "기쁨" | "슬픔" | "화남" | "그냥그래";
+  content: string;
+}
 
 export default function DiaryTempPage() {
   const navigate = useNavigate();
 
-  // hover 상태: "edit" or "save" or null
-  const [hovered, setHovered] = useState<"edit" | "save" | null>(null);
+  const [hovered, setHovered] = useState<"edit" | "save" | "rewrite" | null>(
+    null
+  );
+  const [diary, setDiary] = useState<Diary | null>(null);
 
-  // 저장 모달 여부
-  const [modalOpen, setModalOpen] = useState(false);
-
-  // 기본: save 버튼이 fill, edit은 line
-  // hover 있을 때만 그 버튼이 fill, 나머지는 line
-  const getButtonType = (btn: "edit" | "save") => {
+  const getButtonType = (btn: "edit" | "save" | "rewrite") => {
     if (hovered) {
       return hovered === btn ? "fill" : "line";
     }
     return btn === "save" ? "fill" : "line";
   };
 
-  const handleEdit = () => {
-    // 기존 일기 데이터를 편집 페이지에 넘겨줍니다
-    navigate("edit", { state: diary });
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "fail";
+  } | null>(null);
+
+  // 임시 일기 데이터 조회
+  const fetchDiary = async () => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { title, diary: content, createdAt, emotion } = data.data;
+      const date = new Date(createdAt);
+      const dateText = `${date.getMonth() + 1}월 ${date.getDate()}일 (${"일월화수목금토"[date.getDay()]})`;
+
+      setDiary({ title, content, emotion, dateText });
+    } catch (err) {
+      console.error("임시 일기 불러오기 실패:", err);
+    }
   };
-  const handleSave = () => {
-    // TODO: 저장 로직
-    console.log("저장할 일기:", diary);
-    navigate("/my"); // 마이페이지로
+
+  useEffect(() => {
+    fetchDiary();
+  }, []);
+
+  // 임시 일기 재생성
+  const handleEdit = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/retry`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setAlert({
+        message: "일기를 다시 생성하고 있어요!",
+        type: "success",
+      });
+    } catch (err) {
+      console.error("일기 재생성 실패:", err);
+      setAlert({
+        message: "일기 재생성에 실패했어요!",
+        type: "fail",
+      });
+    }
+  };
+
+  // 일기 생성(확정) post 요청
+  const handleSave = async () => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/confirm`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const { diaryId } = res.data.data;
+      navigate(`/diary/${diaryId}`);
+    } catch (err) {
+      console.error("일기 저장 실패:", err);
+      setAlert({
+        message: "일기 저장에 실패했습니다.",
+        type: "fail",
+      });
+    }
   };
 
   return (
@@ -50,39 +118,36 @@ export default function DiaryTempPage() {
           title="생성된 일기 확인하기"
           subtitle="대화를 통해 완성된 일기를 확인해보세요"
         />
+        {diary && <DiaryEntryCard {...diary} />}
 
-        {/* 일기 카드 */}
-        <DiaryEntryCard {...diary} />
-
-        {/* 버튼 영역 */}
-        <div className="mt-6 flex justify-center items-center gap-4">
-          {/* 수정 버튼 */}
-          <div
-            onMouseEnter={() => setHovered("edit")}
-            onMouseLeave={() => setHovered("save")}
-          >
-            <Button
-              text="수정"
-              type={getButtonType("edit")}
-              size="M"
-              onClick={handleEdit}
+        {/* 재생성 버튼 (상대적 위치) */}
+        <div className="flex justify-end mt-6 mr-6">
+          <button onClick={handleEdit} title="다시 생성">
+            <img
+              src="/src/assets/icons/button/arrowButton.png"
+              alt="재생성"
+              className="w-5 h-5 hover:scale-110 transition-transform"
             />
-          </div>
-
-          {/* <ChatExistModal /> */}
-          {/* 저장 버튼 */}
-          <div
-            onMouseEnter={() => setHovered("save")}
-            onMouseLeave={() => setHovered("save")}
-          >
-            <Button
-              text="저장"
-              type={getButtonType("save")}
-              size="M"
-              onClick={handleSave}
-            />
-          </div>
+          </button>
         </div>
+        {/* 수정/저장 버튼 영역 */}
+        <div className="mt-6 flex flex-row justify-center items-center gap-4">
+          <Button
+            text="수정"
+            type="line"
+            size="M"
+            onClick={() => navigate("edit", { state: diary })}
+          />
+          <Button text="저장" type="fill" size="M" onClick={handleSave} />
+        </div>
+
+        {alert && (
+          <AlertModal
+            message={alert.message}
+            type={alert.type}
+            onClose={() => setAlert(null)}
+          />
+        )}
       </div>
     </div>
   );

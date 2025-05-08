@@ -10,6 +10,7 @@ import Button from "../../components/common/Button";
 
 import DiaryCreatingModal from "../../components/modal/DiaryCreatingModal";
 import DiaryCreateFailModal from "../../components/modal/DiaryCreateFailModal";
+import AlertModal from "../../components/modal/AlertModal";
 
 export default function DiaryChatPage() {
   const navigate = useNavigate();
@@ -24,6 +25,10 @@ export default function DiaryChatPage() {
   const [creatingModalOpen, setCreatingModalOpen] = useState(false);
   const [failModalOpen, setFailModalOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "fail";
+  } | null>(null);
 
   // 대화 불러오기
   useEffect(() => {
@@ -91,8 +96,16 @@ export default function DiaryChatPage() {
 
   // 일기 생성 요청
   const handleCreate = async () => {
+    if (limit < 60) {
+      setAlert({
+        message: "일기를 위한 소중한 이야기를 더 들려주세요",
+        type: "fail",
+      });
+      return;
+    }
+
     setCreatingModalOpen(true);
-    setShowConfirm(false); // 버튼은 초기에는 숨김
+    setShowConfirm(false);
 
     try {
       await axios.post(
@@ -106,12 +119,8 @@ export default function DiaryChatPage() {
         }
       );
 
-      // ⏱ 2초 후 버튼 보여줌
-      setTimeout(() => {
-        setShowConfirm(true);
-      }, 2000);
-
-      // ⏱ 4초 후 자동 이동
+      // 1.5초 후 확인 버튼 생성 + 4초 후 임시 저장으로 이동하기
+      setTimeout(() => setShowConfirm(true), 1500);
       setTimeout(() => {
         setCreatingModalOpen(false);
         navigate("/diary/temp");
@@ -135,12 +144,13 @@ export default function DiaryChatPage() {
 
       <div className="relative w-full max-w-[320px] mx-auto mb-8">
         <div className="flex items-center justify-between text-gray-500 text-sm mb-1">
-          대화량{" "}
+          대화량 {/* 60 이하이면 버튼 생성 금지 */}
           <Button
             text="일기 생성"
             type="fill"
             size="S"
             onClick={handleCreate}
+            disabled={limit < 60}
           />
         </div>
         <ProgressBar label="" progress={limit} />
@@ -187,6 +197,14 @@ export default function DiaryChatPage() {
             setFailModalOpen(false);
             handleCreate();
           }}
+        />
+      )}
+
+      {alert && (
+        <AlertModal
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
         />
       )}
 
