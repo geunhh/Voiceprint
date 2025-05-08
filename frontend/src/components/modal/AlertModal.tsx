@@ -6,12 +6,14 @@ interface AlertModalProps {
   message: string;
   type: "success" | "fail";
   onClose: () => void;
+  callback?: () => void; // 선택: 확인 시 실행할 추가 동작
 }
 
 export default function AlertModal({
   message,
   type,
   onClose,
+  callback,
 }: AlertModalProps) {
   const icon = type === "success" ? happyIcon : questionIcon;
 
@@ -46,7 +48,15 @@ export default function AlertModal({
             {message}
           </h2>
           <div className="w-full">
-            <Button text="확인" type="fill" size="L" onClick={onClose} />
+            <Button
+              text="확인"
+              type="fill"
+              size="L"
+              onClick={() => {
+                onClose();
+                callback?.();
+              }}
+            />
           </div>
         </div>
       </div>
