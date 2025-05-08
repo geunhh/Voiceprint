@@ -1,6 +1,6 @@
 // src/components/common/ThemaList.tsx
-import { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import themaCharacter1 from "../../assets/icons/themaCharacter1.png";
@@ -8,9 +8,9 @@ import themaCharacter2 from "../../assets/icons/themaCharacter2.png";
 import themaCharacter3 from "../../assets/icons/themaCharacter3.png";
 import themaCharacter4 from "../../assets/icons/themaCharacter4.png";
 
+import AlertModal from "../modal/AlertModal";
 import Button from "./Button";
 import ThemaItem from "./ThemaItem";
-import AlertModal from "../modal/AlertModal";
 
 interface Thema {
   id: number;
