@@ -14,6 +14,7 @@ import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.domain.diary.DiaryRepository;
 import com.voiceprint.backend.domain.diary.Emotion;
 import com.voiceprint.backend.domain.diary.EmotionRepository;
+import com.voiceprint.backend.domain.thema.DiaryThema;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -148,8 +149,24 @@ public class ChatSessionService {
         // 채팅 관련 Redis 키.
         String sessionKey = "chat_session:"+userId;
 
+        // 일기 생성 직전 유저가 선택한 일기 테마를 Redis 서버에 갱신해줌
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
+
+        DiaryThema thema = user.getUsingThema();
+        String cur_thema_title = thema.getTitle();
+        String cur_thema_prompt = thema.getPrompt();
+        String cur_thema_description = thema.getDescription();
+        String cur_thema_example = thema.getExample();
+
         // 1. 상태값을 DIARY_CREATING(일기 생성중)으로 갱신
         redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_CREATING.name());
+
+        // 1.5 일기 생성에 필요한 테마 정보 갱신
+        redisTemplate.opsForHash().put(sessionKey,"themeTitle",cur_thema_title);
+        redisTemplate.opsForHash().put(sessionKey,"themeDescription",cur_thema_description);
+        redisTemplate.opsForHash().put(sessionKey,"themePrompt",cur_thema_prompt);
+        redisTemplate.opsForHash().put(sessionKey,"themeDiary",cur_thema_example);
 
         // 2. 백그라운드에서 일기 생성 비동기 처리
         CompletableFuture.runAsync(() -> {
@@ -182,7 +199,7 @@ public class ChatSessionService {
                 redisTemplate.opsForHash().put(sessionKey,"tempTitle",title);
                 redisTemplate.opsForHash().put(sessionKey,"emotion",emotion);
                 redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now().toString()); //Todo:식간 -6
-                    // status 변경
+                // status 변경
                 redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
                 log.info("일기 생성이 완료되었습니다.");
             }
