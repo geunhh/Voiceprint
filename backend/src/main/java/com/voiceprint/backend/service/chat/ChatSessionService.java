@@ -29,6 +29,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+import static com.voiceprint.backend.domain.chat.ChatSessionStatus.DIARY_SAVED;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -368,13 +370,15 @@ public class ChatSessionService {
         Chatbot chatbot = chatbotRepository.findById(chatbotId)
                 .orElseThrow(() -> new RuntimeException("챗봇 정보 없음"));
         user.setLastChatbot(chatbot);
-//        userRepository.save(user); // user가 이미 영속상태이므로, save 불필요
+
         diaryRepository.save(diary);
 
 
-        // Redis 데이터 삭제
-        redisTemplate.delete(sessionKey);
-        redisTemplate.delete(messageKey);
+        // Redis 데이터 삭제 X
+//        redisTemplate.delete(sessionKey);
+//        redisTemplate.delete(messageKey);
+        redisTemplate.opsForHash().put(sessionKey,"status", DIARY_SAVED.name());
+
 
         return diary.getId();
 
