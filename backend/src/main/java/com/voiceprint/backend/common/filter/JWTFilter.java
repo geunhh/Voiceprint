@@ -51,6 +51,7 @@ public class JWTFilter extends OncePerRequestFilter {
         // 인증 객체 생성 및 설정
         CustomOAuth2User customUser = new CustomOAuth2User(user);
 
+
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(customUser, null, customUser.getAuthorities())
         );

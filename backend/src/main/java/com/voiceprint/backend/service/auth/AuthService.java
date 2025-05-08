@@ -1,10 +1,16 @@
 package com.voiceprint.backend.service.auth;
 
-import com.voiceprint.backend.api.auth.dto.TokenResponse;
+
+import com.voiceprint.backend.api.auth.dto.*;
+import com.voiceprint.backend.common.exception.user.NicknameConflictException;
+import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.util.JWTUtil;
+import com.voiceprint.backend.domain.auth.*;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.auth.RefreshTokenRepository;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.diary.DiaryRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,6 +30,22 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ProfileImageRepository profileImageRepository;
+    private final DiaryRepository diaryRepository;
+
+    public ProfileResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
+
+        // 최근 일기 리스트 조회
+        // 일기 리스트가 비어있을 경우 빈 리스트로 처리
+        List<DiaryResponse> diaries = diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(DiaryResponse::new)  // Diary 객체를 DiaryResponse로 변환
+                .collect(Collectors.toList());
+
+        return new ProfileResponse(user.getId(), user.getNickname(), user.getProfileImage().getImageUrl(), diaries);
+    }
+
 
     /**
      * 리프레시 토큰을 검증하고 새로운 액세스 토큰과 리프레시 토큰을 발급합니다.
@@ -196,5 +220,48 @@ public class AuthService {
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
+    }
+
+    public List<ProfileImageResponse> getProfileImages() {
+        // DB에서 모든 프로필 이미지 정보를 조회
+        List<ProfileImage> images = profileImageRepository.findAll();
+        // 빈 목록일 경우 빈 리스트 반환
+        if (images.isEmpty()) {
+            throw new ProfileImageNotFoundException("프로필 이미지가 없습니다.");
+        }
+        // 이미지 정보를 DTO로 변환하여 반환
+        return images.stream()
+                .map(image -> new ProfileImageResponse(image.getId(), image.getTitle(),image.getImageUrl()))
+                .collect(Collectors.toList());
+    }
+
+    public ProfileUpdateResponse updateProfile(Long userId, ProfileUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
+
+        // 닉네임이 존재할 경우 업데이트
+        // 닉네임 중복 체크
+        if (request.getNickname() != null && !request.getNickname().isEmpty()) {
+            if (isNicknameDuplicate(request.getNickname(), userId)) {
+                throw new NicknameConflictException("중복된 닉네임이 있습니다.");
+            }
+            user.setNickname(request.getNickname());
+        }
+
+        // 프로필 이미지 ID가 존재할 경우 업데이트
+        if (request.getProfileImageId() != null) {
+            ProfileImage profileImage = profileImageRepository.findById(request.getProfileImageId())
+                    .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));
+            user.setProfileImage(profileImage);
+        }
+
+        // 변경 사항 저장
+        userRepository.save(user);
+
+        return new ProfileUpdateResponse(user.getId(), user.getNickname(), user.getProfileImage().getId());
+    }
+    // 닉네임 중복 체크 메서드
+    private boolean isNicknameDuplicate(String nickname, Long userId) {
+        return userRepository.existsByNicknameAndIdNot(nickname, userId);
     }
 }

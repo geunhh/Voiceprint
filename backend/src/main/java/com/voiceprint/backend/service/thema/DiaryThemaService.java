@@ -3,6 +3,7 @@ package com.voiceprint.backend.service.thema;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateResponse;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaResponse;
+import com.voiceprint.backend.api.thema.dto.UsingDiaryThemaResponseDTO;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.DiaryThemaNotFoundException;
 import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
@@ -155,5 +156,18 @@ public class DiaryThemaService {
         userRepository.save(user);
 
         System.out.println("갱신 완료 : "+user.getUsingThema());
+    }
+
+    /**
+     * 사용중인 테마 조회 메소드
+     */
+    public UsingDiaryThemaResponseDTO getUsingThema(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
+
+        DiaryThema thema = user.getUsingThema();
+        Long themaId = (thema != null) ? thema.getId() : null;
+        log.debug("{} user의 사용중인 themaId : {}",userId,themaId);
+        return new UsingDiaryThemaResponseDTO(themaId);
     }
 }
