@@ -58,6 +58,9 @@ public class ChatController {
                 200, "세션 종료 성공", "일기 생성을 시작했습니다. (생성중입니다)"));
     }
 
+    /**
+     * 임시 일기 조회 API
+     */
     @GetMapping("/diary/temp")
     public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> getTempDiary(
             HttpServletRequest request
@@ -110,11 +113,10 @@ public class ChatController {
         }
     }
 
-    @PostMapping("diary/temp/confirm")
+    @PostMapping("/diary/temp/confirm")
     public ResponseEntity<CommonResponse<Map<String, Long>>> confirmDiary(
             HttpServletRequest request
     ) {
-//        Long userId = 1L;
         Long userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 확정!! / userid : {}",userId);
         Long diaryId = chatSessionService.confirmDiary(userId);
