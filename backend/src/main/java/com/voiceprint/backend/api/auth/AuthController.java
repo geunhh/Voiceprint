@@ -1,8 +1,6 @@
 package com.voiceprint.backend.api.auth;
 
-import com.voiceprint.backend.api.auth.dto.ProfileResponse;
-import com.voiceprint.backend.api.auth.dto.TokenResponse;
-import com.voiceprint.backend.api.auth.dto.UserResponse;
+import com.voiceprint.backend.api.auth.dto.*;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
@@ -12,13 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequestMapping("/api/v1/user")
@@ -27,6 +23,26 @@ import java.util.Map;
 public class AuthController {
     private final AuthService authService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @PatchMapping("/profile")
+    public ResponseEntity<CommonResponse<ProfileUpdateResponse>> updateProfile(
+            HttpServletRequest request,
+            @RequestBody ProfileUpdateRequest profileUpdateRequest) {
+
+        Long userId = authService.getUserIdFromRequest(request);
+        ProfileUpdateResponse updatedProfile = authService.updateProfile(userId, profileUpdateRequest);
+
+        return ResponseEntity.ok(new CommonResponse<>(200, "프로필 수정 완료", updatedProfile));
+    }
+
+
+    @GetMapping("/profileimage")
+    public ResponseEntity<CommonResponse<List<ProfileImageResponse>>> getProfileImage() {
+        List<ProfileImageResponse> profileImages = authService.getProfileImages();
+        return ResponseEntity.ok(new CommonResponse<>(200, "프로필 이미지 조회 완료", profileImages));
+    }
+
+
 
     /**
      * 유저 프로필 조회

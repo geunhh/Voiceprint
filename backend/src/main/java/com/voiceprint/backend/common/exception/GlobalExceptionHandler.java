@@ -9,6 +9,8 @@ import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.common.exception.user.NicknameConflictException;
+import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -76,6 +78,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DiaryThemaNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND) // 404
     public String handleDiaryThemaNotFound(DiaryThemaNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(NicknameConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleConflictException(NicknameConflictException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ProfileImageNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleProfileImageNotFound(ProfileImageNotFoundException e) {
         return e.getMessage();
     }
 
