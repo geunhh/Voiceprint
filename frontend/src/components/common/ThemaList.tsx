@@ -20,8 +20,8 @@ interface Thema {
 }
 
 interface ThemaListResponse {
-  default_themes: Thema[];
-  custom_themes: Thema[];
+  default_themas: Thema[];
+  custom_themas: Thema[];
 }
 
 function ThemaList() {
@@ -30,8 +30,8 @@ function ThemaList() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [examples, setExamples] = useState<{ [id: number]: string }>({});
   const [themas, setThemas] = useState<ThemaListResponse>({
-    default_themes: [],
-    custom_themes: [],
+    default_themas: [],
+    custom_themas: [],
   });
   const [alert, setAlert] = useState<{
     message: string;
@@ -119,7 +119,7 @@ function ThemaList() {
   return (
     <div className="flex flex-col items-center px-4 py-2">
       <div className="w-full mb-5">
-        {themas.default_themes.map((thema) => (
+        {themas.default_themas.map((thema) => (
           <ThemaItem
             key={thema.id}
             id={thema.id}
@@ -132,7 +132,7 @@ function ThemaList() {
           />
         ))}
 
-        {themas.custom_themes.map((thema) => (
+        {themas.custom_themas.map((thema) => (
           <ThemaItem
             key={thema.id}
             id={thema.id}
