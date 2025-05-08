@@ -1,14 +1,14 @@
 // src/pages/diary/DiaryFriendPage.tsx
-import React, { useState } from "react";
+import axios from "axios";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
-import ChatSelector from "../../components/diaryCreate/ChatSelector";
-import PageTitle from "../../components/PageTitle";
 import Button from "../../components/common/Button";
-import ChatExistModal from "../../components/modal/ChatExistModal";
+import PageTitle from "../../components/common/PageTitle";
+import ChatSelector from "../../components/diaryCreate/ChatSelector";
 import AlertModal from "../../components/modal/AlertModal";
+import ChatExistModal from "../../components/modal/ChatExistModal";
 
 import { setCharacter } from "../../store/characterSlice";
 

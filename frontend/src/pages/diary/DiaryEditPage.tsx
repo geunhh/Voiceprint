@@ -1,11 +1,11 @@
 // src/pages/diary/DiaryEditPage.tsx
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import PageTitle from "../../components/PageTitle";
-import DiaryEditCard from "../../components/diaryCreate/DiaryEditCard";
-import Button from "../../components/common/Button";
-import AlertModal from "../../components/modal/AlertModal";
 import axios from "axios";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Button from "../../components/common/Button";
+import PageTitle from "../../components/common/PageTitle";
+import DiaryEditCard from "../../components/diaryCreate/DiaryEditCard";
+import AlertModal from "../../components/modal/AlertModal";
 
 interface TempDiary {
   title: string;

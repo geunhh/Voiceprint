@@ -1,10 +1,10 @@
 /* src/pages/diary/DiaryTempPage.tsx */
-import React, { useState, useEffect } from "react";
-import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
-import PageTitle from "../../components/PageTitle";
-import Button from "../../components/common/Button";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Button from "../../components/common/Button";
+import PageTitle from "../../components/common/PageTitle";
+import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import AlertModal from "../../components/modal/AlertModal";
 
 interface Diary {
