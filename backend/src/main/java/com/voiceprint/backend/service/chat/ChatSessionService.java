@@ -184,6 +184,7 @@ public class ChatSessionService {
                 redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now().toString()); //Todo:식간 -6
                     // status 변경
                 redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
+                log.info("일기 생성이 완료되었습니다.");
             }
             catch (Exception e) {
                 log.error("일기 생성 중 에러발생 : {}",e.getMessage());

@@ -1,6 +1,7 @@
 package com.voiceprint.backend.api.auth;
 
 import com.voiceprint.backend.api.auth.dto.ProfileImageResponse;
+import com.voiceprint.backend.api.auth.dto.ProfileResponse;
 import com.voiceprint.backend.api.auth.dto.TokenResponse;
 import com.voiceprint.backend.api.auth.dto.UserResponse;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;
@@ -36,6 +37,17 @@ public class AuthController {
     }
 
 
+
+    /**
+     * 유저 프로필 조회
+     * 최근 일기 리스트로 응답
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<CommonResponse<ProfileResponse>> getProfile(HttpServletRequest request) {
+        Long userId = authService.getUserIdFromRequest(request);
+        ProfileResponse response = authService.getProfile(userId);
+        return ResponseEntity.ok(new CommonResponse<>(200,"프로필 조회 완료.", response));
+    }
 
     /**
      * 액세스 토큰 재발급

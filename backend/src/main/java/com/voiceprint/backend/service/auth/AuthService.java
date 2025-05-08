@@ -1,16 +1,22 @@
 package com.voiceprint.backend.service.auth;
 
+
 import com.voiceprint.backend.api.auth.dto.ProfileImageResponse;
 import com.voiceprint.backend.api.auth.dto.TokenResponse;
-import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.domain.auth.*;
+import com.voiceprint.backend.api.auth.dto.DiaryResponse;
+import com.voiceprint.backend.api.auth.dto.ProfileResponse;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.domain.auth.RefreshTokenRepository;
+import com.voiceprint.backend.domain.auth.User;
+import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.diary.DiaryRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +33,21 @@ public class AuthService {
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ProfileImageRepository profileImageRepository;
+    private final DiaryRepository diaryRepository;
+
+    public ProfileResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
+
+        // 최근 일기 리스트 조회
+        // 일기 리스트가 비어있을 경우 빈 리스트로 처리
+        List<DiaryResponse> diaries = diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(DiaryResponse::new)  // Diary 객체를 DiaryResponse로 변환
+                .collect(Collectors.toList());
+
+        return new ProfileResponse(user.getId(), user.getNickname(), user.getProfileImage().getImageUrl(), diaries);
+    }
+
 
     /**
      * 리프레시 토큰을 검증하고 새로운 액세스 토큰과 리프레시 토큰을 발급합니다.

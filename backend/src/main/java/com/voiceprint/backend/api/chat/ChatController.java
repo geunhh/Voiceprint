@@ -110,11 +110,10 @@ public class ChatController {
         }
     }
 
-    @PostMapping("diary/temp/confirm")
+    @PostMapping("/diary/temp/confirm")
     public ResponseEntity<CommonResponse<Map<String, Long>>> confirmDiary(
             HttpServletRequest request
     ) {
-//        Long userId = 1L;
         Long userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 확정!! / userid : {}",userId);
         Long diaryId = chatSessionService.confirmDiary(userId);
