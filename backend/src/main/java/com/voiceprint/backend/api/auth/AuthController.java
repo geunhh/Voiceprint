@@ -28,6 +28,17 @@ public class AuthController {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     /**
+     * 유저 프로필 조회
+     * 최근 일기 리스트로 응답
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<CommonResponse<ProfileResponse>> getProfile(HttpServletRequest request) {
+        Long userId = authService.getUserIdFromRequest(request);
+        ProfileResponse response = authService.getProfile(userId);
+        return ResponseEntity.ok(new CommonResponse<>(200,"프로필 조회 완료.", response));
+    }
+
+    /**
      * 액세스 토큰 재발급
      * 리프레시 토큰은 쿠키에서 추출
      */
