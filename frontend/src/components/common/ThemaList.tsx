@@ -43,7 +43,7 @@ function ThemaList() {
     const fetchThemas = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/thema/list`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/thema/all`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
