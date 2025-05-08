@@ -3,10 +3,10 @@ pipeline {
 
   triggers {
     gitlab(
-      triggersOnPush: true,
+      triggerOnPush: true,
       triggerOnMergeRequest: true,
       branchFilterType: 'NameBasedFilter',
-      includeBranches: 'release'
+      includeBranchesSpec: 'release'
     )
   }
 
