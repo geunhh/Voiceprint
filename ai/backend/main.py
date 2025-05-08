@@ -20,6 +20,8 @@ import datetime
 app = FastAPI()
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
+# 깃 충돌 해결용 주석
+
 # 백엔드 origin 으로 변경 필요 
 origins = [
     "http://localhost",
@@ -270,6 +272,7 @@ async def chat_text(user_key) :
 
     # 질문이랑 답변은 내가 받아서 바로 보내면 됨. 
     # 댑변 저장은 백엔드 쪽에서. 
+    # 그냥 테스트 용도로 넣어둔 주석임. 깃 충돌나서 변경 사항이 필요했음.
 
 
     
