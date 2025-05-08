@@ -39,6 +39,7 @@ function ThemaList() {
     callback?: () => void;
   } | null>(null);
 
+  // 테마 리스트 요청하기
   useEffect(() => {
     const fetchThemas = async () => {
       try {
@@ -64,10 +65,6 @@ function ThemaList() {
     setSelectedId((prev) => (prev === id ? null : id));
   };
 
-  const handleExampleSubmit = (id: number, value: string) => {
-    setExamples((prev) => ({ ...prev, [id]: value }));
-  };
-
   const getThemaCharacterImage = (id: number) => {
     switch (id) {
       case 1:
@@ -81,6 +78,7 @@ function ThemaList() {
     }
   };
 
+  // 테마 선택 보내기
   const handleSubmit = async () => {
     if (selectedId === null) {
       setAlert({ message: "테마를 선택해주세요.", type: "fail" });
@@ -113,6 +111,48 @@ function ThemaList() {
       else if (status === 404) message = "존재하지 않는 테마입니다.";
 
       setAlert({ message, type: "fail" });
+    }
+  };
+
+  // 커스텀 일기 생성 post 요청 보내기
+  const handleExampleSubmit = async (id: number, diaryText: string) => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/thema/create`,
+        { exampleDiary: diaryText },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { themaId, example } = res.data.data;
+      setExamples((prev) => ({ ...prev, [themaId]: example }));
+      setSelectedId(themaId);
+
+      // 전체 목록 재조회 (또는 직접 추가)
+      const updated = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/thema/all`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setThemas(updated.data.data);
+
+      setAlert({
+        message: "커스텀 테마가 생성되었어요!",
+        type: "success",
+      });
+    } catch (err) {
+      setAlert({
+        message: "테마 생성 실패: 너무 짧은 예시거나 오류가 발생했어요.",
+        type: "fail",
+      });
     }
   };
 
