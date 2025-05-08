@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         mint: "#B5E6E2", // 민트색 등록
         darkmint: "#8DC4BF", // 어두운 민트색 등록
+        lightmint: "#DEF6F5", // 밝은 민트색 등록
       },
     },
   },

@@ -52,14 +52,14 @@ export default function ChatExistModal({
 
           {/* 이어하기 (outlined) */}
           <div className="w-full">
-            <Button text="이어하기" type="line" size="L" onClick={onContinue} />
+            <Button text="이어하기" type="fill" size="L" onClick={onContinue} />
           </div>
 
           {/* 새로 시작하기 (filled) */}
           <div className="w-full">
             <Button
               text="새로 시작하기"
-              type="fill"
+              type="line"
               size="L"
               onClick={onRestart}
             />
