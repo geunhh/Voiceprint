@@ -2,6 +2,7 @@ package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.common.filter.JWTFilter;
 import com.voiceprint.backend.common.util.JWTUtil;
+import com.voiceprint.backend.domain.auth.UserRepository;
 import com.voiceprint.backend.service.auth.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler successHandler;
     private final JWTUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -62,7 +64,7 @@ public class SecurityConfig {
                 .httpBasic((auth) -> auth.disable());
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, userRepository), UsernamePasswordAuthenticationFilter.class);
 
         //oauth2
         http
