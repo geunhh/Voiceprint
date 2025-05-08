@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.diary;
 
+import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryDetailResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,6 +39,21 @@ public class DiaryController {
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "조회 성공", response
         ));
+    }
+
+    @GetMapping("/diary/{diaryId}/chat")
+    public ResponseEntity<CommonResponse<List<ChatMessageResponseDTO>>> getDiaryChat(
+            @PathVariable Long diaryId,
+            HttpServletRequest request    ) {
+        log.info("id:{ }  다이어리 채팅 내역 조회 API 호출");
+
+        List<ChatMessageResponseDTO>resposne = diaryService.getChatRecordFromDiary(request,diaryId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "채팅 내역 조회 성공", resposne
+        ));
+
+
     }
 
     /**
@@ -66,5 +84,6 @@ public class DiaryController {
                 200, "조회 성공", response
         ));
     }
+
 
 }

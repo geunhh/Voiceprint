@@ -58,6 +58,9 @@ public class ChatController {
                 200, "세션 종료 성공", "일기 생성을 시작했습니다. (생성중입니다)"));
     }
 
+    /**
+     * 임시 일기 조회 API
+     */
     @GetMapping("/diary/temp")
     public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> getTempDiary(
             HttpServletRequest request

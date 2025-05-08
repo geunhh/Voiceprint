@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.auth;
 
+import com.voiceprint.backend.api.auth.dto.ProfileResponse;
 import com.voiceprint.backend.api.auth.dto.TokenResponse;
 import com.voiceprint.backend.api.auth.dto.UserResponse;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;

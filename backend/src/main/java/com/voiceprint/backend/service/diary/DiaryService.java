@@ -1,5 +1,9 @@
 package com.voiceprint.backend.service.diary;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryDetailResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
@@ -127,5 +131,45 @@ public class DiaryService {
                 )).toList();
 
         return new DiaryMontlyListDTO(result);
+    }
+
+    public List<ChatMessageResponseDTO> getChatRecordFromDiary(HttpServletRequest request, Long diaryId) {
+        // 유저 정보 조회
+//        Long userId = authService.getUserIdFromRequest(request);
+        Long userId = 1L;
+        log.debug("userId : {}",userId);
+
+        // 일기 정보 조회
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryNotFoundException("해당 Id의 Diary를 찾을 수 없습니다."));
+
+        // 일기의 유저id와 사용자의 id가 일치하는가??
+        if (!diary.getUser().getId().equals(userId)) {
+            log.debug("유저 id : {} 와 일기의 유저 id : {} 가 일치하지 않습니다.",userId, diary.getUser().getId());
+            throw new UnauthorizedDiaryAccessException("diary에 권한이 없습니다.");
+        }
+        log.debug("일기의 userID와 일치합니다. {}",diary.getUser().getEmail());
+
+        // messsages -> List로 매핑하기.
+        String messagesJson = diary.getMessages();
+        System.out.println("messages : "+messagesJson);
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<ChatMessageResponseDTO> result;
+
+        try {
+            result = mapper.readValue(messagesJson, new TypeReference<List<ChatMessageResponseDTO>>() {
+            });
+        }catch (JsonProcessingException e ) {
+            log.error("메시지 json 파싱 실패. {}",e.getMessage());
+            throw new RuntimeException("채팅 메시지 파싱 실패",e);
+        }
+
+        return result;
+
+
+
+
+
     }
 }
