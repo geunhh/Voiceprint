@@ -1,18 +1,8 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import closeIcon from "../../assets/icons/close.png";
 import profileSelect from "../../assets/icons/profileSelect.png";
 import Button from "../common/Button";
-
-// 임시 프로필 이미지
-import profile1 from "../../assets/temp/profile1.png";
-import profile2 from "../../assets/temp/profile2.png";
-import profile3 from "../../assets/temp/profile3.png";
-import profile4 from "../../assets/temp/profile4.png";
-import profile5 from "../../assets/temp/profile5.png";
-import profile6 from "../../assets/temp/profile6.png";
-import profile7 from "../../assets/temp/profile7.png";
-import profile8 from "../../assets/temp/profile8.png";
-import profile9 from "../../assets/temp/profile9.png";
 
 interface ProfileEditProps {
   userName: string;
@@ -20,20 +10,37 @@ interface ProfileEditProps {
   onClose: () => void;
 }
 
-const profileList = [
-  profile1,
-  profile2,
-  profile3,
-  profile4,
-  profile5,
-  profile6,
-  profile7,
-  profile8,
-  profile9,
-];
+interface ProfileImage {
+  id: number;
+  title: string;
+  imageUrl: string;
+}
 
 function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
   const [selectedImage, setSelectedImage] = useState(userImage);
+  const [profileList, setProfileList] = useState<ProfileImage[]>([]);
+
+  useEffect(() => {
+    const fetchProfileImages = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profileimage`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        setProfileList(res.data.data);
+        console.log(res.data.data);
+      } catch (error) {
+        console.error("프로필 이미지 목록 불러오기 실패", error);
+      }
+    };
+
+    fetchProfileImages();
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center">
@@ -54,7 +61,7 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
           <img
             src={selectedImage}
             alt="선택된 프로필"
-            className="w-28 h-28 object-contain rounded-full"
+            className="w-28 h-28 object-cover rounded-full"
           />
         </div>
 
@@ -71,14 +78,14 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
             <div
               key={idx}
               className={`relative w-20 h-20 rounded-full flex items-center justify-center cursor-pointer `}
-              onClick={() => setSelectedImage(img)}
+              onClick={() => setSelectedImage(img.imageUrl)}
             >
               <img
-                src={img}
+                src={img.imageUrl}
                 alt={`프로필${idx}`}
-                className="w-20 h-20 object-contain"
+                className="w-20 h-20 object-cover rounded-full"
               />
-              {selectedImage === img && (
+              {selectedImage === img.imageUrl && (
                 <img
                   src={profileSelect}
                   alt="선택됨"

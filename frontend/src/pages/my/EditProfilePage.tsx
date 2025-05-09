@@ -1,19 +1,13 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import profileImageEdit from "../../assets/icons/edit.png";
 import ThemaList from "../../components/common/ThemaList";
 import ProfileEditModal from "../../components/modal/ProfileEditModal";
-
-// 유저 정보
-const user = {
-  userId: 1,
-  userName: "김혜민",
-  userImage:
-    "https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
-  customThemaId: null,
-};
+import { RootState } from "../../store/store";
 
 export default function EditProfilePage() {
   const [modalOpen, setModalOpen] = useState(false);
+  const user = useSelector((state: RootState) => state.user);
 
   return (
     <div>
@@ -22,7 +16,7 @@ export default function EditProfilePage() {
         {/* 유저 프로필 */}
         <div className="relative w-36 h-36">
           <img
-            src={user.userImage}
+            src={user.imageUrl}
             className="rounded-full w-36 h-36 object-cover"
             alt="프로필 이미지"
           />
@@ -35,7 +29,7 @@ export default function EditProfilePage() {
         </div>
         {/* 닉네임 */}
         <p className="font-semibold text-2xl text-center mt-3">
-          {user.userName}
+          {user.nickname}
         </p>
       </div>
 
@@ -49,8 +43,8 @@ export default function EditProfilePage() {
       {/* 프로필 수정 모달 */}
       {modalOpen && (
         <ProfileEditModal
-          userName={user.userName}
-          userImage={user.userImage}
+          userName={user.nickname}
+          userImage={user.imageUrl}
           onClose={() => setModalOpen(false)}
         />
       )}
