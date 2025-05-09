@@ -1,24 +1,17 @@
 import { addMonths, format, subMonths } from "date-fns";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import Calendar from "../../components/my/Calendar";
 import DiarySummaryCard from "../../components/my/DiarySummaryCard";
 import ToggleButton from "../../components/my/ToggleButton";
 import UserProfile from "../../components/my/UserProfile";
+import { RootState } from "../../store/store";
 
 import back from "../../assets/icons/backYellow.png";
 import forward from "../../assets/icons/forwardYellow.png";
 import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 // 임시 데이터
-// 유저 정보
-const user = {
-  userId: 1,
-  userName: "김혜민",
-  userImage:
-    "https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
-  customThemaId: null,
-};
-
 // 이번 달 일기 목록
 const diaries = [
   {
@@ -71,6 +64,8 @@ export default function MyPage() {
   const [selected, setSelected] = useState("리스트");
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  const user = useSelector((state: RootState) => state.user);
+
   const filteredDiaries = diaries.filter((diary) => {
     const date = new Date(diary.createdAt);
     return (
@@ -85,9 +80,8 @@ export default function MyPage() {
       <div className="p-4 mb-2">
         <UserProfile
           userId={user.userId}
-          userName={user.userName}
-          userImage={user.userImage}
-          customThemaId={user.customThemaId}
+          userName={user.nickname}
+          userImage={user.imageUrl}
         />
       </div>
 
