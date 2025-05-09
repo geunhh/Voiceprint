@@ -14,6 +14,7 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +32,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     // 사용자 ID별 세션 관리 (한 사용자가 여러 세션을 가질 수 있음)
     private final Map<Long, Set<String>> userSessions = new ConcurrentHashMap<>();
     // 세션과 AI 서버 연결 관리
-//    private final Map<String, Object> sessionToAIConnection = new ConcurrentHashMap<>();
+    // private final Map<String, Object> sessionToAIConnection = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -55,15 +56,15 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         log.debug("📩 텍스트 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 내용: {}", userId, sessionId, payload);
 
         try {
-            Map<String, Object> messageMap = objectMapper.readValue(payload, Map.class);
-            String action = (String) messageMap.get("action");
-
+            Map<String, Map<String,String>> messageMap = objectMapper.readValue(payload, Map.class);
+            Map<String, String> content = messageMap.get("content");
+            String action = content.get("action");
             switch (action) {
                 case "audio_complete":
-                    handleAudioComplete(session, messageMap);
+                    handleAudioComplete(session);
                     break;
                 case "ping":
-                    session.sendMessage(new TextMessage("{\"action\":\"pong\"}"));
+                    session.sendMessage(new TextMessage("{action:pong}"));
                     break;
                 default:
                     aiServerClient.sendTextMessage(sessionId, userId, payload);
@@ -164,11 +165,26 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     }
 
     // 오디오 완료 시그널 처리
-    private void handleAudioComplete(WebSocketSession session, Map<String, Object> messageMap) {
+    private void handleAudioComplete(WebSocketSession session) {
         String sessionId = session.getId();
         Long userId = (Long) session.getAttributes().get("userId");
 
-        // AI 서버에 오디오 처리 완료 알림
-        aiServerClient.notifyAudioComplete(sessionId, userId, messageMap);
+        try {
+            // AI 서버로 전송할 메시지 형식 구성
+            Map<String, Object> aiMessage = new HashMap<>();
+            aiMessage.put("type", "websocket.receive");
+            aiMessage.put("Done", "");
+            aiMessage.put("state", "끝");
+
+            // JSON 직렬화
+            String messageJson = objectMapper.writeValueAsString(aiMessage);
+
+            // AI 서버에 오디오 처리 완료 알림 전송
+            aiServerClient.sendTextMessage(sessionId, userId, messageJson);
+            log.info("AI 서버로 오디오 완료 시그널 전송 - 사용자 ID: {}, 세션 ID: {}", userId, sessionId);
+        } catch (Exception e) {
+            log.error("오디오 완료 시그널 전송 중 오류 발생", e);
+        }
     }
+
 }
