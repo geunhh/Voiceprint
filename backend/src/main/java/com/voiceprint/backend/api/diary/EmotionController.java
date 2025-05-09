@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.diary;
 
+import com.voiceprint.backend.api.diary.dto.MonthlyEmotionResponseDTO;
 import com.voiceprint.backend.api.diary.dto.WeeklyEmotionResponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
@@ -33,5 +34,21 @@ public class EmotionController {
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "이번주 감정 데이터 조회 성공", response
         ));
+    }
+
+    @GetMapping("/monthly")
+    public ResponseEntity<CommonResponse<MonthlyEmotionResponseDTO>> getMonthlyEmotion(
+            HttpServletRequest request
+    ) {
+//        Long userId = authService.getUserIdFromRequest(request);
+        Long userId = 2L;
+        log.info("이번달 사용자의 감정 통계 정보 조회// userId : {}",userId);
+
+        MonthlyEmotionResponseDTO response = emotionService.getMonthlyEmotions(userId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200,"이번달 감정 통계 데이터 조회 성공", response
+        )) ;
+
     }
 }
