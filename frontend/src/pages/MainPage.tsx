@@ -142,7 +142,10 @@ export default function MainPage() {
     <>
       {/* 유저 정보 */}
       <div className="flex mx-4 my-5 p-2 gap-2">
-        <img src={user.imageUrl} className="rounded-full w-14" />
+        <img
+          src={user.imageUrl}
+          className="rounded-full w-14 h-14 object-cover"
+        />
         <div className="flex-row self-center">
           <div className="flex items-end">
             <p className="text-xl font-semibold mr-1 text-gray-700">
