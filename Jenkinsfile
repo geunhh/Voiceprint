@@ -7,7 +7,7 @@ pipeline {
       triggerOnMergeRequest: true,
       branchFilterType: 'RegexBasedFilter',
       includeBranchesSpec: '',
-      targetBranchRegax: 'release',
+      targetBranchRegex: 'release',
       secretToken: '04dfb6f16a2855a873d237a5046dd45d'
     )
   }
