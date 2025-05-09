@@ -52,31 +52,24 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         String sessionId = session.getId();
         Long userId = (Long) session.getAttributes().get("userId");
         String payload = message.getPayload();
-
-        log.debug("텍스트 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 내용: {}", userId, sessionId, payload);
+        log.debug("📩 텍스트 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 내용: {}", userId, sessionId, payload);
 
         try {
-            // JSON 메시지 처리 (예: 명령어, 설정 등)
             Map<String, Object> messageMap = objectMapper.readValue(payload, Map.class);
             String action = (String) messageMap.get("action");
 
-            // 메시지 종류에 따른 처리
             switch (action) {
                 case "audio_complete":
-                    // 오디오 녹음 완료 시그널 처리
                     handleAudioComplete(session, messageMap);
                     break;
                 case "ping":
-                    // 연결 유지를 위한 핑 처리
                     session.sendMessage(new TextMessage("{\"action\":\"pong\"}"));
                     break;
                 default:
-                    // 기타 메시지는 AI 서버로 전달
                     aiServerClient.sendTextMessage(sessionId, userId, payload);
             }
         } catch (Exception e) {
-            log.error("메시지 처리 중 오류 발생", e);
-            // 오류 메시지 전송
+            log.error("🚨 텍스트 메시지 처리 중 오류 발생", e);
             session.sendMessage(new TextMessage("{\"error\":\"메시지 처리 중 오류가 발생했습니다.\"}"));
         }
     }
@@ -85,15 +78,18 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
         String sessionId = session.getId();
         Long userId = (Long) session.getAttributes().get("userId");
-        // WebM 형식 확인 (프론트엔드에서 WebM으로 인코딩됐는지 확인)
         ByteBuffer buffer = message.getPayload();
-        log.info("📥 바이너리 메시지 수신! 세션: {}, 크기: {}", session.getId(), message.getPayloadLength());
+        log.info("📥 바이너리 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 크기: {}", userId, sessionId, buffer.remaining());
 
-        log.debug("바이너리 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 크기: {}", userId, sessionId, buffer.remaining());
-
-        // 오디오 데이터를 AI 서버로 전달
-        aiServerClient.sendBinaryMessage(sessionId, userId, buffer);
+        try {
+            // 바이너리 데이터를 AI 서버로 직접 전달
+            aiServerClient.sendBinaryMessage(sessionId, userId, buffer);
+            log.info("🔗 AI 서버로 바이너리 데이터 전송 완료");
+        } catch (Exception e) {
+            log.error("🚨 바이너리 메시지 처리 중 오류 발생", e);
+        }
     }
+
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {

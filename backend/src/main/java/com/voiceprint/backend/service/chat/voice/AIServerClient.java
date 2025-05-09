@@ -70,10 +70,15 @@ public class AIServerClient {
     public void sendTextMessage(String clientSessionId, Long userId, String message) {
         AIServerEndpoint endpoint = aiEndpoints.get(clientSessionId);
         if (endpoint != null) {
-            endpoint.sendText(message);
-            log.debug("텍스트 메시지 전송 - 사용자: {}, 세션: {}", userId, clientSessionId);
+            try {
+                // AI 서버로 텍스트 전송
+                endpoint.getSession().getBasicRemote().sendText(message);
+                log.info("✅ 텍스트 메시지 전송 - 사용자: {}, 세션: {}", userId, clientSessionId);
+            } catch (Exception e) {
+                log.error("🚨 텍스트 메시지 전송 오류", e);
+            }
         } else {
-            log.warn("AI 서버 세션 없음 - 세션: {}", clientSessionId);
+            log.warn("❌ AI 서버 세션 없음 - 세션: {}", clientSessionId);
         }
     }
 
@@ -83,10 +88,15 @@ public class AIServerClient {
     public void sendBinaryMessage(String clientSessionId, Long userId, ByteBuffer buffer) {
         AIServerEndpoint endpoint = aiEndpoints.get(clientSessionId);
         if (endpoint != null) {
-            endpoint.sendBinary(buffer);
-            log.debug("바이너리 메시지 전송 - 사용자: {}, 세션: {}, 크기: {}", userId, clientSessionId, buffer.remaining());
+            try {
+                // AI 서버로 바이너리 데이터 전송
+                endpoint.getSession().getBasicRemote().sendBinary(buffer);
+                log.info("✅ 바이너리 메시지 전송 - 사용자: {}, 세션: {}, 크기: {}", userId, clientSessionId, buffer.remaining());
+            } catch (Exception e) {
+                log.error("🚨 바이너리 메시지 전송 오류", e);
+            }
         } else {
-            log.warn("AI 서버 세션 없음 - 세션: {}", clientSessionId);
+            log.warn("❌ AI 서버 세션 없음 - 세션: {}", clientSessionId);
         }
     }
 
@@ -104,8 +114,12 @@ public class AIServerClient {
     public void disconnect(String clientSessionId, Long userId) {
         AIServerEndpoint endpoint = aiEndpoints.remove(clientSessionId);
         if (endpoint != null) {
-            endpoint.close();
-            log.info("AI 서버 연결 종료 - 사용자: {}, 세션: {}", userId, clientSessionId);
+            try {
+                endpoint.getSession().close();
+                log.info("🔌 AI 서버 연결 종료 - 사용자: {}, 세션: {}", userId, clientSessionId);
+            } catch (Exception e) {
+                log.error("🚨 연결 종료 중 오류", e);
+            }
         }
     }
 
@@ -114,7 +128,13 @@ public class AIServerClient {
      */
     @PreDestroy
     public void cleanUp() {
-        aiEndpoints.values().forEach(AIServerEndpoint::close);
+        aiEndpoints.values().forEach(endpoint -> {
+            try {
+                endpoint.getSession().close();
+            } catch (Exception e) {
+                log.error("🔴 세션 종료 실패", e);
+            }
+        });
         aiEndpoints.clear();
     }
 }
