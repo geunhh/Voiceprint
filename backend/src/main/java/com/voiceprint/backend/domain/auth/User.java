@@ -1,8 +1,8 @@
 package com.voiceprint.backend.domain.auth;
 
-import com.voiceprint.backend.domain.chat.ChatSession;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.diary.Diary;
+import com.voiceprint.backend.domain.thema.DiaryThema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,9 +20,11 @@ public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 프로필 이미지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
     private ProfileImage profileImage;
+
 
     @Column(nullable = false, length = 50)
     private String email;
@@ -35,34 +37,48 @@ public class User {
     @JoinColumn(name = "auth_provider")
     private AuthProvider authProvider;
 
-    // 최근 사용한 테마
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "using_thema_id")
-    private DiaryThema usingThema;
 
     @Column(nullable = false)
+    @Builder.Default    // builder 사용에 있어 초기화 되지 않는 문제를 해결
     private Boolean isDeleted = false;
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // 내가 만든 커스텀 테마
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "custom_thema_id")
+
+    // 유저 생성시 자동 적용
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
+    // 내가 만든 커스텀 테마 (DiaryThema.user로 연결된 역방향
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private DiaryThema customThema;
 
-    @OneToMany(mappedBy = "user")
+    // 현재 사용중인 테마 (단방향 연관)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "using_thema_id")
+    private DiaryThema usingThema;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Diary> diaries = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<ChatSession> sessions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")
     private Chatbot lastChatbot;
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();

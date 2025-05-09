@@ -1,6 +1,16 @@
 pipeline {
   agent any
 
+  triggers {
+    gitlab(
+      triggerOnPush: true,
+      triggerOnMergeRequest: true,
+      branchFilterType: 'NameBasedFilter',
+      includeBranchesSpec: 'release'
+    )
+  }
+
+
   environment {
     FRONTEND_IMAGE = "jokiheum/voiceprint-frontend:latest"
     BACKEND_IMAGE = "jokiheum/voiceprint-backend:latest"
@@ -62,10 +72,12 @@ pipeline {
       }
     }
 
+
+
     // 위에서 build 한 docker image push
     stage("Push Docker Images") {
       steps {
-        withDockerRegistry([credentialsId: 'docker-hub-token', url: '']) {
+        withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
           sh "docker push ${FRONTEND_IMAGE}"
           sh "docker push ${BACKEND_IMAGE}"
           sh "docker push ${MYSQL_IMAGE}"
@@ -84,11 +96,12 @@ pipeline {
           scp -o StrictHostKeyChecking=no frontend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/frontend.env
           scp -o StrictHostKeyChecking=no mysql/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/mysql.env
           scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml
-
+          scp -o StrictHostKeyChecking=no voiceprint.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/voiceprint.conf
           # 2. 원격 접속 후 배포
           ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
             cd ${DEPLOY_PATH} &&
             docker compose down --remove-orphans &&
+            docker compose up -d --build
             docker compose pull &&
             docker compose up -d &&
             docker image prune -f &&

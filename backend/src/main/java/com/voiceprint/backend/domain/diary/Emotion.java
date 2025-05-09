@@ -18,11 +18,15 @@ public class Emotion {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Byte id;
 
-    private String content;
+    // 이름 : 불안, 행복, 기쁨, 슬픔 ...
+    private String name;
+
+    //색상 코드
+    private String color;
 
     //== 생성 메서드 ==//
     public Emotion(String content) {
-        this.content = content;
+        this.name = name;
     }
 }
 

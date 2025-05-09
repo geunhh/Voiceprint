@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import characterReducer from "./characterSlice";
+import userReducer from "./userSlice";
 
 // localStorage 저장
 const saveToLocalStorage = (state: any) => {
@@ -28,6 +29,7 @@ const loadFromLocalStorage = () => {
 export const store = configureStore({
   reducer: {
     character: characterReducer,
+    user: userReducer,
   },
   preloadedState: loadFromLocalStorage(), // localStorage에서 불러오기
 });

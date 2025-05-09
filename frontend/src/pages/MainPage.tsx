@@ -1,17 +1,12 @@
+import axios from "axios";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import DiaryPreview from "../components/common/DiaryPreview";
+import MonthEmotion from "../components/main/MonthEmotion";
 import TodayQuestion from "../components/main/TodayQuestion";
 import WeekEmotion from "../components/main/WeekEmotion";
-import MonthEmotion from "../components/main/MonthEmotion";
-
-// 임시 데이터
-// 유저 정보
-const user = {
-  userId: 1,
-  userName: "김혜민",
-  userImage:
-    "https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
-  customThemaId: null,
-};
+import { RootState } from "../store/store";
+import { setUser } from "../store/userSlice";
 
 // 오늘의 질문
 const todayQuestion = [
@@ -106,14 +101,53 @@ const diaries = [
 ];
 
 export default function MainPage() {
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user); // Redux에서 유저 정보 가져오기
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const { userId, nickname, imageUrl } = res.data.data;
+
+        dispatch(
+          setUser({
+            userId,
+            nickname,
+            imageUrl,
+          })
+        );
+
+        console.log("유저 정보 불러오기 성공", res.data.data);
+      } catch (err) {
+        console.error("유저 정보 불러오기 실패:", err);
+      }
+    };
+
+    fetchUser();
+  }, [dispatch]);
+
+  if (!user || !user.userId) return null;
+
   return (
     <>
       {/* 유저 정보 */}
       <div className="flex mx-4 my-5 p-2 gap-2">
-        <img src={user.userImage} className="rounded-full w-14" />
+        <img src={user.imageUrl} className="rounded-full w-14" />
         <div className="flex-row self-center">
           <div className="flex items-end">
-            <p className="text-xl font-semibold">{user.userName}</p>
+            <p className="text-xl font-semibold mr-1 text-gray-700">
+              {user.nickname}
+            </p>
             <p className="text-gray-700">님</p>
           </div>
           <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>

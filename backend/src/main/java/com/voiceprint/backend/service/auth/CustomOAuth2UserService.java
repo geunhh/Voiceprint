@@ -11,6 +11,9 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -29,8 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         else if (providerName.equals("kakao")) {
-
-            oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+            // 카카오 DTo
         }
         else {
 
@@ -40,6 +42,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
         String email = oAuth2Response.getEmail();
         String name = oAuth2Response.getName();
+
         User user = userRepository.findByAuthProviderAndEmail(provider, email)
                 .orElseGet(() -> {
                     User newUser = User.builder()
@@ -47,6 +50,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .nickname(name)
                             .authProvider(provider)
                             .isDeleted(false)
+                            .createdAt(LocalDateTime.now())  // not null 설정으로 인한 명시적 설정
+                            .updatedAt(LocalDateTime.now())
                             .build();
                     return userRepository.save(newUser);
                 });

@@ -4,14 +4,14 @@ import profile1 from "../../assets/temp/profile1.png";
 import profile2 from "../../assets/temp/profile2.png";
 import profile3 from "../../assets/temp/profile3.png";
 
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import Button from "../../components/common/Button";
+import { DayPicker } from "../../components/group/DayPicker";
+import ImageUploader from "../../components/group/ImageUploader";
 import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
-import ImageUploader from "../../components/group/ImageUploader";
-import { DayPicker } from "../../components/group/DayPicker";
-import { useNavigate } from "react-router";
-import { useState } from "react";
-import { useRef, useEffect } from "react";
+import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
 const group = {
   groupId: 1,
@@ -40,6 +40,9 @@ const group = {
   isAlertEnabled: false,
 };
 
+// 초대 링크
+const inviteLink = "www.voice_print/group/1/invite/1234";
+
 export default function GroupEditPage() {
   const navigate = useNavigate();
   const [isOn, setIsOn] = useState(group.isAlertEnabled);
@@ -51,6 +54,8 @@ export default function GroupEditPage() {
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
   const [groupImageUrl, setGroupImageUrl] = useState<string>(group.groupImage);
+
+  const [modalOpen, setModalOpen] = useState(false); // 초대 모달 표시 여부
 
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -141,7 +146,13 @@ export default function GroupEditPage() {
               </p>
             </div>
           ))}
-          <img src={Add} alt="초대하기" className="w-12 h-12 shrink-0" />
+          {/* 초대하기 버튼 */}
+          <img
+            src={Add}
+            alt="초대하기"
+            className="w-12 h-12 shrink-0"
+            onClick={() => setModalOpen(true)}
+          />
         </div>
       </div>
 
@@ -208,7 +219,7 @@ export default function GroupEditPage() {
       {/* 저장 버튼 */}
       <div className="flex justify-center mt-10 short-screen-padding">
         <Button
-          text="그룹 만들기 완료"
+          text="그룹 수정 완료"
           type="fill"
           size="L"
           color="mint"
@@ -217,6 +228,14 @@ export default function GroupEditPage() {
           }}
         />
       </div>
+
+      {/* 그룹 초대 모달 */}
+      {modalOpen && (
+        <GroupInviteModal
+          link={inviteLink}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

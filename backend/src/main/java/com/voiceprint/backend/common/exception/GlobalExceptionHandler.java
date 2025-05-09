@@ -3,9 +3,16 @@ package com.voiceprint.backend.common.exception;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
+import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
+import com.voiceprint.backend.common.exception.diary.DiaryThemaNotFoundException;
+import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
+import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
+import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
+import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.common.exception.user.NicknameConflictException;
+import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +35,61 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ChatSessionNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleSessionNotFound(ChatSessionNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UnauthorizedThemaAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedThema(UnauthorizedThemaAccessException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ThemaNotFoundExceiption.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleThemaNotFound(ThemaNotFoundExceiption e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleUserNotFound(UserNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(DiaryNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleDiaryNotFound(DiaryNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UnauthorizedDiaryAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedThema(UnauthorizedDiaryAccessException e) {
+        return e.getMessage();
+    }
+
+
+    @ExceptionHandler(InvalidPromptException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public String handleInvalidPrompt(InvalidPromptException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(DiaryThemaNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND) // 404
+    public String handleDiaryThemaNotFound(DiaryThemaNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(NicknameConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleConflictException(NicknameConflictException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ProfileImageNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleProfileImageNotFound(ProfileImageNotFoundException e) {
         return e.getMessage();
     }
 
