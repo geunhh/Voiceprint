@@ -5,7 +5,7 @@ interface UserProfileProps {
   userId: number;
   userName: string;
   userImage: string;
-  customThemaId: number | null; // 커스텀 테마 Id
+  customThemaId?: number | null; // 커스텀 테마 Id
 }
 
 function UserProfile(props: UserProfileProps) {
