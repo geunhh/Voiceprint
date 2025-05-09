@@ -43,6 +43,7 @@ export default function EditProfilePage() {
       {/* 프로필 수정 모달 */}
       {modalOpen && (
         <ProfileEditModal
+          key={user.nickname + user.imageUrl}
           userName={user.nickname}
           userImage={user.imageUrl}
           onClose={() => setModalOpen(false)}
