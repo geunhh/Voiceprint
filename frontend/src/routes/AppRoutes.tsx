@@ -23,7 +23,6 @@ import GroupInvitePage from "../pages/group/GroupInvitePage";
 import GroupMainPage from "../pages/group/GroupMainPage";
 
 import EditProfilePage from "../pages/my/EditProfilePage";
-import MyDiaryDetailPage from "../pages/my/MyDiaryDetailPage";
 import MyPage from "../pages/my/MyPage";
 
 import NotFound from "../pages/NotFound";
@@ -106,7 +105,6 @@ const AppRoutes = () => (
       <Route path="/my" element={<MyOutlet />}>
         <Route index element={<MyPage />} />
         <Route path="edit" element={<EditProfilePage />} />
-        <Route path="diary/:diaryId" element={<MyDiaryDetailPage />} />
       </Route>
 
       {/* 404 */}
