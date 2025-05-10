@@ -1,6 +1,8 @@
+import axios from "axios";
 import { addMonths, format, subMonths } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+
 import Calendar from "../../components/my/Calendar";
 import DiarySummaryCard from "../../components/my/DiarySummaryCard";
 import ToggleButton from "../../components/my/ToggleButton";
@@ -11,46 +13,6 @@ import back from "../../assets/icons/backYellow.png";
 import forward from "../../assets/icons/forwardYellow.png";
 import robotCharacter from "../../assets/icons/robotCharacter.png";
 
-// 임시 데이터
-// 이번 달 일기 목록
-const diaries = [
-  {
-    diaryId: 101,
-    title: "벚꽃놀이",
-    createdAt: "2025-05-02T15:00:00",
-    emotion: "행복",
-    content: "오늘은 신나는 벚꽃놀이 가는 날~! 너무너무 즐거워워",
-  },
-  {
-    diaryId: 102,
-    title: "면접 전날이라 긴장돼",
-    createdAt: "2025-05-10T22:00:00",
-    emotion: "설렘",
-    content: "일기 내용내용용",
-  },
-  {
-    diaryId: 103,
-    title: "과제하다가 새벽 3시...",
-    createdAt: "2025-05-11T03:10:00",
-    emotion: "피곤",
-    content: "일기 내용내용용",
-  },
-  {
-    diaryId: 104,
-    title: "요즘 좀 우울한 것 같아",
-    createdAt: "2025-05-15T10:00:00",
-    emotion: "우울",
-    content: "일기 내용내용용",
-  },
-  {
-    diaryId: 105,
-    title: "짜증나는 일이 있었어",
-    createdAt: "2025-05-20T19:00:00",
-    emotion: "짜증",
-    content: "일기 내용내용용",
-  },
-];
-
 // 날짜 포맷팅
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -60,19 +22,47 @@ function formatDate(iso: string): string {
   return `${yyyy}.${mm}.${dd}`;
 }
 
+interface Diary {
+  diaryId: number;
+  title: string;
+  createdAt: string;
+  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
+  content: string;
+}
+
 export default function MyPage() {
   const [selected, setSelected] = useState("리스트");
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [diaries, setDiaries] = useState<Diary[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const user = useSelector((state: RootState) => state.user);
 
-  const filteredDiaries = diaries.filter((diary) => {
-    const date = new Date(diary.createdAt);
-    return (
-      date.getFullYear() === currentMonth.getFullYear() &&
-      date.getMonth() === currentMonth.getMonth()
-    );
-  });
+  useEffect(() => {
+    const fetchDiaries = async () => {
+      setLoading(true);
+      try {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth() + 1;
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/diaries/monthly`,
+          {
+            params: { year, month },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            },
+          }
+        );
+        setDiaries(res.data.data.diaries || []);
+      } catch (error) {
+        console.error("다이어리 불러오기 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDiaries();
+  }, [currentMonth]);
 
   return (
     <div className="mt-5">
@@ -122,7 +112,7 @@ export default function MyPage() {
         {/* 일기 카드 리스트 */}
         {selected === "리스트" && (
           <div className="flex flex-col items-center space-y-3">
-            {filteredDiaries.length === 0 ? (
+            {diaries.length === 0 ? (
               <div className="flex h-80 flex-col items-center justify-center">
                 <img src={robotCharacter} alt="" className="h-32" />
                 <p className="text-sm text-gray-400 mt-4">
@@ -130,7 +120,7 @@ export default function MyPage() {
                 </p>
               </div>
             ) : (
-              filteredDiaries.map((diary) => (
+              diaries.map((diary) => (
                 <DiarySummaryCard
                   key={diary.diaryId}
                   date={formatDate(diary.createdAt)}
