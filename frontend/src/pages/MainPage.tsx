@@ -139,9 +139,9 @@ export default function MainPage() {
   if (!user || !user.userId) return null;
 
   return (
-    <>
+    <div className="p-4">
       {/* 유저 정보 */}
-      <div className="flex mx-4 my-5 p-2 gap-2">
+      <div className="flex my-3 p-2 gap-2">
         <img
           src={user.imageUrl}
           className="rounded-full w-14 h-14 object-cover"
@@ -157,13 +157,13 @@ export default function MainPage() {
         </div>
       </div>
       {/* 오늘의 질문 */}
-      <div className="mb-2">
+      <div className="mb-3">
         <TodayQuestion question={todayQuestion} />
       </div>
 
       {/* 이번 주 기록 */}
-      <p className="ml-4 text-yellow-400 font-semibold">이번 주 기록</p>
-      <div className="p-4">
+      <p className=" text-yellow-400 font-semibold mb-2">이번 주 기록</p>
+      <div className="mb-3">
         <WeekEmotion
           emotions={
             weekEmotions as (
@@ -179,20 +179,20 @@ export default function MainPage() {
       </div>
 
       {/* 이번 달 통계 */}
-      <p className="ml-4 text-yellow-400 font-semibold">이번 달 내 마음</p>
-      <div className="p-4">
+      <p className=" text-yellow-400 font-semibold mb-2">이번 달 내 마음</p>
+      <div className="mb-3">
         <MonthEmotion emotions={monthEmotions} />
       </div>
 
       {/* 최근 말자국 모음 */}
-      <p className="ml-4 text-yellow-400 font-semibold">최근 말자국</p>
-      <div className="mb-16">
+      <p className=" text-yellow-400 font-semibold mb-2">최근 말자국</p>
+      <div className="pb-20">
         {diaries.map((diary) => (
-          <div className="mb-2">
+          <div className="mb-3">
             <DiaryPreview {...diary} />
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }

@@ -6,11 +6,11 @@ interface TodayQuestionProps {
 
 function TodayQuestion({ question }: TodayQuestionProps) {
   return (
-    <div className="flex mx-auto rounded-xl bg-yellow-50 p-4 w-11/12">
+    <div className="flex items-center mx-auto rounded-xl bg-yellow-50 p-4 w-fit">
       <img src={QuestionCharacter} className="w-20 h-auto" />
-      <div className="flex-row ml-4">
+      <div className="ml-4">
         <p className="text-yellow-400 font-semibold">오늘의 질문</p>
-        <p className="text-gray-500 font-medium"> {question}</p>
+        <p className="text-gray-500 font-medium">{question}</p>
       </div>
     </div>
   );
