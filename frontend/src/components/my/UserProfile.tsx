@@ -20,7 +20,7 @@ function UserProfile(props: UserProfileProps) {
       className="flex bg-yellow-50 p-2 rounded-2xl gap-2"
       onClick={handleClick}
     >
-      <img src={userImage} className="rounded-full w-20" />
+      <img src={userImage} className="rounded-full w-20 h-20 object-cover" />
       <div className="flex-row self-center">
         <p className="text-xl font-semibold text-gray-700">{userName}</p>
         <p className="text-gray-500">회원 정보 수정하기</p>
