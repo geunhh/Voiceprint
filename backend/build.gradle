@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.5' // 3.2.5 -> 스웨거랑 호환하려면 수정..
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "6.0.1.5171"
 }
 
 group = 'com.voiceprint'
@@ -62,4 +63,12 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+sonar {
+	properties {
+		property "sonar.projectKey", "s12-final_S12P31B106_f09ff99e-cb2b-42be-9648-691716b25443"
+		property "sonar.projectName", "S12P31B106"
+		property "sonar.qualitygate.wait", true
+	}
 }
