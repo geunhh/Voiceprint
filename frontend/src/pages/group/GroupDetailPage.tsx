@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router";
 
-import settingIcon from "../../assets/icons/setting.png";
-import clockIcon from "../../assets/icons/clock.png";
 import calendarIcon from "../../assets/icons/calendar.png";
+import clockIcon from "../../assets/icons/clock.png";
+import QuestionCharacter from "../../assets/icons/lovelyCharacter.png";
+import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
 
 import profile1 from "../../assets/temp/profile1.png";
@@ -126,10 +127,10 @@ export default function GroupDetailPage() {
   return (
     <div className="mt-5 p-4">
       {/* 그룹 생성 관련 정보 */}
-      <div className="mb-5">
+      <div className="mb-3">
         {/* 생성일 및 수정 페이지 이동 아이콘 */}
         <div className="flex justify-between items-center">
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-500 text-lg font-semibold">
             {year}.{month}.{day} ~
           </p>
           <img
@@ -146,13 +147,13 @@ export default function GroupDetailPage() {
       </div>
 
       {/* 공유 루틴 및 디데이 정보 */}
-      <div className="mb-5 w-full flex items-center">
-        {/* 공유 루틴 */}
-        <div className="w-3/5 mb-2">
-          <p className="font-semibold text-gray-500 mb-2">일기 공유 루틴</p>
+      <div className="mb-3 w-full">
+        {/* <p className="text-darkmint font-semibold mb-2">일기 공유 루틴</p> */}
+
+        <div className="flex items-center gap-4">
           {/* 시간 */}
-          <div className="flex items-center mb-2">
-            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-3" />
+          <div className="flex items-center">
+            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
             <p className="font-bold text-gray-700">
               {routineHour < 12
                 ? `오전 ${group.routineTime}`
@@ -161,26 +162,35 @@ export default function GroupDetailPage() {
           </div>
 
           {/* 요일 */}
-          <div className="flex items-center mb-2">
-            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-3" />
+          <div className="flex items-center">
+            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
             <p className="font-medium text-gray-500">
               <span className="font-semibold text-gray-700">{routineText}</span>{" "}
               기록해요
             </p>
           </div>
         </div>
+      </div>
 
-        {/* 디데이 정보 */}
-        <div className="border border-gray-200 rounded-xl w-2/5 h-full py-4 flex flex-col justify-center">
-          <p className="text-center text-gray-500">내가 함께한 날짜</p>
-          <p className="text-center font-semibold text-xl text-gray-700">
-            D+{diffDays}
+      {/* 디데이 */}
+      <div className="mb-3 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
+        {/* 텍스트 */}
+        <div className="flex flex-col">
+          <p className="text-gray-500 text-base font-semibold mb-1">
+            일기 메이트들과 함께 기록한 시간
           </p>
+          <p className="text-2xl font-semibold text-darkmint">D+{diffDays}</p>
         </div>
+
+        <img
+          src={QuestionCharacter}
+          alt="캐릭터"
+          className="w-20 h-20 object-contain"
+        />
       </div>
 
       {/* 그룹 메이트 */}
-      <div className="mb-5">
+      <div className="mb-3">
         {/* 메이트 인원수 정보 */}
         <div className="flex mb-2">
           <p className="text-darkmint font-semibold">
@@ -200,7 +210,7 @@ export default function GroupDetailPage() {
                 alt="유저 프로필"
                 className="w-20 h-20 rounded-full"
               />
-              <p className="font-semibold text-gray-700 whitespace-nowrap">
+              <p className="font-semibold text-gray-500 whitespace-nowrap">
                 {user.userName}
               </p>
             </div>
@@ -211,9 +221,9 @@ export default function GroupDetailPage() {
       {/* 우리들의 발자국 */}
       <div>
         <p className="text-darkmint font-semibold mb-2">우리들의 발자국</p>
-        <div className="mb-16">
+        <div className="pb-20">
           {groupDiaries.map((diary) => (
-            <div className="mb-2">
+            <div className="mb-3">
               <GroupDiaryPreview {...diary} />
             </div>
           ))}
