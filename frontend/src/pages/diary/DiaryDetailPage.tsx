@@ -1,4 +1,7 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import DiaryContent from "../../components/diary/DiaryContent";
 import ChatHistoryModal from "../../components/modal/ChatHistoryModal";
 import CustomThemaModal from "../../components/modal/CustumThemaModal";
@@ -20,28 +23,51 @@ const emotionTagMap: Record<string, string> = {
   우울: emotionTag5,
 };
 
-// 임시 데이터
-const diaryinfo = {
-  diaryId: 101,
-  title: "여름날 한강",
-  content:
-    "오늘은 친구들이랑 한강 공원에 놀러갔다.바람이 솔솔 불고 햇빛도 따뜻해서 걷기만 해도 기분이 좋아졌다. 엽떡에 유부 추가 3번, 허니콤보랑 시원한 맥주까지… 진짜 완벽한 조합! 잔디밭에 앉아 수다 떨고 먹는 그 시간이 참 좋았다. 해가 지고 나서는 따릉이를 타고 한강을 달렸다. 밤공기 맞으며 자전거 타는 기분, 요즘 같은 날씨에 최고다. 평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.그 시간이 참 좋았다. 해가 지고 나서는 따릉이를 타고 한강을 달렸다. 밤공기 맞으며 자전거 타는 기분, 요즘 같은 날씨에 최고다. 평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.",
-  emotion: "행복",
-  createdAt: "2025-06-26T14:22:30",
-  authorNickname: "김혜민",
-  thumbnail: "https://example.com/diary/101-thumbnail.jpg",
-};
+interface DiaryData {
+  diaryId: number;
+  title: string;
+  content: string;
+  emotion: string | null;
+  createdAt: string;
+  authorNickname: string;
+  thumbnail: string | null;
+}
 
 export default function DiaryDetailPage() {
-  const emotionTagImage = emotionTagMap[diaryinfo.emotion];
+  const { diaryId } = useParams<{ diaryId: string }>();
+  const [diary, setDiary] = useState<DiaryData | null>(null);
 
-  const date = new Date(diaryinfo.createdAt);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [showThemaModal, setShowThemaModal] = useState(false);
+
+  useEffect(() => {
+    const fetchDiary = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/diaries/diary/${diaryId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+            },
+          }
+        );
+        setDiary(res.data.data);
+      } catch (err) {
+        console.error("다이어리 불러오기 실패", err);
+      }
+    };
+
+    if (diaryId) fetchDiary();
+  }, [diaryId]);
+
+  if (!diary) return null;
+
+  const date = new Date(diary.createdAt);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  const [showChatModal, setShowChatModal] = useState(false);
-  const [showThemaModal, setShowThemaModal] = useState(false);
+  const emotionTagImage = emotionTagMap[diary.emotion];
 
   return (
     <div className="pb-28">
@@ -55,12 +81,12 @@ export default function DiaryDetailPage() {
 
       {/* 일기 제목 */}
       <div className="ml-4 mb-4">
-        <p className="font-semibold text-xl"> {diaryinfo.title}</p>
+        <p className="font-semibold text-xl"> {diary.title}</p>
       </div>
 
       {/* 일기 내용 */}
       <div className="mb-4">
-        <DiaryContent content={diaryinfo.content} />
+        <DiaryContent content={diary.content} />
       </div>
 
       {/* 이전 채팅 기록 버튼 */}
