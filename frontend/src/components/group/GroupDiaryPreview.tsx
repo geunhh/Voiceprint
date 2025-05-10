@@ -23,7 +23,7 @@ function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
 
   return (
     <div
-      className="flex mx-auto rounded-xl border border-darkmint p-4 w-full"
+      className="flex mx-auto rounded-xl border border-lightmint shadow-sm shadow-mint/50 p-4 w-full hover:bg-lightmint cursor-pointer"
       onClick={handleClick}
     >
       <div className="flex items-start gap-3">
@@ -42,7 +42,7 @@ function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
               {timeAgo}
             </span>
           </div>
-          <p className="mt-2 text-sm text-gray-700 line-clamp-2">{content}</p>
+          <p className="mt-2 text-sm text-gray-700 line-clamp-3">{content}</p>
         </div>
       </div>
     </div>
