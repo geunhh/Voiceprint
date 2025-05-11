@@ -37,10 +37,7 @@ analysis:
   script: 
     - cd backend
     - chmod +x ./gradlew
-    - ./gradlew sonarqube \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.login=$SONAR_TOKEN \
-        -Dsonar.qualitygate.wait=true
+    - ./gradlew sonarqube -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.qualitygate.wait=true
   rules:
     - if: '$CI_COMMIT_REF_NAME == "develop"'
       when: always
