@@ -39,6 +39,7 @@ const emotionIcons: Record<string, string> = {
   짜증: emotion4,
   우울: emotion5,
 };
+
 function Calendar({ currentMonth, diaries }: CalendarProps) {
   const navigate = useNavigate();
 
