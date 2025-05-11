@@ -1,10 +1,15 @@
 package com.voiceprint.backend.domain;
 
 
+import com.voiceprint.backend.common.util.StringListConverter;
 import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "`groups`")
@@ -30,6 +35,17 @@ public class Group {
 
     @Column(length = 512)
     private String groupImage;
+
+    @Column(name = "alarm_day")
+    @Convert(converter = StringListConverter.class)
+    private List<String> alarmDays;
+
+    @Column(columnDefinition = "TIME")
+    private LocalTime alarmTime;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Builder.Default
+    private Boolean enableAlarm = false;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     @Builder.Default

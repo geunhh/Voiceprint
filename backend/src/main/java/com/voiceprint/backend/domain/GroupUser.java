@@ -36,12 +36,6 @@ public class GroupUser {
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt = LocalDateTime.now();
 
-    @Builder.Default
-    @Column(nullable = false)
-    private Boolean enableAlarm = false;
-
-    private LocalDateTime alarm;
-
     public enum Role {
         ADMIN,   // 그룹 관리자
         MEMBER   // 일반 사용자

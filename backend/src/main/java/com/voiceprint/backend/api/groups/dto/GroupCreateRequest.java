@@ -3,7 +3,8 @@ package com.voiceprint.backend.api.groups.dto;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,6 +15,7 @@ public class GroupCreateRequest {
     private String description;
     private MultipartFile groupImage;  // 이미지 파일
     private Boolean enableAlarm;
-    private LocalDateTime alarm;
+    private List<String> alarmDays;  // 요일 목록 (문자열 형태로 받음)
+    private LocalTime alarmTime;     // 알림 시간
 }
 

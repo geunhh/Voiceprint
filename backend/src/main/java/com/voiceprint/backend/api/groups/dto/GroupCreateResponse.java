@@ -12,4 +12,7 @@ public class GroupCreateResponse {
     private String description;
     private String groupImage;
     private String role;
+    private Boolean enableAlarm;
+    private String alarmTime;
+    private String alarmDays;
 }

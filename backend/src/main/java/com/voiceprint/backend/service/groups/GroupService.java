@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class GroupService {
@@ -35,6 +39,9 @@ public class GroupService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .groupImage(imageUrl)
+                .enableAlarm(request.getEnableAlarm() != null ? request.getEnableAlarm() : false)
+                .alarmDays(request.getAlarmDays())
+                .alarmTime(request.getAlarmTime())
                 .build();
 
         // 그룹 저장
@@ -46,8 +53,6 @@ public class GroupService {
                 .user(createUser)  // 사용자 ID 설정
                 .group(savedGroup)  // 그룹 설정
                 .role(GroupUser.Role.ADMIN)   // 생성자는 ADMIN으로 설정
-                .enableAlarm(request.getEnableAlarm() != null ? request.getEnableAlarm() : false)
-                .alarm(request.getAlarm())
                 .build();
 
         // 그룹 유저 저장
@@ -56,6 +61,9 @@ public class GroupService {
         // 응답 객체 반환
         return new GroupCreateResponse(savedGroup.getId(), savedGroup.getName(),
                 savedGroup.getDescription(), savedGroup.getGroupImage(),
-                groupUser.getRole().name());
+                groupUser.getRole().name(),
+                group.getEnableAlarm(),
+                group.getAlarmTime().toString(),
+                group.getAlarmDays().toString());
     }
 }
