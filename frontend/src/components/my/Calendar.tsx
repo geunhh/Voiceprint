@@ -76,45 +76,71 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
         onClick = null;
       }
 
-      days.push(
-        <div
-          key={thisDate.toString()}
-          onClick={onClick ?? undefined}
-          className={`flex-1 text-sm flex flex-col items-center justify-center ${
-            !isCurrent ? "text-gray-200" : "text-gray-500"
-          } ${onClick ? "cursor-pointer" : "cursor-default"}`}
-          style={{ height: "var(--cell-height, 64px)" }}
-        >
-          <div>{formatted}</div>
-          {icon && (
-            <img
-              src={icon}
-              alt=""
-              className="w-6 h-6 mt-1 select-none pointer-events-none"
-            />
-          )}
-        </div>
-      );
+      if (!isCurrent) {
+        // 이번 달이 아닌 날짜는 흐리게
+        days.push(
+          <div
+            key={thisDate.toString()}
+            className="flex-1 text-sm flex flex-col items-center justify-center text-gray-300 opacity-30 cursor-default"
+            style={{ height: "var(--cell-height, 64px)" }}
+          >
+            <div className="px-2 py-1">{formatted}</div>
+            {icon && (
+              <img
+                src={icon}
+                alt=""
+                className="w-6 h-6 mt-1 select-none pointer-events-none"
+              />
+            )}
+          </div>
+        );
+      } else {
+        // 이번 달 날짜
+        days.push(
+          <div
+            key={thisDate.toString()}
+            onClick={onClick ?? undefined}
+            className={`flex-1 text-sm flex flex-col items-center justify-center text-gray-500 ${
+              onClick ? "cursor-pointer" : "cursor-default"
+            }`}
+            style={{ height: "var(--cell-height, 64px)" }}
+          >
+            <div
+              className={`px-2 py-1 ${
+                isTodayDate ? " font-semibold text-yellow-400" : ""
+              }`}
+            >
+              {formatted}
+            </div>
+            {icon && (
+              <img
+                src={icon}
+                alt=""
+                className="w-6 h-6 mt-1 select-none pointer-events-none"
+              />
+            )}
+          </div>
+        );
+      }
 
       day = addDays(day, 1);
     }
 
     rows.push(
-      <div key={day.toString()} className="flex gap-x-6">
+      <div key={day.toString()} className="grid grid-cols-7 gap-y-2">
         {days}
       </div>
     );
+
     days = [];
   }
 
   return (
     <div className="space-y-2 calendar-compact">
       {/* 요일 헤더 */}
-      <div className="flex justify-between text-sm text-gray-500 gap-x-6">
+      <div className="grid grid-cols-7 text-sm text-gray-500 text-center">
         {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
-          <div className="flex-1 text-center" key={d}>
-            {d}
-          </div>
+          <div key={d}>{d}</div>
         ))}
       </div>
 
