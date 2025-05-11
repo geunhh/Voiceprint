@@ -3,6 +3,9 @@ package com.voiceprint.backend.service.groups;
 
 import com.voiceprint.backend.api.groups.dto.GroupCreateRequest;
 import com.voiceprint.backend.api.groups.dto.GroupCreateResponse;
+import com.voiceprint.backend.api.groups.dto.GroupUpdateRequest;
+import com.voiceprint.backend.api.groups.dto.GroupUpdateResponse;
+import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.domain.*;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,5 +69,37 @@ public class GroupService {
                 group.getEnableAlarm(),
                 group.getAlarmTime().toString(),
                 group.getAlarmDays().toString());
+    }
+
+    public GroupUpdateResponse updateGroup(Long groupId, Long userId, GroupUpdateRequest updateRequest) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
+
+        GroupUser groupUser = groupUserRepository.findByGroupIdAndUserId(groupId, userId)
+                .orElseThrow(() -> new UnauthorizedGroupAccessException("그룹 접근 권한이 없습니다."));
+
+        // 권한 확인
+        if (!groupUser.getRole().equals(GroupUser.Role.ADMIN)) {
+            throw new UnauthorizedGroupAccessException("ADMIN만 수정 가능합니다.");
+        }
+
+        if (updateRequest.getName() != null) group.setName(updateRequest.getName());
+        if (updateRequest.getDescription() != null) group.setDescription(updateRequest.getDescription());
+        if (updateRequest.getIsDeleted() != null) group.setIsDeleted(updateRequest.getIsDeleted());
+        if (updateRequest.getEnableAlarm() != null) group.setEnableAlarm(updateRequest.getEnableAlarm());
+        if (updateRequest.getAlarmDays() != null && !updateRequest.getAlarmDays().isEmpty()) group.setAlarmDays(updateRequest.getAlarmDays());
+        if (updateRequest.getAlarmTime() != null) group.setAlarmTime(updateRequest.getAlarmTime());
+
+        if (updateRequest.getGroupImage() != null) {
+            if (group.getGroupImage() != null) {
+                s3Service.deleteFile(group.getGroupImage());
+            }
+            String newImageUrl = s3Service.uploadFile(updateRequest.getGroupImage(),"group");
+            group.setGroupImage(newImageUrl);
+        }
+
+        groupRepository.save(group);
+
+        return GroupUpdateResponse.from(group);
     }
 }

@@ -2,6 +2,8 @@ package com.voiceprint.backend.api.groups;
 
 import com.voiceprint.backend.api.groups.dto.GroupCreateRequest;
 import com.voiceprint.backend.api.groups.dto.GroupCreateResponse;
+import com.voiceprint.backend.api.groups.dto.GroupUpdateRequest;
+import com.voiceprint.backend.api.groups.dto.GroupUpdateResponse;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.groups.GroupService;
@@ -21,13 +23,32 @@ public class GroupUserController {
     private final GroupService groupService;
     private final AuthService authService;
 
-    @PostMapping(value = "", consumes = "multipart/form-data")
+    /**
+     * 그룹 생성
+     */
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse<GroupCreateResponse>> createGroup(HttpServletRequest request,
                                                                            @ModelAttribute GroupCreateRequest requestData) {
 
         Long userId = authService.getUserIdFromRequest(request);
         GroupCreateResponse response = groupService.createGroup(userId, requestData);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 생성 완료", response));
+    }
+
+    /**
+     * 그룹 정보 수정
+     */
+    @PatchMapping(path = "/{groupId}", consumes = "multipart/form-data")
+    public ResponseEntity<CommonResponse<GroupUpdateResponse>> updateGroup(
+            @PathVariable Long groupId,
+            @ModelAttribute GroupUpdateRequest updateRequest,
+            HttpServletRequest request) {
+
+        Long userId = authService.getUserIdFromRequest(request);
+
+        GroupUpdateResponse updatedGroup = groupService.updateGroup(groupId, userId, updateRequest);
+
+        return ResponseEntity.ok(new CommonResponse<>(200, "그룹 수정 완료", updatedGroup));
     }
 
     /**
