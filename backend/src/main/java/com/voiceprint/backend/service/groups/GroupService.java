@@ -6,6 +6,7 @@ import com.voiceprint.backend.api.groups.dto.GroupCreateResponse;
 import com.voiceprint.backend.domain.*;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +18,23 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupUserRepository groupUserRepository;
     private final UserRepository userRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public GroupCreateResponse createGroup(Long userId, GroupCreateRequest request) {
+        // 유저 조회
         User createUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));;
-
+        // 이미지 업로드
+        String imageUrl = null;
+        if (request.getGroupImage() != null && !request.getGroupImage().isEmpty()) {
+            imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+        }
         // 그룹 엔티티 생성
         Group group = Group.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .groupImage(request.getGroupImage())
+                .groupImage(imageUrl)
                 .build();
 
         // 그룹 저장

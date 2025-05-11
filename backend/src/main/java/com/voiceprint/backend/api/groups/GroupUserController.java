@@ -21,9 +21,9 @@ public class GroupUserController {
     private final GroupService groupService;
     private final AuthService authService;
 
-    @PostMapping("")
+    @PostMapping(value = "", consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse<GroupCreateResponse>> createGroup(HttpServletRequest request,
-                                                           @RequestBody GroupCreateRequest requestData) {
+                                                                           @ModelAttribute GroupCreateRequest requestData) {
 
         Long userId = authService.getUserIdFromRequest(request);
         GroupCreateResponse response = groupService.createGroup(userId, requestData);
