@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-@RequestMapping("/diaries")
+@RequestMapping("/api/diaries")
 public class DiaryController {
     private final DiaryService diaryService;
     private final DiaryRepository diaryRepository;
