@@ -106,7 +106,7 @@ export default function MyPage() {
 
         {/* 일기 카드 리스트 */}
         {selected === "리스트" && (
-          <div className="max-h-96 overflow-y-auto flex flex-col items-center space-y-3">
+          <div className="max-h-96 overflow-y-auto flex flex-col items-center space-y-3 custom-scroll">
             {diaries.length === 0 ? (
               <div className="flex h-80 flex-col items-center justify-center">
                 <img src={robotCharacter} alt="" className="h-32" />

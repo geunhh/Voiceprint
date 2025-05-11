@@ -136,7 +136,7 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
   }
 
   return (
-    <div className="space-y-2 calendar-compact">
+    <div className="space-y-2">
       {/* 요일 헤더 */}
       <div className="grid grid-cols-7 text-sm text-gray-500 text-center">
         {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
