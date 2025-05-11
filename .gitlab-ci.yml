@@ -12,6 +12,8 @@ stages:
 # 빌드 단계
 build:
   stage: build
+  tags:
+    - sonarqube
   script:
     - cd backend
     - chmod +x ./gradlew
