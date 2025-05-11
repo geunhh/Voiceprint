@@ -32,6 +32,7 @@ public class Group {
     private String groupImage;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Builder.Default
     private Boolean isDeleted = false;
 
     @Column(nullable = false, updatable = false)
@@ -42,16 +43,6 @@ public class Group {
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // 그룹 생성시 자동 적용
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
-    }
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();

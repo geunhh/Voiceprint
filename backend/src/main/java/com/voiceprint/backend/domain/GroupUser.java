@@ -32,9 +32,11 @@ public class GroupUser {
     @Column(length = 10, nullable = false)
     private Role role;
 
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt = LocalDateTime.now();
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean enableAlarm = false;
 
