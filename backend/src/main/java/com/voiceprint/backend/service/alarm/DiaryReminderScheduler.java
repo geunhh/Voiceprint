@@ -31,8 +31,7 @@ public class DiaryReminderScheduler {
             String sessionKey = "chat_session:"+userId;
 
             Object statusObj = redisTemplate.opsForHash().get(sessionKey,"status");
-//            String status = (statusObj != null) ? statusObj.toString() : "NOT_EXIST";
-            String status = "IN_PROGRESS";
+            String status = (statusObj != null) ? statusObj.toString() : "NOT_EXIST";
 
             NotificationDTO payload = switch (status) {
                 case "WAITING", "NOT_EXIST" -> new NotificationDTO(
