@@ -1,9 +1,10 @@
 import axios from "axios";
 import { addMonths, format, subMonths } from "date-fns";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 import Calendar from "../../components/my/Calendar";
+import DiaryCard from "../../components/my/DiaryCard";
 import DiarySummaryCard from "../../components/my/DiarySummaryCard";
 import ToggleButton from "../../components/my/ToggleButton";
 import UserProfile from "../../components/my/UserProfile";
@@ -38,6 +39,62 @@ export default function MyPage() {
 
   const user = useSelector((state: RootState) => state.user);
 
+  const [allDiaries, setAllDiaries] = useState<Diary[]>([]);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef(null);
+
+  // 전체 일기 불러오기
+  const fetchAllDiaries = async (cursor?: number) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/diaries/me/diaries`,
+        {
+          params: cursor ? { cursor } : {},
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
+          },
+        }
+      );
+
+      const newDiaries = res.data.data.diaries;
+      setAllDiaries((prev) => {
+        const existingIds = new Set(prev.map((d) => d.diaryId));
+        const filtered = newDiaries.filter((d) => !existingIds.has(d.diaryId));
+        return [...prev, ...filtered];
+      });
+      setNextCursor(res.data.data.nextCursor);
+      setHasMore(res.data.data.nextCursor !== null);
+    } catch (e) {
+      console.error("전체 일기 불러오기 실패", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllDiaries();
+  }, []);
+
+  useEffect(() => {
+    const currentRef = observerRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchAllDiaries(nextCursor!);
+        }
+      },
+      { threshold: 1 }
+    );
+
+    observer.observe(currentRef);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [nextCursor, hasMore]);
+
+  // 월별 일기 불러오기
   useEffect(() => {
     const fetchDiaries = async () => {
       setLoading(true);
@@ -65,9 +122,9 @@ export default function MyPage() {
   }, [currentMonth]);
 
   return (
-    <div className="mt-5">
+    <div className="mt-5 p-4">
       {/* 유저 정보 */}
-      <div className="p-4 mb-2">
+      <div className="mb-5">
         <UserProfile
           userId={user.userId}
           userName={user.nickname}
@@ -76,7 +133,7 @@ export default function MyPage() {
       </div>
 
       {/* 달력 및 일기 리스트 */}
-      <div className="px-4 space-y-6">
+      <div className="space-y-6 mb-3">
         <div className="flex justify-between">
           <div className="flex justify-center items-center gap-2">
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
@@ -99,19 +156,14 @@ export default function MyPage() {
 
         {/* 달력 */}
         {selected === "달력" && (
-          <div
-            className="
-            w-full
-            flex justify-center
-          "
-          >
+          <div className="w-full">
             <Calendar currentMonth={currentMonth} diaries={diaries} />
           </div>
         )}
 
         {/* 일기 카드 리스트 */}
         {selected === "리스트" && (
-          <div className="flex flex-col items-center space-y-3">
+          <div className="max-h-96 overflow-y-auto flex flex-col items-center space-y-3 custom-scroll">
             {diaries.length === 0 ? (
               <div className="flex h-80 flex-col items-center justify-center">
                 <img src={robotCharacter} alt="" className="h-32" />
@@ -136,6 +188,33 @@ export default function MyPage() {
           </div>
         )}
       </div>
+
+      {/* 내 말자국 */}
+      {allDiaries.length > 0 && (
+        <div className="pb-24">
+          <p className="text-yellow-400 font-semibold mb-2">내 말자국</p>
+          <div className="grid grid-cols-3 gap-4">
+            {allDiaries.map((diary) => (
+              <DiaryCard
+                key={diary.diaryId}
+                diaryId={diary.diaryId}
+                title={diary.title}
+                createdAt={diary.createdAt}
+                emotion={diary.emotion}
+              />
+            ))}
+
+            {hasMore && (
+              <div
+                ref={observerRef}
+                className="col-span-3 h-10 flex justify-center items-center"
+              >
+                <p className="text-gray-400 text-sm">불러오는 중...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
