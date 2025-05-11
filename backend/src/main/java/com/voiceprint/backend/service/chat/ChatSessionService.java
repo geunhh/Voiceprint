@@ -17,6 +17,7 @@ import com.voiceprint.backend.domain.diary.EmotionRepository;
 import com.voiceprint.backend.domain.thema.DiaryThema;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -44,13 +45,19 @@ public class ChatSessionService {
     private final EmotionRepository emotionRepository;
     private final WebClient fastApiWebClient;
 
+    @Value("${session.key}")
+    private String session_key;
+
+    @Value("${message.key}")
+    private String message_key;
+
     /**
      * 세션을 시작하는 메소드
      */
     @Transactional(readOnly = true)
     public void startSession(Long userId, Long chatbotId) {
-        String sessionKey = "chat_session:"+userId;
-        String messageKey = "chat_session_messages:" + userId;
+        String sessionKey = session_key + ":" + userId;
+        String messageKey = message_key + ":" + userId;
 
         // 1.Redis에 기존 세션 존재하는지 확인
             // 있으면, status 주기
@@ -100,10 +107,8 @@ public class ChatSessionService {
 
     public ChatSessionStatus getSessionStatus(Long userId) {
         try {
-            String key = "chat_session:"+userId;
+            String key = session_key + ":" +userId;
             String statusData = (String) redisTemplate.opsForHash().get(key,"status");
-            System.out.println("key: "+ key);
-            System.out.println("statusData: "+ statusData);
 
             if (statusData == null){
                 return null;
@@ -124,11 +129,11 @@ public class ChatSessionService {
     public ChatMessageListWithTokenDTO getMessages(long userId) {
         try {
             // Redis Key.
-            String redisKey = "chat_session_messages:" + userId;
-            String sessionKey = "chat_session:"+userId;
+            String messageKey = message_key + ":" + userId;
+            String sessionKey = session_key + ":" + userId;
 
             // 1. 채팅 로그 조회
-            List<Object> rawMessages = redisTemplate.opsForList().range(redisKey, 0, -1);
+            List<Object> rawMessages = redisTemplate.opsForList().range(messageKey, 0, -1);
             log.debug("채팅로그 {} ", rawMessages);
 
             if (rawMessages == null) return new ChatMessageListWithTokenDTO(new ArrayList<>(),0);
@@ -171,7 +176,7 @@ public class ChatSessionService {
      */
     public void endSession(Long userId) {
         // 채팅 관련 Redis 키.
-        String sessionKey = "chat_session:"+userId;
+        String sessionKey = session_key + ":" + userId;
 
         // 일기 생성 직전 유저가 선택한 일기 테마를 Redis 서버에 갱신해줌
         User user = userRepository.findById(userId)
@@ -249,18 +254,18 @@ public class ChatSessionService {
     }
 
     public TempDiaryResponseDTO getTempDiary(Long userId) {
-        String session_key = "chat_session:"+userId;
+        String sessionKey = session_key + ":"+userId;
 
         // 현재 상태 확인
-        String status = (String) redisTemplate.opsForHash().get(session_key,"status");
+        String status = (String) redisTemplate.opsForHash().get(sessionKey,"status");
         if (!ChatSessionStatus.DIARY_DONE.name().equals(status)) {
             throw new ChatSessionNotFoundException("아직 생성된 일기가 없습니다.");
         }
 
-        String title = (String) redisTemplate.opsForHash().get(session_key,"tempTitle");
-        String diary = (String) redisTemplate.opsForHash().get(session_key,"tempDiary");
-        String createdAt = (String) redisTemplate.opsForHash().get(session_key, "createdAt");
-        String emotion = (String) redisTemplate.opsForHash().get(session_key, "emotion");
+        String title = (String) redisTemplate.opsForHash().get(sessionKey,"tempTitle");
+        String diary = (String) redisTemplate.opsForHash().get(sessionKey,"tempDiary");
+        String createdAt = (String) redisTemplate.opsForHash().get(sessionKey, "createdAt");
+        String emotion = (String) redisTemplate.opsForHash().get(sessionKey, "emotion");
 
         return new TempDiaryResponseDTO(title, diary, createdAt, emotion);
     }
@@ -269,7 +274,7 @@ public class ChatSessionService {
      * 일기 생성 재시도 메서드
      */
     public void retryTempDiaryGeneration(Long userId) {
-        String sessionKey = "chat_session:" + userId;
+        String sessionKey = session_key + ":" + userId;
 
         // 1. 기존 임시 일기 관련 필드 삭제
         redisTemplate.opsForHash().delete(sessionKey,
@@ -282,7 +287,7 @@ public class ChatSessionService {
      * 임시 다이어리 수정 메소드
      */
     public UpdateDiaryResult updateTempDiary(Long userId, TempDiaryUpdateRequestDTO request) {
-        String sessionKey = "chat_session:"+userId;
+        String sessionKey = session_key + ":"+userId;
 
         Map<Object,Object> existing = redisTemplate.opsForHash().entries(sessionKey);
         System.out.println(existing);
@@ -326,8 +331,8 @@ public class ChatSessionService {
 
     @Transactional(readOnly = false)
     public Long confirmDiary(Long userId) {
-        String sessionKey = "chat_session:"+userId;
-        String messageKey = "chat_session_messages:"+userId;
+        String sessionKey = session_key + ":"+userId;
+        String messageKey = message_key + ":"+userId;
 
         Map<Object, Object> sessionData = redisTemplate.opsForHash().entries(sessionKey);
 
@@ -374,9 +379,7 @@ public class ChatSessionService {
         diaryRepository.save(diary);
 
 
-        // Redis 데이터 삭제 X
-//        redisTemplate.delete(sessionKey);
-//        redisTemplate.delete(messageKey);
+        // 일기 생성 및 채팅 상태 변경
         redisTemplate.opsForHash().put(sessionKey,"status", DIARY_SAVED.name());
 
 

@@ -4,6 +4,7 @@ import com.voiceprint.backend.api.chat.dto.ChatMessage;
 import com.voiceprint.backend.api.chat.dto.ChatTextResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,11 @@ public class ChatServcie {
             "뭐라고? 미친거 아니가??? 금마 그거 진짜 완전히 도라뿟네. 지금 어데있다노?"
     );
 
+    @Value("${session.key}")
+    private String session_key;
+
+    @Value("${message.key}")
+    private String message_key;
 
     public ChatTextResponseDTO processChat(Long userId, String message) {
         // requestBody 초기화
@@ -40,9 +46,9 @@ public class ChatServcie {
         requestBody.put("chatting",message);
 
         // 변수 초기화
-        Integer limit_token = 700;  // 글자수 제한
+        int limit_token = 700;  // 글자수 제한
         String botResponse = "";    // 챗봇 답변
-        Integer total_token = 0;    // 현재 글자수
+        int total_token = 0;    // 현재 글자수
 
         try {
             log.info("FastAPI 챗봇 호출 : {}",message);
@@ -72,19 +78,19 @@ public class ChatServcie {
         }
 
         // Redis 에 저장
-        String sessionKey = "chat_session:" +userId;
-        String redisKey = "chat_session_messages:" +userId;
+        String sessionKey = session_key + ":" +userId;
+        String messageKey = message_key + ":" +userId;
 
         // redis에 현재 토큰수 저장
         redisTemplate.opsForHash().put(sessionKey,"total_token",total_token);
 
         // 레디스에 유저 request 저장
         ChatMessage userMsg = new ChatMessage("USER",message);
-        redisTemplate.opsForList().rightPush(redisKey,userMsg);
+        redisTemplate.opsForList().rightPush(messageKey,userMsg);
 
         // 레디스에 서버 response 저장
         ChatMessage botMsg = new ChatMessage("SERVER",botResponse);
-        redisTemplate.opsForList().rightPush(redisKey,botMsg);
+        redisTemplate.opsForList().rightPush(messageKey,botMsg);
 
         int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
