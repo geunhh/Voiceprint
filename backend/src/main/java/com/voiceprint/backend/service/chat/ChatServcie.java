@@ -13,9 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 @Service
 @Slf4j
@@ -24,14 +22,6 @@ import java.util.Random;
 public class ChatServcie {
     private final WebClient fastApiWebClient;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final Random random = new Random(); // 임시
-    private static final List<String> SAMPLE_RESPONSES = List.of( // 임시 메시지 리스트
-            "헐 진짜요?? 정말 힘들었겠어요...",
-            "아니 정말요??? 그런 일이 있었군요. 조금 더 이야기해 볼까요?",
-            "헉.. 세상에나.. 제가 도와드릴 수 있을까요?",
-            "잘 듣고 있어요. 어떤 일이 있었는지 알려주세요.",
-            "뭐라고? 미친거 아니가??? 금마 그거 진짜 완전히 도라뿟네. 지금 어데있다노?"
-    );
 
     @Value("${session.key}")
     private String session_key;
@@ -47,7 +37,7 @@ public class ChatServcie {
 
         // 변수 초기화
         int limit_token = 700;  // 글자수 제한
-        String botResponse = "";    // 챗봇 답변
+        String botResponse = "오류가 발생했습니다.";    // 챗봇 답변
         int total_token = 0;    // 현재 글자수
 
         try {
