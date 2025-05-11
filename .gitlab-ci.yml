@@ -36,6 +36,7 @@ analysis:
       
   script: 
     - cd backend
+    - chmod +x ./gradlew
     - ./gradlew sonarqube \
         -Dsonar.host.url=$SONAR_HOST_URL \
         -Dsonar.login=$SONAR_TOKEN \
