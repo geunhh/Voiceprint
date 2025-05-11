@@ -17,7 +17,7 @@ build:
   script:
     - cd backend
     - chmod +x ./gradlew
-    - ./gradle clean build -x test
+    - ./gradlew clean build -x test
   artifacts:
     paths:
       - build/libs/*.jar
