@@ -28,8 +28,9 @@ public class GroupUser {
     @JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "fk_gu_group"))
     private Group group;
 
-    @Column(length = 10)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10, nullable = false)
+    private Role role;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt = LocalDateTime.now();
@@ -38,4 +39,9 @@ public class GroupUser {
     private Boolean enableAlarm = false;
 
     private LocalDateTime alarm;
+
+    public enum Role {
+        ADMIN,   // 그룹 관리자
+        MEMBER   // 일반 사용자
+    }
 }
