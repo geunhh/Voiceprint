@@ -67,8 +67,8 @@ public class GroupService {
                 savedGroup.getDescription(), savedGroup.getGroupImage(),
                 groupUser.getRole().name(),
                 group.getEnableAlarm(),
-                group.getAlarmTime().toString(),
-                group.getAlarmDays().toString());
+                group.getAlarmTime() != null ? group.getAlarmTime().toString() : null,
+                group.getAlarmDays() != null ? group.getAlarmDays().toString() : null);
     }
 
     public GroupUpdateResponse updateGroup(Long groupId, Long userId, GroupUpdateRequest updateRequest) {
