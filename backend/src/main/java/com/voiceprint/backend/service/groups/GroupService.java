@@ -9,6 +9,7 @@ import com.voiceprint.backend.domain.auth.UserRepository;
 import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class GroupService {
 
     private final GroupRepository groupRepository;
+    private final GroupDiaryRepository groupDiaryRepository;
     private final GroupUserRepository groupUserRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
@@ -102,7 +104,7 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public GroupMainPageResponse getGroupMainPage(Long groupId, Long userId, int page) {
+    public GroupMainPageResponse getGroupMainPage(Long groupId, Long userId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
 
@@ -113,11 +115,9 @@ public class GroupService {
         GroupUser groupUser = groupUserRepository.findByGroupIdAndUserId(groupId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹에 참여하지 않았습니다."));
 
-        List<User> groupUsers = groupUserRepository.findAllByGroupId(groupId).stream()
-                .map(GroupUser::getUser)
-                .collect(Collectors.toList());
+        // 그룹에 속한 유저들
+        List<UserInfoDTO> groupUserList = groupUserRepository.findUserInfoByGroupId(groupId);
 
-        List<Diary> diaries = diaryRepository.findByGroupIdOrderByCreatedAtDesc(groupId, PageRequest.of(page, 3));
 
         return new GroupMainPageResponse(
                 group.getId(),
@@ -127,9 +127,8 @@ public class GroupService {
                 group.getAlarmDays(),
                 group.getAlarmTime(),
                 group.getCreatedAt(),
-                groupUser,
-                groupUser.getJoinedAt(),
-                diaries
+                groupUserList,
+                groupUser.getJoinedAt()
         );
     }
 }

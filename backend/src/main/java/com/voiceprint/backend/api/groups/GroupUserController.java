@@ -38,11 +38,10 @@ public class GroupUserController {
     @GetMapping("/{groupId}")
     public ResponseEntity<CommonResponse<GroupMainPageResponse>> getGroupMainPage(
             @PathVariable Long groupId,
-            HttpServletRequest request,
-            @RequestParam(defaultValue = "0") int page) {
+            HttpServletRequest request) {
 
         Long userId = authService.getUserIdFromRequest(request);
-        GroupMainPageResponse response = groupService.getGroupMainPage(groupId, userId, page);
+        GroupMainPageResponse response = groupService.getGroupMainPage(groupId, userId);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 메인 페이지 조회 완료", response));
     }

@@ -19,7 +19,6 @@ public class GroupMainPageResponse {
     private List<DayOfWeek> alarmDays;
     private LocalTime alarmTime;
     private LocalDateTime createdAt;
-    private List<Long> userIds;
+    private List<UserInfoDTO> groupUserList;
     private LocalDateTime joinedAt;
-    private List<Diary> diaries;
 }
