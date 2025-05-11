@@ -26,7 +26,7 @@ function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
       className="flex flex-col mx-auto rounded-xl border border-lightmint shadow-sm shadow-mint/50 p-6 w-full hover:bg-lightmint cursor-pointer"
       onClick={handleClick}
     >
-      {/* 유저 정보 및 일기 제목, 일자자 */}
+      {/* 유저 정보 및 일기 제목, 일자 */}
       <div className="flex items-start gap-3">
         <img
           src={userImage}
