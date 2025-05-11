@@ -1,14 +1,12 @@
 package com.voiceprint.backend.service.groups;
 
 
-import com.voiceprint.backend.api.groups.dto.GroupCreateRequest;
-import com.voiceprint.backend.api.groups.dto.GroupCreateResponse;
-import com.voiceprint.backend.api.groups.dto.GroupUpdateRequest;
-import com.voiceprint.backend.api.groups.dto.GroupUpdateResponse;
+import com.voiceprint.backend.api.groups.dto.*;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.domain.*;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -101,5 +99,37 @@ public class GroupService {
         groupRepository.save(group);
 
         return GroupUpdateResponse.from(group);
+    }
+
+    @Transactional(readOnly = true)
+    public GroupMainPageResponse getGroupMainPage(Long groupId, Long userId, int page) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
+
+        if (group.getIsDeleted()) {
+            throw new IllegalArgumentException("삭제된 그룹입니다.");
+        }
+
+        GroupUser groupUser = groupUserRepository.findByGroupIdAndUserId(groupId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹에 참여하지 않았습니다."));
+
+        List<User> groupUsers = groupUserRepository.findAllByGroupId(groupId).stream()
+                .map(GroupUser::getUser)
+                .collect(Collectors.toList());
+
+        List<Diary> diaries = diaryRepository.findByGroupIdOrderByCreatedAtDesc(groupId, PageRequest.of(page, 3));
+
+        return new GroupMainPageResponse(
+                group.getId(),
+                group.getName(),
+                group.getDescription(),
+                group.getEnableAlarm(),
+                group.getAlarmDays(),
+                group.getAlarmTime(),
+                group.getCreatedAt(),
+                groupUser,
+                groupUser.getJoinedAt(),
+                diaries
+        );
     }
 }
