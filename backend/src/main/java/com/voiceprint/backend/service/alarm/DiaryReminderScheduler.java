@@ -25,13 +25,13 @@ public class DiaryReminderScheduler {
     public void checkAndNotify() {
         LocalTime now = LocalTime.now().withSecond(0).withNano(0); // s와 ns 제거
         int minute = now.getMinute();
-        log.info("알람 스케쥴러 시작 : {}",now);
 
         // 30분 단위 확인
         if (minute != 0 && minute !=30) {
-            log.info("⏳ [{}:{}]은 알림 타이밍이 아님. 로직 종료.", now.getHour(), minute);
+//            log.info("⏳ [{}:{}]은 알림 타이밍이 아님. 로직 종료.", now.getHour(), minute);
             return;
         }
+        log.info("알람 스케쥴러 시작 : {}",now);
 
         // 정확한 시간대면 -> 유저 조회
         List<User> users = userRepository.findAll();
