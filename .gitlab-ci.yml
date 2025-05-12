@@ -40,6 +40,7 @@ backend-analysis:
     - when: never
 
 frontend-analysis:
+  needs: [backend-analysis]
   stage: frontend-analysis
   tags: 
     - sonarqube
