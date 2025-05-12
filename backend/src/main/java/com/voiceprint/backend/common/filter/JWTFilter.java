@@ -4,7 +4,6 @@ import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

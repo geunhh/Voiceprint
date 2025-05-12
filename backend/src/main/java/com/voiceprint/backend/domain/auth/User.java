@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.auth;
 
+import com.voiceprint.backend.domain.auth.ProfileImage;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.domain.thema.DiaryThema;

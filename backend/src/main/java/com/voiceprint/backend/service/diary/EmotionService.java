@@ -1,5 +1,7 @@
 package com.voiceprint.backend.service.diary;
 
+import com.voiceprint.backend.api.diary.dto.EmotionCountDTO;
+import com.voiceprint.backend.api.diary.dto.MonthlyEmotionResponseDTO;
 import com.voiceprint.backend.api.diary.dto.WeeklyEmotionResponseDTO;
 import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.domain.diary.DiaryRepository;
@@ -13,7 +15,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +67,43 @@ public class EmotionService {
         }
 
         return new WeeklyEmotionResponseDTO(emotionList);
+    }
+
+    public MonthlyEmotionResponseDTO getMonthlyEmotions(Long userId) {
+
+        // 1. 이번달 시작과 끝 계산
+        LocalDate today = LocalDate.now(); // 오늘 날짜
+        log.debug("today : {}",today);
+        LocalDate startDate = today.withDayOfMonth(1);
+        LocalDate endDate = today.withDayOfMonth(today.lengthOfMonth());
+        log.debug("date range : {} ~ {}",startDate,endDate);
+
+        // 2. 일기 목록 조회
+        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(
+                userId, startDate.atStartOfDay(),endDate.atTime(LocalTime.MAX)
+        );
+        log.debug("diaries : {} ",diaries);
+
+        //행복 설렘 피로 짜증 우울
+        // 3. 감정 리스트 정의
+        List<String> emotionList = List.of("행복","설렘","피로","짜증","우울");
+
+        // 3. 감정 통계 조회
+        Map<String, Integer> emotionMap = new HashMap<>();
+        for (Diary diary : diaries) {
+            log.debug("id:{}, emotion:{}",diary.getId(),diary.getEmotion().getName());
+            if (diary.getEmotion() == null) continue;
+
+            String name = diary.getEmotion().getName();
+            emotionMap.put(name, emotionMap.getOrDefault(name,0)+1);
+        }
+
+        List<EmotionCountDTO> result = new ArrayList<>();
+        for (String emo : emotionList) {
+            result.add(new EmotionCountDTO(emo,emotionMap.getOrDefault(emo,0)));
+
+        }
+
+        return new MonthlyEmotionResponseDTO(result);
     }
 }
