@@ -48,8 +48,10 @@ frontend-analysis:
   script:
     - |
       cd frontend
-      npm install
-      npx sonar-scanner \
+      npm ci
+      npm install -g sonar-scanner
+      chmod +x /usr/local/lib/node_modules/sonar-scanner/bin/sonar-scanner
+      sonar-scanner \
         -Dsonar.projectKey=voiceprint-frontend \
         -Dsonar.sources=./src \
         -Dsonar.exclusions="**/*.test.js,**/*.spec.js" \
