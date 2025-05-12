@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.chat;
 
+import com.voiceprint.backend.api.chat.dto.ChatMessageListWithTokenDTO;
 import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.chat.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
@@ -64,15 +65,15 @@ public class ChatSessionController {
      * 진행 중인 대화 메시지 전체 조회
      */
     @GetMapping("/messages")
-    public ResponseEntity<CommonResponse<List<ChatMessageResponseDTO>>> getMessages(
+    public ResponseEntity<CommonResponse<ChatMessageListWithTokenDTO>> getMessages(
             HttpServletRequest request) {
 //        Long userId = 1L;
         Long userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 기록 조회 / userid : {}",userId);
-        List<ChatMessageResponseDTO> messages = chatSessionService.getMessages(userId);
-        log.info("messages : {}",messages);
+        ChatMessageListWithTokenDTO response = chatSessionService.getMessages(userId);
+        log.info("response : {}",response);
         return ResponseEntity.ok(new CommonResponse<>(
-                200, "메시지 조회 성공", messages
+                200, "메시지 조회 성공", response
         ));
 
     }

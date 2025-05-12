@@ -30,7 +30,8 @@ public enum ChatSessionStatus {
     public boolean isOngoing() {
         return this == IN_PROGRESS ||
                 this == DIARY_CREATING ||
-                this == DIARY_DONE;
+                this == DIARY_DONE ||
+                this == DIARY_SAVED;
     }
 
 
