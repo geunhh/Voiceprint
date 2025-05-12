@@ -16,6 +16,7 @@ import asyncio
 from schema import Chat, MyChat, PromtTest, ChatResponse, ChatSaveTest
 from typing import Annotated
 import datetime
+import base64
 app = FastAPI()
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
@@ -121,72 +122,85 @@ async def tts(message):
         
         return audio_bytes
     
+    
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("WebSocket 연결 수락됨")
+    chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
 
-    audio_buffer = b""  # 바이트 데이터를 누적 저장할 버퍼
-
+    # 오디오 데이터 버퍼
+    audio_buffer = None
+    chat_history = [{"role" :"system", "content": chat_character}]
+    
     try:
         while True:
+            # 메시지 수신 (바이너리 또는 텍스트)
             message = await websocket.receive()
-            print(f"수신된 메시지: {message}")
-
-            # 바이너리 데이터 처리 (Base64로 인코딩되어 올 가능성 있음)
+            print(message)
+            
+            # 바이너리 데이터 (오디오) 처리
             if "bytes" in message:
                 audio_data = message["bytes"]
-
-                try:
-                    # Base64 디코딩 시도
-                    try:
-                        audio_data = base64.b64decode(audio_data)
-                        print("Base64 디코딩 성공")
-                    except Exception as e:
-                        print(f"Base64 디코딩 실패, 직접 처리 시도: {e}")
-
-                    audio_buffer += audio_data
-                    print(f"수신된 오디오 데이터 크기: {len(audio_buffer)} 바이트")
-                
-                except Exception as e:
-                    print(f"오디오 데이터 처리 오류: {e}")
-
+                print(f"수신된 오디오 데이터 크기: {len(audio_data)} 바이트")
+                audio_buffer = audio_data
+            
             # 텍스트 메시지 (JSON) 처리
             elif "text" in message:
+                print("text in message:")
                 try:
                     data = json.loads(message["text"])
                     print(f"수신된 JSON 메시지: {data}")
-
+                    
+                    print(audio_buffer)
                     # audio_complete 메시지 처리
                     if data.get("action") == "audio_complete" and audio_buffer:
                         print("오디오 처리 시작")
-
+                        
                         # STT 처리
                         transcription = stt(audio_buffer)
-                        print(f"STT 결과: {transcription}")
-
+                        print(transcription)
                         if transcription:
+                            # 처리 결과를 클라이언트에 전송
                             await websocket.send_json({
                                 "transcription": transcription
                             })
+                            # transcriotion 에 있는 내용 백엔드에 보내기보단 redis 에 저장
+                            chat_history.append({"role" : "user", "content" : transcription})
+
+
                         else:
                             await websocket.send_json({
                                 "error": "음성 인식 실패"
-                            })
+                            }) 
                         
-                        # 오디오 버퍼 초기화
-                        audio_buffer = b""
+                        # 버퍼 초기화
+                        audio_buffer = None
+
+                        # LLM 에서 대댑을 해줌
+                        response = await llm(transcription)
+                        chat_history.append({"role" : "assistant", "content" : response})
+                        
+                        # openai TTS 
+                        return_voice = await tts(response)
+                        # response를 redis에 저장하는 기능을 여기 넣자. 
+
+                        print("여기까지됨 2222")
+                        await websocket.send_bytes(return_voice)
+                        
+
                 except json.JSONDecodeError:
                     print("잘못된 JSON 형식")
+            
             else:
                 print(f"알 수 없는 메시지 형식: {message}")
-
+    
     except WebSocketDisconnect:
         print("클라이언트 연결 종료")
-        await websocket.close()
+        if websocket.application_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
     except Exception as e:
         print(f"오류 발생: {e}")
-
 
 async def chat(request) : 
     response = client.chat.completions.create(
