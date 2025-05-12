@@ -7,6 +7,8 @@ import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.DiaryThemaNotFoundException;
 import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
+import com.voiceprint.backend.common.exception.s3.InvalidFileException;
+import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
 import com.voiceprint.backend.common.exception.user.NicknameConflictException;
@@ -93,6 +95,17 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(InvalidFileException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public String handleInvalidFile(InvalidFileException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(S3UnavailableException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) //500
+    public String handleS3Unavailable(S3UnavailableException e) {
+        return e.getMessage();
+    }
     // 공통 응답 생성메서드
 
 }
