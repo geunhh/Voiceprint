@@ -272,4 +272,20 @@ public class AuthService {
 
         return user.getEnableAlarm();
     }
+
+    /**
+     * 유저 알람 T/F 수정 메서드
+     */
+    public Boolean updateReminderSetting(Boolean enableAlarms, Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+        log.info("USER id : {}, 알람여부 : {}",userId,enableAlarms);
+
+
+        user.setEnableAlarm(enableAlarms);
+        userRepository.save(user);
+
+        return user.getEnableAlarm();
+    }
 }

@@ -10,6 +10,7 @@ import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -172,5 +173,19 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 new CommonResponse<>(200, "유저 알람 여부 조회 성공", isEnabled));
+    }
+
+    @PatchMapping("/reminder-setting")
+    public ResponseEntity<CommonResponse<Boolean>> updateReminderSetting(
+            HttpServletRequest httprequest,
+            @RequestBody @Valid ReminderSettingRequest request
+    ) {
+       Long userId = authService.getUserIdFromRequest(httprequest);
+
+       Boolean response = authService.updateReminderSetting(request.getEnableAlarms(), userId);
+
+       return ResponseEntity.ok(new CommonResponse<>(
+               200, "알림 여부가 설정되었습니다.",  response
+       ));
     }
 }
