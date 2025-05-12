@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -20,13 +21,26 @@ public class DiaryReminderScheduler {
     private final SseService sseService;
     private final UserRepository userRepository;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(cron = "0 * * * * *") // 1분 마다 실행
     public void checkAndNotify() {
-        log.info("알람 스케쥴러 시작");
-        // 유저 조회
+        LocalTime now = LocalTime.now().withSecond(0).withNano(0); // s와 ns 제거
+        int minute = now.getMinute();
+        log.info("알람 스케쥴러 시작 : {}",now);
+
+        // 30분 단위 확인
+        if (minute != 0 && minute !=30) {
+            log.info("⏳ [{}:{}]은 알림 타이밍이 아님. 로직 종료.", now.getHour(), minute);
+            return;
+        }
+
+        // 정확한 시간대면 -> 유저 조회
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
+            // null 체크 유의.
+            if ( user.getAlarmTime() == null || !Boolean.TRUE.equals(user.getEnableAlarm()) || !user.getAlarmTime().equals(now)) {
+                continue;  // 알람 시간 없음, 알람 꺼짐, 알람 시각 아님 → 패스
+            }
             Long userId = user.getId();
             String sessionKey = "chat_session:"+userId;
 
