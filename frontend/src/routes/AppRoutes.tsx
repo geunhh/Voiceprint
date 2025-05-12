@@ -20,6 +20,7 @@ import DiaryFriendPage from "../pages/diary/DiaryFriendPage";
 import DiaryTempPage from "../pages/diary/DiaryTempPage";
 import DiaryThemePage from "../pages/diary/DiaryThemePage";
 import DiaryVoicePage from "../pages/diary/DiaryVoicePage";
+import AudioRecorder from "../components/audio/AudioRecorder";
 
 import GroupCreatePage from "../pages/group/GroupCreatePage";
 import GroupDetailPage from "../pages/group/GroupDetailPage";
@@ -114,7 +115,8 @@ const AppRoutes = () => (
       <Route path="/diary" element={<DiaryOutlet />}>
         <Route path="setting/theme" element={<DiaryThemePage />} />
         <Route path="setting/friend" element={<DiaryFriendPage />} />
-        <Route path="voice" element={<DiaryVoicePage />} />
+        {/* DiaryVoicePage */}
+        <Route path="voice" element={<AudioRecorder />} />
         <Route path="chat" element={<DiaryChatPage />} />
         <Route path="temp" element={<DiaryTempPage />} />
         <Route path="temp/edit" element={<DiaryEditPage />} />
