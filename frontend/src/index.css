@@ -86,8 +86,6 @@
 }
 
 /* 커스텀 스크롤 제작 */
-/* index.css or App.css */
-
 .custom-scroll::-webkit-scrollbar {
   width: 6px;
 }
