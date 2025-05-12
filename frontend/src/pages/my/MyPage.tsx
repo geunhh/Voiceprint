@@ -48,7 +48,7 @@ export default function MyPage() {
   const fetchAllDiaries = async (cursor?: number) => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/diaries/me/diaries`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/diaries/me/all`,
         {
           params: cursor ? { cursor } : {},
           headers: {
@@ -102,7 +102,7 @@ export default function MyPage() {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth() + 1;
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/diaries/monthly`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/diaries/monthly`,
           {
             params: { year, month },
             headers: {

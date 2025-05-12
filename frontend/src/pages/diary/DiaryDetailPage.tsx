@@ -44,7 +44,7 @@ export default function DiaryDetailPage() {
     const fetchDiary = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/diaries/diary/${diaryId}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/diaries/diary/${diaryId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
