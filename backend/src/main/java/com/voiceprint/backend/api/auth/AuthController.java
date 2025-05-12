@@ -167,8 +167,7 @@ public class AuthController {
     public ResponseEntity<CommonResponse<Boolean>> isReminderEnabled(
             HttpServletRequest request
     ) {
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 2L;
+        Long userId = authService.getUserIdFromRequest(request);
         Boolean isEnabled = authService.isReminderEnabled(userId);
 
         return ResponseEntity.ok(
