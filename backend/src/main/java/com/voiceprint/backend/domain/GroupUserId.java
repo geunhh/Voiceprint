@@ -17,17 +17,5 @@ public class GroupUserId implements Serializable {
     private Long userId;
     private Long groupId;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(userId, groupId);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GroupUserId that = (GroupUserId) obj;
-        return Objects.equals(userId, that.userId) && Objects.equals(groupId, that.groupId);
-    }
 }
 
