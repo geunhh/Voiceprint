@@ -31,7 +31,7 @@ public class TestSseScheduler {
     /**
      * 테스트용 스케줄러 – 5초마다 테스트 알림 전송
      */
-    @Scheduled(fixedRate = 5000)
+//    @Scheduled(fixedRate = 5000)
     public void sendTestReminder() {
         String status = statuses.get(index.getAndUpdate(i -> (i + 1) % statuses.size()));
         log.info("🔁 테스트 상태: {}", status);
