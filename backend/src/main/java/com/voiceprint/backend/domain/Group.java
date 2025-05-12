@@ -1,7 +1,6 @@
 package com.voiceprint.backend.domain;
 
 
-import com.voiceprint.backend.common.util.StringListConverter;
 import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,7 +37,7 @@ public class Group {
 
     @Column(name = "alarm_day")
     @Convert(converter = StringListConverter.class)
-    private List<String> alarmDays;
+    private List<DayOfWeek> alarmDays;
 
     @Column(columnDefinition = "TIME")
     private LocalTime alarmTime;

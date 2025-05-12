@@ -39,7 +39,7 @@ public class GroupUserService {
         // 새로운 사용자를 ADMIN으로 승급
         newAdmin.setRole(GroupUser.Role.ADMIN);
         groupUserRepository.save(newAdmin);
-        return ResponseEntity.ok(new CommonResponse<>(200, "관리자 위임 완료",null));
+        return ResponseEntity.ok(new CommonResponse<>(200, currentAdminId + "(이)가 " + newAdminUserId + "에게 관리자 위임 완료",null));
     }
 
 

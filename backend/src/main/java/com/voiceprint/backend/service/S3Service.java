@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.UUID;
 
 @Service
@@ -61,5 +62,21 @@ public class S3Service {
                 s3Client.serviceClientConfiguration().region(),
                 folder,
                 fileName);
+    }
+
+    public void deleteFile(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            String key = url.getPath().substring(1);
+
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (Exception e) {
+            throw new S3UnavailableException("파일 삭제 실패: " + e.getMessage());
+        }
     }
 }
