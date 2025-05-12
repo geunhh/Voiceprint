@@ -3,6 +3,12 @@ import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Tabbar from "../components/common/Tabbar";
 
+import axios from "axios";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import { setUser } from "../store/userSlice";
+
 /* ---------- 더미 페이지 임포트 ---------- */
 import HomePage from "../pages/HomePage";
 import MainPage from "../pages/MainPage";
@@ -14,6 +20,7 @@ import DiaryFriendPage from "../pages/diary/DiaryFriendPage";
 import DiaryTempPage from "../pages/diary/DiaryTempPage";
 import DiaryThemePage from "../pages/diary/DiaryThemePage";
 import DiaryVoicePage from "../pages/diary/DiaryVoicePage";
+import AudioRecorder from "../components/audio/AudioRecorder";
 
 import GroupCreatePage from "../pages/group/GroupCreatePage";
 import GroupDetailPage from "../pages/group/GroupDetailPage";
@@ -49,8 +56,35 @@ const Layout = () => {
 
   const currentType = getCurrentType();
 
+  const dispatch = useDispatch();
+  const userId = useSelector((state: RootState) => state.user.userId);
+
+  useEffect(() => {
+    const token = localStorage.getItem("Authorization");
+    if (!token || userId) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const { userId, nickname, imageUrl } = res.data.data;
+        dispatch(setUser({ userId, nickname, imageUrl }));
+      } catch (err) {
+        console.error("유저 정보 불러오기 실패:", err);
+      }
+    };
+
+    fetchUser();
+  }, [dispatch, userId]);
+
   return (
-    <div className="w-screen min-h-dvh flex justify-center bg-neutral-50">
+    <div className="w-full min-h-dvh flex justify-center bg-neutral-50 overflow-x-hidden">
       <div className="w-full max-w-[393px] min-h-screen bg-white shadow-lg flex flex-col">
         <Toaster position="top-center" />
         {/* <Appbar /> */}
@@ -60,7 +94,7 @@ const Layout = () => {
 
         {/* 고정 탭바 */}
         {showTabbar && (
-          <div className="fixed bottom-0 w-full max-w-[393px]">
+          <div className="fixed bottom-0 w-full max-w-[393px]  mx-auto left-1/2 -translate-x-1/2">
             <Tabbar type={currentType} onClick={() => {}} />
           </div>
         )}
@@ -81,7 +115,8 @@ const AppRoutes = () => (
       <Route path="/diary" element={<DiaryOutlet />}>
         <Route path="setting/theme" element={<DiaryThemePage />} />
         <Route path="setting/friend" element={<DiaryFriendPage />} />
-        <Route path="voice" element={<DiaryVoicePage />} />
+        {/* DiaryVoicePage */}
+        <Route path="voice" element={<AudioRecorder />} />
         <Route path="chat" element={<DiaryChatPage />} />
         <Route path="temp" element={<DiaryTempPage />} />
         <Route path="temp/edit" element={<DiaryEditPage />} />

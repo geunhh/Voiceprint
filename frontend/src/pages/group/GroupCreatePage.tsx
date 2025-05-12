@@ -129,55 +129,6 @@ export default function GroupCreatePage() {
 
       <hr className="my-4 border-t border-gray-300" />
 
-      {/* 일기 공유 루틴  */}
-      <div className="mt-2 ">
-        <p className="text-darkmint text-lg font-semibold mb-2">
-          일기 공유 루틴
-        </p>
-        {/* 일기 공유 시간 */}
-        <div className="flex items-center justify-between">
-          <p className="text-gray-500">지정 기록 시간</p>
-          <div className="relative">
-            <button
-              onClick={() => setShowTimePicker((prev) => !prev)}
-              className="w-32 text-right text-darkmint font-semibold"
-            >
-              {selectedTime}
-            </button>
-            {showTimePicker && (
-              <TimePicker
-                selectedTime={selectedTime}
-                onChange={(time) => {
-                  setSelectedTime(time);
-                  setShowTimePicker(false);
-                }}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* 일기 공유 요일 */}
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-gray-500">지정 기록 요일</p>
-          <div className="relative" ref={dayPickerRef}>
-            <button
-              onClick={() => setShowDayPicker((prev) => !prev)}
-              className="w-32 text-right text-darkmint font-semibold"
-            >
-              {getDayLabel(selectedDays) || "요일 선택"}
-            </button>
-            {showDayPicker && (
-              <DayPicker
-                selectedDays={selectedDays}
-                onChange={setSelectedDays}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
-      <hr className="my-4 border-t border-gray-300" />
-
       {/* 알림 */}
       <div>
         <p className="text-darkmint text-lg font-semibold mb-2">알림</p>
@@ -186,6 +137,60 @@ export default function GroupCreatePage() {
           <OnOffToggleButton isOn={isOn} onToggle={() => setIsOn(!isOn)} />
         </div>
       </div>
+
+      {/* 알림 설정 여부에 따른 공유 루틴 설정*/}
+      {isOn && (
+        <>
+          <hr className="my-4 border-t border-gray-300" />
+
+          {/* 일기 공유 루틴  */}
+          <div className="mt-2 ">
+            <p className="text-darkmint text-lg font-semibold mb-2">
+              일기 공유 루틴
+            </p>
+            {/* 일기 공유 시간 */}
+            <div className="flex items-center justify-between">
+              <p className="text-gray-500">지정 기록 시간</p>
+              <div className="relative">
+                <button
+                  onClick={() => setShowTimePicker((prev) => !prev)}
+                  className="w-32 text-right text-darkmint font-semibold"
+                >
+                  {selectedTime}
+                </button>
+                {showTimePicker && (
+                  <TimePicker
+                    selectedTime={selectedTime}
+                    onChange={(time) => {
+                      setSelectedTime(time);
+                      setShowTimePicker(false);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 일기 공유 요일 */}
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-gray-500">지정 기록 요일</p>
+              <div className="relative" ref={dayPickerRef}>
+                <button
+                  onClick={() => setShowDayPicker((prev) => !prev)}
+                  className="w-32 text-right text-darkmint font-semibold"
+                >
+                  {getDayLabel(selectedDays) || "요일 선택"}
+                </button>
+                {showDayPicker && (
+                  <DayPicker
+                    selectedDays={selectedDays}
+                    onChange={setSelectedDays}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* 저장 버튼 */}
       <div className="flex justify-center mt-10 short-screen-padding">

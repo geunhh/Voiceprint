@@ -1,6 +1,9 @@
 package com.voiceprint.backend.api.auth;
 
 import com.voiceprint.backend.api.auth.dto.*;
+import com.voiceprint.backend.api.auth.dto.ProfileResponse;
+import com.voiceprint.backend.api.auth.dto.TokenResponse;
+import com.voiceprint.backend.api.auth.dto.UserResponse;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
@@ -157,5 +160,17 @@ public class AuthController {
         UserResponse response = new UserResponse(userId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reminder-setting")
+    public ResponseEntity<CommonResponse<Boolean>> isReminderEnabled(
+            HttpServletRequest request
+    ) {
+//        Long userId = authService.getUserIdFromRequest(request);
+        Long userId = 2L;
+        Boolean isEnabled = authService.isReminderEnabled(userId);
+
+        return ResponseEntity.ok(
+                new CommonResponse<>(200, "유저 알람 여부 조회 성공", isEnabled));
     }
 }
