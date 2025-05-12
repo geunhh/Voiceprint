@@ -1,10 +1,13 @@
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import notificationIcon from "../assets/icons/notification.png";
 import DiaryPreview from "../components/common/DiaryPreview";
 import MonthEmotion from "../components/main/MonthEmotion";
 import TodayQuestion from "../components/main/TodayQuestion";
 import WeekEmotion from "../components/main/WeekEmotion";
+import NotificationModal from "../components/modal/NotificationModal";
 import { RootState } from "../store/store";
 import { setUser } from "../store/userSlice";
 
@@ -104,6 +107,10 @@ export default function MainPage() {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user); // Redux에서 유저 정보 가져오기
 
+  const navigate = useNavigate();
+
+  const [showModal, setShowModal] = useState(false); // 보이지 않도록 설정(임시) -> 유저 정보를 받아 처리 예정
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -141,21 +148,31 @@ export default function MainPage() {
   return (
     <div className="p-4">
       {/* 유저 정보 */}
-      <div className="flex my-3 p-2 gap-2">
-        <img
-          src={user.imageUrl}
-          className="rounded-full w-14 h-14 object-cover"
-        />
-        <div className="flex-row self-center">
-          <div className="flex items-end">
-            <p className="text-xl font-semibold mr-1 text-gray-700">
-              {user.nickname}
-            </p>
-            <p className="text-gray-700">님</p>
+      <div className="flex items-center justify-between my-3 p-2">
+        {/* 유저 정보 */}
+        <div className="flex items-center gap-3">
+          <img
+            src={user.imageUrl}
+            className="rounded-full w-14 h-14 object-cover"
+            alt="프로필"
+          />
+          <div className="flex flex-col">
+            <div className="flex items-baseline">
+              <p className="text-xl font-semibold text-gray-700">
+                {user.nickname}
+              </p>
+              <p className="ml-1 text-gray-700">님</p>
+            </div>
+            <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
           </div>
-          <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
         </div>
+
+        {/* 알림 버튼 */}
+        <button onClick={() => navigate("/notification")}>
+          <img src={notificationIcon} alt="알림" className="w-6 h-6" />
+        </button>
       </div>
+
       {/* 오늘의 질문 */}
       <div className="mb-3">
         <TodayQuestion question={todayQuestion} />
@@ -193,6 +210,8 @@ export default function MainPage() {
           </div>
         ))}
       </div>
+
+      {showModal && <NotificationModal onClose={() => setShowModal(false)} />}
     </div>
   );
 }

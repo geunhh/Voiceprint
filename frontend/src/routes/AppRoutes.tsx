@@ -31,6 +31,8 @@ import GroupMainPage from "../pages/group/GroupMainPage";
 import EditProfilePage from "../pages/my/EditProfilePage";
 import MyPage from "../pages/my/MyPage";
 
+import NotificationPage from "../pages/NotificationPage";
+
 import NotFound from "../pages/NotFound";
 
 /* ---------- 중첩 라우트용 래퍼 ---------- */
@@ -139,6 +141,8 @@ const AppRoutes = () => (
         <Route index element={<MyPage />} />
         <Route path="edit" element={<EditProfilePage />} />
       </Route>
+
+      <Route path="/notification" element={<NotificationPage />} />
 
       {/* 404 */}
       <Route path="/404" element={<NotFound />} />
