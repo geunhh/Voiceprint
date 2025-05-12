@@ -12,6 +12,7 @@ import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.common.exception.user.ExpiredJwtTokenException;
 import com.voiceprint.backend.common.exception.user.NicknameConflictException;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
@@ -116,6 +117,11 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(ExpiredJwtTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED) // 401
+    public String handleExpiredJwtToken(ExpiredJwtTokenException e) {
+        return e.getMessage();
+    }
     // 공통 응답 생성메서드
 
 }
