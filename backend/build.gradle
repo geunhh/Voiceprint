@@ -73,5 +73,10 @@ sonar {
 		property "sonar.projectKey", "s12-final_S12P31B106_f09ff99e-cb2b-42be-9648-691716b25443"
 		property "sonar.projectName", "S12P31B106"
 		property "sonar.qualitygate.wait", true
+		// Java analysis settings
+		property "sonar.java.binaries", "${project.buildDir}/classes/java/main"
+		property "sonar.java.libraries", fileTree(dir: "${project.buildDir}/libs", include: "*.jar").files.join(",")
+		property "sonar.java.source", "21"
+		property "sonar.java.previewFeature", true
 	}
 }
