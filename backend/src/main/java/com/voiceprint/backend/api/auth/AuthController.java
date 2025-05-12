@@ -188,4 +188,23 @@ public class AuthController {
                200, "알림 여부가 설정되었습니다.",  response
        ));
     }
+
+    @PatchMapping("/reminder-time")
+    public ResponseEntity<CommonResponse<String>> updateReminderTime(
+            HttpServletRequest httprequest,
+            @RequestBody @Valid ReminderTimeRequestDTO request
+    ) {
+        Long userId = authService.getUserIdFromRequest(httprequest);
+
+        String response = authService.updateReminderTime(request.getAlarmTime(), userId);
+
+        if (response==null) {
+            return ResponseEntity.ok(new CommonResponse<>(
+                    400, "알림 시간의 형식이 누락되거나 잘못되었습니다.", null
+            ));
+        }
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "알림 시간이 설정되었습니다.", response
+        ));
+    }
 }

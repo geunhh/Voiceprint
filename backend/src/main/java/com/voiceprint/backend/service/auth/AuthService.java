@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -287,5 +289,33 @@ public class AuthService {
         userRepository.save(user);
 
         return user.getEnableAlarm();
+    }
+
+    /**
+     * 유저 알람 시간 수정 메서드
+     */
+    public String updateReminderTime(String alarmTime, Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+        log.info("USER id : {}, 알람 시간 : {}",userId,alarmTime);
+
+        try {
+            LocalTime time = LocalTime.parse(alarmTime); //HH:mm
+
+            if (time.getMinute() != 0 && time.getMinute() !=30) {
+                return null;
+            }
+
+
+            user.setAlarmTime(time);
+            userRepository.save(user);
+
+            return time.toString();
+
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+
     }
 }
