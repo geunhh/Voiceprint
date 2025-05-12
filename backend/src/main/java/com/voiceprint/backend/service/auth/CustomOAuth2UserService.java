@@ -3,6 +3,9 @@ package com.voiceprint.backend.service.auth;
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.api.auth.dto.GoogleResponse;
 import com.voiceprint.backend.api.auth.dto.OAuth2Response;
+import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
+import com.voiceprint.backend.domain.auth.ProfileImage;
+import com.voiceprint.backend.domain.auth.ProfileImageRepository;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -19,6 +23,7 @@ import java.util.UUID;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final ProfileImageRepository profileImageRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
@@ -42,10 +47,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
         String email = oAuth2Response.getEmail();
         String name = oAuth2Response.getName();
-
+        ProfileImage profileImage = profileImageRepository.findById(1L)
+                .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));;
         User user = userRepository.findByAuthProviderAndEmail(provider, email)
                 .orElseGet(() -> {
                     User newUser = User.builder()
+                            .profileImage(profileImage)
                             .email(email)
                             .nickname(name)
                             .authProvider(provider)
