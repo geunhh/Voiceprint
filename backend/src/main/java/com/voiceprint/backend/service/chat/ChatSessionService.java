@@ -94,7 +94,7 @@ public class ChatSessionService {
             String todayMessage = "오늘은 어떤일이 있었나요 >_< 꺄르륵 꺄르륵????";
             redisTemplate.delete(messageKey);
             redisTemplate.opsForList().rightPush(messageKey,
-                    new ChatMessage("SERVER", todayMessage));
+                    new ChatMessage("assistant", todayMessage));
 
             log.info("세션 생성 완료 : userId = {}, chatbotId={}", userId, chatbotId);
         } catch (RedisConnectionFailureException e ) {
@@ -142,7 +142,7 @@ public class ChatSessionService {
 
             for (Object msj : rawMessages) {
                 ChatMessage msg = (ChatMessage) msj;
-                result.add(new ChatMessageResponseDTO(msg.getRole(), msg.getMessage()));
+                result.add(new ChatMessageResponseDTO(msg.getRole(), msg.getContent()));
             }
 
             // 2. 글자수 토큰 추출
@@ -201,11 +201,11 @@ public class ChatSessionService {
         CompletableFuture.runAsync(() -> {
             try {
                 // reqeustBody 초기화
-                Map<String, String> requestBody = new HashMap<>();
-                requestBody.put("user_id", userId.toString());
+                Map<String, Long> requestBody = new HashMap<>();
+                requestBody.put("user_id", userId);
 
                 Map<String, Object> fastApiResponse = fastApiWebClient.post()
-                        .uri("/api/v1/diary")
+                        .uri("/api/v1/to_diary")
                         .bodyValue(requestBody)
                         .retrieve()
                         .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
