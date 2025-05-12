@@ -20,7 +20,7 @@ public class DiaryThema {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = true)
+    @JoinColumn(name = "user_id") // unique 해제
     private User user;
 
     @Column(length = 10)
