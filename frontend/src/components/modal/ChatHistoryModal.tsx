@@ -17,7 +17,7 @@ function ChatHistoryModal({ onClose }: ChatHistoryModalProps) {
     const fetchChat = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/diaries/diary/${diaryId}/chat`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/diaries/diary/${diaryId}/chat`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
