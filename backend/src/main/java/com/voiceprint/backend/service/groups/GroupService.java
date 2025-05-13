@@ -138,7 +138,8 @@ public class GroupService {
                 group.getAlarmTime(),
                 group.getCreatedAt(),
                 groupUserList,
-                groupUser.getJoinedAt()
+                groupUser.getJoinedAt(),
+                group.getGroupImage()
         );
     }
 
