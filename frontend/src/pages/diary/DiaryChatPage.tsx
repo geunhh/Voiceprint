@@ -30,7 +30,9 @@ export default function DiaryChatPage() {
     type: "success" | "fail";
   } | null>(null);
 
-  // 대화 불러오기
+  // 전체 글자 수 계산
+  const [totalToken, setTotalToken] = useState(100);
+
   // 대화 불러오기
   useEffect(() => {
     const fetchMessages = async () => {
@@ -47,14 +49,16 @@ export default function DiaryChatPage() {
 
         const savedMessages = data.data.chatlog;
         const token = data.data.curToken;
+        const total = data.data.totalToken;
 
         const formatted = savedMessages.map((msg: any) => ({
           from: msg.role === "USER" ? "user" : "ai",
-          text: msg.message,
+          text: msg.content,
         }));
 
         setMessages(formatted);
         setLimit(token); // 초기 curToken을 limit으로 설정
+        setTotalToken(total);
       } catch (err) {
         console.error("이전 대화 불러오기 실패:", err);
       }
@@ -98,9 +102,9 @@ export default function DiaryChatPage() {
     }
   };
 
-  // 일기 생성 요청
+  // 일기 생성 요청 30퍼 이상일 때
   const handleCreate = async () => {
-    if (limit < 60) {
+    if (limit < 30) {
       setAlert({
         message: "일기를 위한 소중한 이야기를 더 들려주세요",
         type: "fail",
@@ -142,13 +146,20 @@ export default function DiaryChatPage() {
     navigate("/diary/temp");
   };
 
+  // 남은 글자 수 계산
+  const remainingChars = Math.round(((100 - limit) / 100) * totalToken);
+
+  // 30퍼센트까지 도달하기 위해 남은 글자 수 계산
+  const remainingFor30 =
+    limit >= 30 ? 0 : Math.round(((30 - limit) / 100) * totalToken);
+
   return (
     <div className="flex flex-col h-screen bg-white">
       <div className="pt-12" />
 
       <div className="relative w-full max-w-[320px] mx-auto mb-8">
         <div className="flex items-center justify-between text-gray-500 text-sm mb-1">
-          대화량 {/* 60 이하이면 버튼 생성 금지 */}
+          대화량 {limit}%
           <Button
             text="일기 생성"
             type="fill"
@@ -159,17 +170,19 @@ export default function DiaryChatPage() {
         </div>
         <ProgressBar label="" progress={limit} />
         {/* 안내 멘트 */}
-        {limit >= 90 ? (
+        {limit >= 80 ? (
           <div className="text-center text-black text-sm mt-2 font-medium">
             충분한 이야기가 모였어요! 일기를 만들어보세요.
           </div>
-        ) : limit >= 60 ? (
+        ) : limit >= 30 ? (
           <div className="text-center text-gray-500 text-sm mt-2 font-medium">
             이제 곧 일기를 만들어갈 수 있어요!
           </div>
         ) : (
           <div className="text-center text-gray-400 text-sm mt-2 font-medium">
-            일기를 위한 소중한 이야기를 더 들려주세요
+            일기를 만들기까지{" "}
+            <span className="font-semibold text-black">{remainingFor30}자</span>{" "}
+            남았어요!
           </div>
         )}
       </div>
