@@ -141,8 +141,7 @@ public class DiaryService {
 
     public List<ChatMessageResponseDTO> getChatRecordFromDiary(HttpServletRequest request, Long diaryId) {
         // 유저 정보 조회
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
 
         // 일기 정보 조회

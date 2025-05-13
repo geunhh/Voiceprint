@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router";
-import axios from "axios";
+import { useState } from "react";
+
+import axiosInstance from "../../api/axiosInstance";
+
 import {
   create,
   group_default,
@@ -11,8 +14,8 @@ import {
   temp_default,
   temp_selected,
 } from "../../assets/icons";
+
 import AlertModal from "../modal/AlertModal";
-import { useState } from "react";
 
 interface TabbarProps {
   type: "Main" | "Temp" | "Create" | "Group" | "My";
@@ -22,7 +25,6 @@ interface TabbarProps {
 
 const Tabbar = ({ type: currentType }: TabbarProps) => {
   const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [alert, setAlert] = useState<{
     message: string;
     type: "success" | "fail";
@@ -31,14 +33,9 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
 
   const handleCreateClick = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/thema/using`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-          "Content-Type": "application/json",
-        },
-      });
-
+      const res = await axiosInstance.get("/api/thema/using");
       const themaId = res.data.data?.themaId;
+
       if (themaId === null) {
         navigate("/diary/setting/theme");
       } else {
@@ -50,56 +47,9 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
     }
   };
 
-  const handleTempClick = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/api/chat/session/status`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const status = res.data.data;
-      if (status === "DIARY_DONE") {
-        navigate("/diary/temp");
-      } else if (status === "DIARY_SAVED") {
-        setAlert({
-          message: "오늘 하루 일기를 이미 완성했어요!",
-          type: "fail",
-          callback: () => navigate("/my"),
-        });
-      } else if (status === "DIARY_CREATING") {
-        setAlert({
-          message: "현재 일기 생성 중이에요! 메인으로 이동합니다",
-          type: "fail",
-          callback: () => navigate("/main"),
-        });
-      } else if (status === "IN_PROGRESS") {
-        setAlert({
-          message: "아직 대화 중이에요! 채팅으로 이동합니다.",
-          type: "fail",
-          callback: () => navigate("/diary/chat"),
-        });
-      } else {
-        setAlert({
-          message: "아직 일기를 시작하지 않았어요. 지금 시작할까요?",
-          type: "fail",
-          callback: () => navigate("/diary/setting/theme"),
-        });
-      }
-    } catch (err) {
-      console.error("세션 상태 조회 실패:", err);
-      setAlert({
-        message: "세션 상태 조회에 실패했어요.",
-        type: "fail",
-        callback: () => navigate("/main"),
-      });
-    }
-  };
-
   const tabItems: TabbarProps[] = [
     { type: "Main", onClick: () => navigate("/main"), name: "메인" },
-    { type: "Temp", onClick: handleTempClick, name: "임시" },
+    { type: "Temp", onClick: () => navigate("/diary/temp"), name: "임시" }, // ✅ 리팩토링: 세션 확인 제거
     { type: "Create", onClick: handleCreateClick },
     { type: "Group", onClick: () => navigate("/group"), name: "그룹" },
     { type: "My", onClick: () => navigate("/my"), name: "마이" },
@@ -136,7 +86,7 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
             onClick={item.onClick}
           >
             <div
-              className={`$${
+              className={`${
                 item.type === "Create"
                   ? "flex items-center justify-center -mt-16"
                   : ""
@@ -145,7 +95,7 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
               <img
                 src={getIconSource(item.type)}
                 alt={item.name}
-                className={`$${
+                className={`${
                   item.type === "Create" ? "w-20 h-20" : "w-6 h-6"
                 }`}
               />
@@ -161,10 +111,10 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
         <AlertModal
           message={alert.message}
           type={alert.type}
-          onClose={() => setAlert(null)} // 닫기 버튼: 단순 닫기만
+          onClose={() => setAlert(null)}
           callback={() => {
             setAlert(null);
-            alert.callback?.(); // 확인 버튼: 닫고 + 이동
+            alert.callback?.();
           }}
         />
       )}

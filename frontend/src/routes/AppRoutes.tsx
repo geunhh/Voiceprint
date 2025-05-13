@@ -3,9 +3,9 @@ import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Tabbar from "../components/common/Tabbar";
 
-import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import axiosInstance from "../api/axiosInstance";
 import { RootState } from "../store/store";
 import { setUser } from "../store/userSlice";
 
@@ -19,7 +19,7 @@ import DiaryEditPage from "../pages/diary/DiaryEditPage";
 import DiaryFriendPage from "../pages/diary/DiaryFriendPage";
 import DiaryTempPage from "../pages/diary/DiaryTempPage";
 import DiaryThemePage from "../pages/diary/DiaryThemePage";
-import DiaryVoicePage from "../pages/diary/DiaryVoicePage";
+// import DiaryVoicePage from "../pages/diary/DiaryVoicePage";
 import AudioRecorder from "../components/audio/AudioRecorder";
 
 import GroupCreatePage from "../pages/group/GroupCreatePage";
@@ -67,14 +67,8 @@ const Layout = () => {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await axiosInstance.get("/api/v1/user/profile");
+
         const { userId, nickname, imageUrl } = res.data.data;
         dispatch(setUser({ userId, nickname, imageUrl }));
       } catch (err) {

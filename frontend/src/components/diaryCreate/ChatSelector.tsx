@@ -1,6 +1,6 @@
 // src/components/diaryCreate/ChatSelector.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import axiosInstance from "../../api/axiosInstance";
 
 // 로컬에 저장된 기본 아이콘들
 import chatBlack from "../../assets/icons/chatBlack.png";
@@ -39,22 +39,11 @@ export default function ChatSelector({ onSelect }: ChatSelectorProps) {
     햇살이: chatYellow,
   };
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const Authorization = localStorage.getItem("Authorization");
-
-  const api = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-      Authorization: `Bearer ${Authorization}`,
-      "Content-Type": "application/json",
-    },
-  });
-
   // 1) 마운트 시 서버에서 챗봇 리스트 가져오기
   useEffect(() => {
     async function fetchChatbots() {
       try {
-        const res = await api.get("/api/chatbot");
+        const res = await axiosInstance.get("/api/chatbot");
 
         if (!res.data || !res.data.data) {
           console.error("챗봇 데이터가 비어있습니다:", res.data);

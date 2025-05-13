@@ -70,7 +70,7 @@ public class User {
 
     // 현재 사용중인 테마 (단방향 연관)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "using_thema_id")
+    @JoinColumn(name = "using_thema_id", unique = false)
     private DiaryThema usingThema;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

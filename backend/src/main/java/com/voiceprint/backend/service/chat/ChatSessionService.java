@@ -88,6 +88,7 @@ public class ChatSessionService {
             metadata.put("chatbotId", chatbotId);   //id
             metadata.put("chatPrompt", prompt);     //prompt
             metadata.put("status", ChatSessionStatus.IN_PROGRESS.name()); //status
+            metadata.put("total_token", 0);
             redisTemplate.opsForHash().putAll(sessionKey, metadata);
 
             // 첫 메시지 초기화
