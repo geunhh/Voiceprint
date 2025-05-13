@@ -44,8 +44,8 @@ export default function DiaryChatPage() {
         const total = data.data.totalToken;
 
         const formatted = savedMessages.map((msg: any) => ({
-          from: msg.role === "USER" ? "user" : "ai",
-          text: msg.content,
+          from: msg.role === "user" ? "user" : "ai",
+          text: msg.message,
         }));
 
         setMessages(formatted);
