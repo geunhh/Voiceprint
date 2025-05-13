@@ -14,12 +14,16 @@ import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.domain.diary.DiaryRepository;
 import com.voiceprint.backend.domain.diary.Emotion;
 import com.voiceprint.backend.domain.diary.EmotionRepository;
+import com.voiceprint.backend.domain.thema.DiaryThema;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -28,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class ChatSessionService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -35,10 +40,12 @@ public class ChatSessionService {
     private final UserRepository userRepository; // UserRepsitory 병합시 수정하기
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
+    private final WebClient fastApiWebClient;
 
     /**
      * 세션을 시작하는 메소드
      */
+    @Transactional(readOnly = true)
     public void startSession(Long userId, Long chatbotId) {
         String sessionKey = "chat_session:"+userId;
         String messageKey = "chat_session_messages:" + userId;
@@ -141,31 +148,60 @@ public class ChatSessionService {
     public void endSession(Long userId) {
         // 채팅 관련 Redis 키.
         String sessionKey = "chat_session:"+userId;
-        String messageKey = "chat_session_messages:"+userId;
+
+        // 일기 생성 직전 유저가 선택한 일기 테마를 Redis 서버에 갱신해줌
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
+
+        DiaryThema thema = user.getUsingThema();
+        String cur_thema_title = thema.getTitle();
+        String cur_thema_prompt = thema.getPrompt();
+        String cur_thema_description = thema.getDescription();
+        String cur_thema_example = thema.getExample();
 
         // 1. 상태값을 DIARY_CREATING(일기 생성중)으로 갱신
         redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_CREATING.name());
 
+        // 1.5 일기 생성에 필요한 테마 정보 갱신
+        redisTemplate.opsForHash().put(sessionKey,"themeTitle",cur_thema_title);
+        redisTemplate.opsForHash().put(sessionKey,"themeDescription",cur_thema_description);
+        redisTemplate.opsForHash().put(sessionKey,"themePrompt",cur_thema_prompt);
+        redisTemplate.opsForHash().put(sessionKey,"themeDiary",cur_thema_example);
+
         // 2. 백그라운드에서 일기 생성 비동기 처리
         CompletableFuture.runAsync(() -> {
             try {
-                // Todo : 하기 부분은 FastAPI에서 처리할 예정.
+                // reqeustBody 초기화
+                Map<String, String> requestBody = new HashMap<>();
+                requestBody.put("user_id", userId.toString());
 
-                // Redis에서 메시지 꺼내기
-                List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);
-                String diary = generateDiary(messages);
-                String title = "임시 일기 제목입니다.";
-                String emotion = "감정이 들어갈 곳";
+                Map<String, Object> fastApiResponse = fastApiWebClient.post()
+                        .uri("/api/v1/diary")
+                        .bodyValue(requestBody)
+                        .retrieve()
+                        .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                                resp -> resp.bodyToMono(String.class).flatMap(body -> {
+                                    log.error("FastAPI error [{}]: {}", resp.statusCode(), body);
+                                    return Mono.error(new RuntimeException("FastAPI 호출 실패"));
+                                })
+                        )
+                        .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {
+                        })
+                        .block();
 
-                Thread.sleep(4000); //4초 대기
+                // FastAPI response 파싱
+                String diary = fastApiResponse.get("diary").toString();
+                String title = fastApiResponse.get("title").toString();
+                String emotion = fastApiResponse.get("emotion").toString();
 
-
-                // 일기 저장 및 상태 변경
+                // 일기 저장 및 상태 변경 => Redis
                 redisTemplate.opsForHash().put(sessionKey,"tempDiary",diary);
                 redisTemplate.opsForHash().put(sessionKey,"tempTitle",title);
-                redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now().toString()); //Todo:식간 -6
-                redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
                 redisTemplate.opsForHash().put(sessionKey,"emotion",emotion);
+                redisTemplate.opsForHash().put(sessionKey,"createdAt", LocalDateTime.now().toString()); //Todo:식간 -6
+                // status 변경
+                redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
+                log.info("일기 생성이 완료되었습니다.");
             }
             catch (Exception e) {
                 log.error("일기 생성 중 에러발생 : {}",e.getMessage());
@@ -264,7 +300,7 @@ public class ChatSessionService {
 
     }
 
-    @Transactional
+    @Transactional(readOnly = false)
     public Long confirmDiary(Long userId) {
         String sessionKey = "chat_session:"+userId;
         String messageKey = "chat_session_messages:"+userId;

@@ -32,7 +32,7 @@ public class DiaryThema {
     private String example;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String prompt;
 
     @CreationTimestamp

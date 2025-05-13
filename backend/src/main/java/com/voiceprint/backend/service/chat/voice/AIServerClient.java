@@ -2,15 +2,13 @@ package com.voiceprint.backend.service.chat.voice;
 
 import com.voiceprint.backend.api.chat.voice.VoiceChatWebSocketHandler;
 import jakarta.annotation.PreDestroy;
-import jakarta.websocket.ContainerProvider;
-import jakarta.websocket.Session;
-import jakarta.websocket.WebSocketContainer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -22,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AIServerClient {
 
     @Lazy
-    private final VoiceChatWebSocketHandler voiceChatHandler;
+    private VoiceChatWebSocketHandler voiceChatHandler;
 
     @Value("${ai-server.url}")
     private String aiServerUrl;
@@ -42,8 +40,8 @@ public class AIServerClient {
                 public void handleText(String message) {
                     try {
                         voiceChatHandler.handleAIServerResponse(clientSessionId, message);
-                    } catch (Exception e) {
-                        log.error("텍스트 메시지 처리 오류", e);
+                    } catch (IOException e) {
+                        log.error("텍스트 메시지 처리 중 IOException 발생: {}", e.getMessage());
                     }
                 }
 
@@ -51,16 +49,16 @@ public class AIServerClient {
                 public void handleBinary(ByteBuffer buffer) {
                     try {
                         voiceChatHandler.handleAIServerResponse(clientSessionId, buffer);
-                    } catch (Exception e) {
-                        log.error("바이너리 메시지 처리 오류", e);
+                    } catch (IOException e) {
+                        log.error("바이너리 메시지 처리 중 IOException 발생: {}", e.getMessage());
                     }
                 }
             });
 
             aiEndpoints.put(clientSessionId, endpoint);
-            log.info("AI 서버 연결 성공 - 클라이언트 세션: {}", clientSessionId);
+            log.info("✅ AI 서버 연결 성공 - 클라이언트 세션: {}", clientSessionId);
         } catch (Exception e) {
-            log.error("AI 서버 연결 실패", e);
+            log.error("🚨 AI 서버 연결 실패", e);
         }
     }
 
@@ -71,9 +69,9 @@ public class AIServerClient {
         AIServerEndpoint endpoint = aiEndpoints.get(clientSessionId);
         if (endpoint != null) {
             endpoint.sendText(message);
-            log.debug("텍스트 메시지 전송 - 사용자: {}, 세션: {}", userId, clientSessionId);
+            log.info("✅ 텍스트 메시지 전송 - 사용자: {}, 세션: {}", userId, clientSessionId);
         } else {
-            log.warn("AI 서버 세션 없음 - 세션: {}", clientSessionId);
+            log.warn("❌ AI 서버 세션 없음 - 세션: {}", clientSessionId);
         }
     }
 
@@ -84,18 +82,10 @@ public class AIServerClient {
         AIServerEndpoint endpoint = aiEndpoints.get(clientSessionId);
         if (endpoint != null) {
             endpoint.sendBinary(buffer);
-            log.debug("바이너리 메시지 전송 - 사용자: {}, 세션: {}, 크기: {}", userId, clientSessionId, buffer.remaining());
+            log.info("✅ 바이너리 메시지 전송 - 사용자: {}, 세션: {}, 크기: {}", userId, clientSessionId, buffer.remaining());
         } else {
-            log.warn("AI 서버 세션 없음 - 세션: {}", clientSessionId);
+            log.warn("❌ AI 서버 세션 없음 - 세션: {}", clientSessionId);
         }
-    }
-
-    /**
-     * 오디오 처리 완료 통지
-     */
-    public void notifyAudioComplete(String clientSessionId, Long userId, Map<String, Object> messageMap) {
-        String message = "{\"action\":\"audio_complete\"}";
-        sendTextMessage(clientSessionId, userId, message);
     }
 
     /**
@@ -105,10 +95,16 @@ public class AIServerClient {
         AIServerEndpoint endpoint = aiEndpoints.remove(clientSessionId);
         if (endpoint != null) {
             endpoint.close();
-            log.info("AI 서버 연결 종료 - 사용자: {}, 세션: {}", userId, clientSessionId);
+            log.info("🔌 AI 서버 연결 종료 - 사용자: {}, 세션: {}", userId, clientSessionId);
         }
     }
-
+    /**
+     * 오디오 처리 완료 통지
+     */
+    public void notifyAudioComplete(String clientSessionId, Long userId, Map<String, Object> messageMap) {
+        String message = "{\"action\":\"audio_complete\"}";
+        sendTextMessage(clientSessionId, userId, message);
+    }
     /**
      * 서버 종료 시 정리
      */

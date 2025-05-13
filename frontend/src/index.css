@@ -42,7 +42,7 @@
   overflow-y: auto; /* 내용이 넘칠 때만 스크롤 */
 }
 
-/* 아이펀 se인 경우 달력 높이 제한 */
+/* 아이폰 se인 경우 달력 높이 제한 */
 @media (max-height: 667px) {
   .calendar-compact {
     --cell-height: 50px;
@@ -64,9 +64,30 @@
   }
 }
 
-/* 화면 크기가 700 이하인 경우 그룹 생성 및 수정 페이지 하단 여백 추가 */
+/* 화면 크기가 740 이하인 경우 특정 페이지 하단 여백 추가 */
 @media (max-height: 740px) {
   .short-screen-padding {
     padding-bottom: 6rem;
+  }
+}
+
+/* 화면 크기가 740 이하인 경우 댓글 내용 높이 제한 */
+@media (max-height: 740px) {
+  .comment-list {
+    max-height: 350px !important;
+  }
+}
+
+/* 아이폰 se인 경우 댓글 내용 높이 제한 */
+@media (max-height: 667px) {
+  .comment-list {
+    max-height: 300px !important;
+  }
+}
+
+/* 화면 크기가 915 이하인 경우 정보 수정 페이지 하단 여백 추가 */
+@media (max-height: 915px) {
+  .thema-list-padding {
+    padding-bottom: 7rem;
   }
 }

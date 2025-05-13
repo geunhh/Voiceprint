@@ -2,6 +2,7 @@ package com.voiceprint.backend.api.chat.voice;
 
 import com.voiceprint.backend.api.chat.voice.dto.VoiceSessionResponseDto;
 //import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +20,21 @@ import java.util.Map;
 public class VoiceController {
 
     private final AuthService authService;
-
+    private final JWTUtil jwtUtil;
     /**
      * 음성 대화 세션 정보를 반환합니다.
      * 웹소켓 연결에 필요한 토큰과 URL을 제공합니다.
      */
     @GetMapping("/session")
     public ResponseEntity<VoiceSessionResponseDto> getVoiceSession(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
+        String token = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+
+        if (token == null) {
             return ResponseEntity.status(401).body(null);
         }
 
-        Long userId = authService.getUserIdFromAuthHeader(authHeader);
+        Long userId = authService.getUserIdFromRequest(request);
 
         if (userId == null) {
             return ResponseEntity.status(401).body(null);
@@ -40,10 +42,10 @@ public class VoiceController {
 
         // 웹소켓 연결 정보 생성
         VoiceSessionResponseDto responseDto = VoiceSessionResponseDto.builder()
-                .wsUrl("ws://localhost:8080/ws?token=" + authHeader.substring(7))
+                .wsUrl("ws://localhost:8080/ws?token=" + token)
                 .userId(userId)
                 .build();
-
+        System.out.printf("######wsUrl= "+"ws://localhost:8080/ws?token=" + token);
         return ResponseEntity.ok(responseDto);
     }
 }

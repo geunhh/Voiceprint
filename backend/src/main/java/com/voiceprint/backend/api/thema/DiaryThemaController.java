@@ -3,6 +3,7 @@ package com.voiceprint.backend.api.thema;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateRequest;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateResponse;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
+import com.voiceprint.backend.api.thema.dto.UsingDiaryThemaResponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.domain.thema.DiaryThemaRepository;
 import com.voiceprint.backend.service.auth.AuthService;
@@ -27,7 +28,9 @@ public class DiaryThemaController {
     @GetMapping("/all")
     public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThmeas(
             HttpServletRequest request    ) {
-        Long userId = 1L;
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 일기 테마 전체 조회 / userid : {}",userId);
         DiaryThemaListResponseDTO response = diaryThemaService.getThemasForUser(userId);
         return ResponseEntity.ok(
                 new CommonResponse<>(200,"일기 테마 조회 성공",response));
@@ -37,7 +40,10 @@ public class DiaryThemaController {
     public ResponseEntity<CommonResponse<Void>> selectTheam(
             @PathVariable Long themaId,
             HttpServletRequest request) {
-        Long userId = 1L;
+//        Long userId = 1L;
+
+        Long userId = authService.getUserIdFromRequest(request);
+        log.info("## 일기 테마 선택 / userid : {}",userId);
         diaryThemaService.selectThema(userId,themaId);
 
         return ResponseEntity.ok(new CommonResponse<>(
@@ -50,9 +56,9 @@ public class DiaryThemaController {
             @Valid @RequestBody DiaryThemaCreateRequest request,
             HttpServletRequest httprequest
     ) {
-//        Long userId = authService.getUserIdFromRequest(httprequest);
-        Long userId = 1L;
-        log.info("userid: {}", userId);
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("## 커스텀 테마 생성 / userid : {}",userId);
 
         DiaryThemaCreateResponse response = diaryThemaService.createCustomThema(userId, request.getExampleDiary());
 
@@ -60,4 +66,37 @@ public class DiaryThemaController {
                 201, "커스템 테마 생성 완료", response
         ));
     }
+
+    @PatchMapping("/extract/{diaryId}")
+    public ResponseEntity<CommonResponse<?>> extractThema(
+            @PathVariable Long diaryId,
+            HttpServletRequest httprequest
+    ) {
+//        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("## 일기에서 테마 추출 / userid : {}",userId);
+        diaryThemaService.updateCustomThemaFromDiary(userId,diaryId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "커스텀 테마 수정 완료", null
+        ));
+    }
+
+    /**
+     * 유저 UsingThema 조회 API
+     */
+    @GetMapping("/using")
+    public ResponseEntity<CommonResponse<UsingDiaryThemaResponseDTO>> getUsingThema(
+            HttpServletRequest request
+    ) {
+        log.info("### UsingThema 조회 API 호출");
+        Long userId = authService.getUserIdFromRequest(request);
+        UsingDiaryThemaResponseDTO response = diaryThemaService.getUsingThema(userId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "현재 사용 중인 테마 ID 조회 성공", response
+        ));
+
+    }
+
 }
