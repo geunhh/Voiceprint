@@ -117,7 +117,7 @@ export default function DiaryFriendPage() {
     } catch (err) {
       console.error("세션 시작 실패:", err);
     }
-    navigate("/diary/chat");
+    navigate("/diary/setting/friend");
   };
 
   return (
