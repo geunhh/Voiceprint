@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/group")
 @RequiredArgsConstructor
@@ -72,6 +74,15 @@ public class GroupUserController {
 
         Long userId = authService.getUserIdFromRequest(request);
         return groupUserService.promoteToAdmin(groupId, userId, newUserId);
+    }
+    /**
+     * 내가 속한 그룹 조회
+     */
+    @GetMapping("/my")
+    public ResponseEntity<CommonResponse<List<MyGroupResponse>>> getMyGroups(HttpServletRequest request) {
+        Long userId = authService.getUserIdFromRequest(request);
+        List<MyGroupResponse> myGroups = groupService.getMyGroups(userId);
+        return ResponseEntity.ok(new CommonResponse<>(200, "내 그룹 목록 조회 성공", myGroups));
     }
 }
 

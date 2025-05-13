@@ -131,4 +131,26 @@ public class GroupService {
                 groupUser.getJoinedAt()
         );
     }
+
+    public List<MyGroupResponse> getMyGroups(Long userId) {
+        List<Group> groups = groupRepository.findAllByUserId(userId);
+
+        return groups.stream().map(group -> {
+            List<GroupUser> groupUsers = groupUserRepository.findAllByGroupId(group.getId());
+            int memberCount = groupUsers.size();
+            List<String> profileImages = groupUsers.stream()
+                    .limit(3)
+                    .map(gu -> gu.getUser().getProfileImage().getImageUrl())
+                    .collect(Collectors.toList());
+
+            return new MyGroupResponse(
+                    group.getId(),
+                    group.getName(),
+                    group.getGroupImage(),
+                    memberCount,
+                    profileImages,
+                    group.getCreatedAt()
+            );
+        }).collect(Collectors.toList());
+    }
 }
