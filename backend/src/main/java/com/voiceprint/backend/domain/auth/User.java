@@ -69,7 +69,7 @@ public class User {
     private DiaryThema customThema;
 
     // 현재 사용중인 테마 (단방향 연관)
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "using_thema_id")
     private DiaryThema usingThema;
 
