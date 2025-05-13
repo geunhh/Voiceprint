@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
+import axiosInstance from "../../api/axiosInstance";
 import closeIcon from "../../assets/icons/close.png";
 import profileSelect from "../../assets/icons/profileSelect.png";
 import Button from "../common/Button";
@@ -31,15 +31,7 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
   useEffect(() => {
     const fetchProfileImages = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profileimage`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const res = await axiosInstance.get("/api/v1/user/profileimage");
         setProfileList(res.data.data);
 
         const current = res.data.data.find(
@@ -59,19 +51,10 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
     const updatedImageId = selectedId;
 
     try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profile`,
-        {
-          nickname: updatedNickname,
-          profileImageId: updatedImageId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axiosInstance.patch("/api/v1/user/profile", {
+        nickname: updatedNickname,
+        profileImageId: updatedImageId,
+      });
 
       const newImageUrl = profileList.find(
         (img) => img.id === updatedImageId
@@ -83,7 +66,6 @@ function ProfileEditModal({ userName, userImage, onClose }: ProfileEditProps) {
           imageUrl: newImageUrl,
         })
       );
-      console.log(updatedNickname);
       onClose();
     } catch (error) {
       console.error("프로필 업데이트 실패", error);

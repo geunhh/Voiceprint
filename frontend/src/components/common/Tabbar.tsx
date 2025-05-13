@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";
 import {
   create,
   group_default,
@@ -12,7 +13,6 @@ import {
   temp_selected,
 } from "../../assets/icons";
 import AlertModal from "../modal/AlertModal";
-import { useState } from "react";
 
 interface TabbarProps {
   type: "Main" | "Temp" | "Create" | "Group" | "My";
@@ -31,12 +31,7 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
 
   const handleCreateClick = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/thema/using`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await axiosInstance.get("/api/thema/using");
 
       const themaId = res.data.data?.themaId;
       if (themaId === null) {
@@ -52,12 +47,7 @@ const Tabbar = ({ type: currentType }: TabbarProps) => {
 
   const handleTempClick = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/chat/session/status`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await axiosInstance.get("/api/chat/session/status");
 
       const status = res.data.data;
       if (status === "DIARY_DONE") {

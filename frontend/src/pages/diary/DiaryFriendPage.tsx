@@ -9,7 +9,7 @@ import ChatSelector from "../../components/diaryCreate/ChatSelector";
 import AlertModal from "../../components/modal/AlertModal";
 import ChatExistModal from "../../components/modal/ChatExistModal";
 
-import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";
 import { setCharacter } from "../../store/characterSlice";
 
 export default function DiaryFriendPage() {
@@ -31,19 +31,10 @@ export default function DiaryFriendPage() {
     callback?: () => void;
   } | null>(null);
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const api = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-      "Content-Type": "application/json",
-    },
-  });
-
   useEffect(() => {
     const checkSessionStatus = async () => {
       try {
-        const res = await api.get("/api/chat/session/status");
+        const res = await axiosInstance.get("/api/chat/session/status");
         const status: string | null = res.data.data;
         console.log("현재 세션 상태:", status);
 
@@ -85,14 +76,22 @@ export default function DiaryFriendPage() {
   };
 
   const handleChatClick = async () => {
+    if (!selectedCharacter.id) {
+      setAlert({
+        message: "대화할 친구를 먼저 선택해주세요.",
+        type: "info",
+      });
+      return;
+    }
+
     dispatch(setCharacter(selectedCharacter));
 
     try {
-      const res = await api.get("/api/chat/session/status");
+      const res = await axiosInstance.get("/api/chat/session/status");
       const status: string | null = res.data.data;
 
-      if (status === null || status === "WAITING") {
-        await api.post("/api/chat/session/start", {
+      if (!status || status === "WAITING") {
+        await axiosInstance.post("/api/chat/session/start", {
           chatbotId: selectedCharacter.id,
         });
         navigate("/diary/chat");
@@ -111,7 +110,7 @@ export default function DiaryFriendPage() {
   const handleRestart = async () => {
     setModalOpen(false);
     try {
-      await api.post("/api/chat/session/start", {
+      await axiosInstance.post("/api/chat/session/start", {
         chatbotId: selectedCharacter.id,
       });
     } catch (err) {

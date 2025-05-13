@@ -1,12 +1,12 @@
 /* src/pages/diary/DiaryTempPage.tsx */
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
+import arrowButton from "../../assets/icons/button/arrowButton.png";
 import Button from "../../components/common/Button";
 import PageTitle from "../../components/common/PageTitle";
 import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import AlertModal from "../../components/modal/AlertModal";
-import arrowButton from "../../assets/icons/button/arrowButton.png";
 
 interface Diary {
   title: string;
@@ -38,15 +38,7 @@ export default function DiaryTempPage() {
   // 임시 일기 데이터 조회
   const fetchDiary = async () => {
     try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const { data } = await axiosInstance.get("/api/chat/diary/temp");
 
       const { title, diary: content, createdAt, emotion } = data.data;
       const date = new Date(createdAt);
@@ -65,16 +57,8 @@ export default function DiaryTempPage() {
   // 임시 일기 재생성
   const handleEdit = async () => {
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/retry`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axiosInstance.post("/api/chat/diary/temp/retry", {});
+
       setAlert({
         message: "일기를 다시 생성하고 있어요!",
         type: "success",
@@ -91,16 +75,8 @@ export default function DiaryTempPage() {
   // 일기 생성(확정) post 요청
   const handleSave = async () => {
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/confirm`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await axiosInstance.post("/api/chat/diary/temp/confirm", {});
+
       const { diaryId } = res.data.data;
       navigate(`/diary/${diaryId}`);
     } catch (err) {

@@ -5,8 +5,10 @@ pipeline {
     gitlab(
       triggerOnPush: true,
       triggerOnMergeRequest: true,
-      branchFilterType: 'NameBasedFilter',
-      includeBranchesSpec: 'release'
+      branchFilterType: 'RegexBasedFilter',
+      includeBranchesSpec: '',
+      targetBranchRegex: 'release',
+      secretToken: '04dfb6f16a2855a873d237a5046dd45d'
     )
   }
 

@@ -1,7 +1,7 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import axiosInstance from "../api/axiosInstance";
 import notificationIcon from "../assets/icons/notification.png";
 import DiaryPreview from "../components/common/DiaryPreview";
 import MonthEmotion from "../components/main/MonthEmotion";
@@ -114,15 +114,7 @@ export default function MainPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const res = await axiosInstance.get("/api/v1/user/profile");
 
         const { userId, nickname, imageUrl } = res.data.data;
 
