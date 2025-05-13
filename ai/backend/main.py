@@ -50,7 +50,7 @@ async def verify_API(token : Annotated) :
     if token != os.getenv("BACKEND_API") : 
         raise HTTPException(status_code=400, detail="TOKEN INVALID. USE CORRECT TOKEN TO ACCESS")
 
-
+"""
 
 # 오디오 파일 변환 함수 (WebM → WAV)
 def convert_webm_to_wav(webm_bytes):
@@ -67,6 +67,8 @@ def convert_webm_to_wav(webm_bytes):
     except Exception as e:
         print(f"변환 중 오류 발생: {e}")
         return None
+    
+
 
 # STT 함수 (WebM 데이터를 텍스트로 변환)
 def stt(audio_data):
@@ -97,7 +99,49 @@ def stt(audio_data):
         print(f"음성 인식 오류: {e}")
         return None
 
+"""
 
+import wave
+import tempfile
+import os
+import io
+
+def stt(audio_data):
+    if not audio_data:
+        print("오디오 데이터가 없습니다.")
+        return None
+
+    try:
+        # 직접 WAV 헤더 생성 (16kHz, 16비트, 모노)
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+            temp_wav_path = temp_file.name
+        
+            # WAV 파일로 저장
+            wf = wave.open(temp_wav_path, "wb")
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(16000)
+            wf.writeframes(audio_data)
+            wf.close()
+        with open(temp_wav_path, 'rb') as audio_file:
+            # OpenAI API로 전송
+            # print(temp_wav_path)
+            transcript = client.audio.transcriptions.create(
+                file=audio_file,
+                model="whisper-1",
+                language="ko",
+                temperature=0.7
+            )
+            
+            print(f"인식된 텍스트: {transcript.text}")
+            
+            return transcript.text
+        
+    except Exception as e:
+        print(f"STT 처리 중 오류 발생: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 async def llm(speak) : 
     if speak : 
@@ -122,7 +166,7 @@ async def tts(message):
         
         return audio_bytes
     
-    
+"""   
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -201,6 +245,133 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close()
     except Exception as e:
         print(f"오류 발생: {e}")
+
+
+"""
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    print("WebSocket 연결 수락됨")
+    # chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
+    # userinfo = await websocket.receive()
+    user_id = websocket.query_params.get("userId")
+    # print("user_id", user_id)
+
+    chatbot_info = r.hgetall(f"chat_session:{user_id}") #챗봇 프롬프트
+    #생각해보니까 이거 어차피 챗봇 프롬프트에서 Ai 성격 프롬프트가 있잖아? 매번 확인해야 하긴 하네
+    chat_history  =r.lrange(f"chat_session_messages:{user_id}", 0, -1)
+    # print(chat_history)
+
+    if int(chatbot_info["total_token"]) > 700 : 
+        return {"chatting_response": "챗봇 토큰 수를 초과하였습니다.", "token" : chatbot_info["total_token"]}
+    
+    # print(chat_history, chatbot_info)
+    
+    #기존 채팅 히스토리 가져오기. json형태이므로, 안타깝게도 이건 바이너리 형태.....하 
+    chat_history = list(map(json.loads,chat_history))
+    # print(chat_history)
+    chat_history = [{"role" : "system", "content" : chatbot_info["chatPrompt"]}] + chat_history 
+
+    # 데이터 없으면 user id가 잘못된 상황으로 판단, not correct 예외 처리
+    if not chatbot_info:
+        raise HTTPException(status_code=404, detail="user id not correct")
+    # print(chatbot_info)
+
+
+    # 오디오 데이터 버퍼
+    audio_buffer = b''
+    # chat_history = [{"role" :"system", "content": chat_character}]
+    
+    try:
+        while True:
+            # 메시지 수신 (바이너리 또는 텍스트)
+            message = await websocket.receive()
+            # print(message)
+            
+            # 바이너리 데이터 (오디오) 처리
+            if "bytes" in message:
+                audio_data = message["bytes"]
+                print(f"수신된 오디오 데이터 크기: {len(audio_data)} 바이트")
+                audio_buffer += audio_data
+            
+            # 텍스트 메시지 (JSON) 처리
+            elif "text" in message:
+                print("text in message:")
+                try:
+                    data = json.loads(message["text"])
+                    print(f"수신된 JSON 메시지: {data}")
+                    
+                    print(audio_buffer)
+                    # audio_complete 메시지 처리
+                    # if data.get("action") == "audio_complete" and audio_buffer:
+                    if "Done" in data and audio_buffer:
+                        print("오디오 처리 시작")
+                        
+                        # STT 처리
+                        transcription = stt(audio_buffer)
+                        print(transcription)
+                        if not transcription : 
+                            await websocket.send_json({
+                                "error": "음성 인식 실패"
+                            }) 
+                        
+                        if transcription:
+                            # 처리 결과를 클라이언트에 전송
+                            await websocket.send_json({
+                                "transcription": transcription
+                            })
+                            # transcriotion 에 있는 내용 백엔드에 보내기보단 redis 에 저장
+                            chat_history.append({"role" : "user", "content" : transcription})    
+                        
+                            # 버퍼 초기화
+                            audio_buffer = None
+
+                            # LLM 에서 대댑을 해줌
+                            response = await llm(transcription)
+                            if response :
+                                
+                                chat_history.append({"role" : "assistant", "content" : response})
+                                await websocket.send_json({
+                                    "chatting" : [
+                                        {"role" : "user", "content" : transcription},
+                                        {"role" : "assistant", "content" : response}
+                                    ],
+                                    "token" : len(transcription)+len(response)
+
+                                })
+                                # openai TTS 
+                                return_voice = await tts(response)
+                                # response를 redis에 저장하는 기능을 여기 넣자. 
+
+                                print("여기까지됨 2222")
+                                await websocket.send_bytes(return_voice)
+                            else : 
+                                await websocket.send_json({"error" : "LLM response fail"})
+                        else : 
+                            await websocket.send_json({
+                                "error": "음성 인식 실패"
+                            }) 
+
+
+                        audio_buffer = b''
+
+
+                except json.JSONDecodeError:
+                    print("잘못된 JSON 형식")
+            
+            else:
+                print(f"알 수 없는 메시지 형식: {message}")
+    
+    except WebSocketDisconnect:
+        print("클라이언트 연결 종료")
+        if websocket.application_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
+    except Exception as e:
+        print(f"오류 발생: {e}")
+
+
+
+
 
 async def chat(request) : 
     response = client.chat.completions.create(

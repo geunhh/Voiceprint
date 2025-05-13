@@ -30,6 +30,7 @@ const AudioRecorder = () => {
   const websocketRef = useRef(null);
   const audioChunksRef = useRef([]);
   const audioElementRef = useRef(null);
+  const startTimeRef = useRef(null);
 
   // WebSocket 연결 함수
   const connectWebSocket = async () => {
@@ -140,11 +141,34 @@ const AudioRecorder = () => {
       const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
 
+      // 녹음 시작 시간 저장
+      startTimeRef.current = Date.now();
+
       // 녹음 데이터가 수신될 때 처리
       mediaRecorder.ondataavailable = async (event) => {
         if (event.data.size > 0) {
           console.log("📥 오디오 데이터 수신:", event.data.size, "바이트");
           await sendAudioToWebSocket(event.data);
+        }
+      };
+      mediaRecorder.onstop = () => {
+        const endTime = Date.now();
+        const durationInSeconds = ((endTime - startTimeRef.current) / 1000).toFixed(1);
+
+        const message = {
+          type: 'silent',
+          content:{
+            action: 'audio_complete',
+            duration: parseFloat(durationInSeconds),
+            has_speech: true
+          }
+        };
+
+        if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+          websocketRef.current.send(JSON.stringify(message));
+          console.log("🟡 모든 오디오 전송 후 메시지 전송:", message);
+        } else {
+          console.error("❌ WebSocket이 열려 있지 않아서 메시지를 보낼 수 없습니다.");
         }
       };
 
