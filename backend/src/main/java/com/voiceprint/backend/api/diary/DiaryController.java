@@ -61,7 +61,7 @@ public class DiaryController {
      * @param size
      * @param request
      */
-    @GetMapping("/me/diaries")
+    @GetMapping("/me/all")
     public ResponseEntity<CommonResponse<DiaryListWithCursorDTO>> getMyDiaries(
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "7") int size,
