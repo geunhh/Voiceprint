@@ -73,20 +73,31 @@ export default function GroupCreatePage() {
       return;
     }
 
+    // 백엔드 전송용 요일 한글-> 영어 매핑
+    const dayMap: Record<string, string> = {
+      월요일: "MONDAY",
+      화요일: "TUESDAY",
+      수요일: "WEDNESDAY",
+      목요일: "THURSDAY",
+      금요일: "FRIDAY",
+      토요일: "SATURDAY",
+      일요일: "SUNDAY",
+    };
+
+    const mappedDays = alarmDays.map((korean) => dayMap[korean]);
+
     const formData = new FormData();
     formData.append("name", groupName);
     formData.append("groupImage", groupImageFile);
     formData.append("enableAlarm", String(enableAlarm));
     if (enableAlarm) {
-      formData.append("alarmTime", alarmTime);
-      formData.append("alarmDays", JSON.stringify(alarmDays));
+      formData.append("alarmTime", `${alarmTime}:00`);
+      mappedDays.forEach((day) => formData.append("alarmDays", day));
     }
 
     try {
-      const { data } = await axiosInstance.post("/api/v1/group", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      // 성공 시 해당 그룹 상세 페이지로 이동동
+      const { data } = await axiosInstance.post("/api/v1/group", formData);
+      // 성공 시 해당 그룹 상세 페이지로 이동
       navigate(`/group/${data.data.groupId}`);
     } catch (err) {
       console.error(err);
