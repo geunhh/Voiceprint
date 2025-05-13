@@ -16,7 +16,7 @@ import io.jsonwebtoken.Jwts;
 public class JWTUtil {
     private Key key;
 
-    private final long accessTokenValidity = 1000 * 60 * 1; // 10분
+    private final long accessTokenValidity = 1000 * 60 * 10; // 10분
     private final long refreshTokenValidity = 1000 * 60 * 60 * 24 * 1; // 1일
 
     public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
