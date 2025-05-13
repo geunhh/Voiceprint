@@ -78,9 +78,9 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/").permitAll()
-//                        .anyRequest().authenticated()); // 일단 막기.
-                        .anyRequest().permitAll());
+                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao").permitAll()
+                        .anyRequest().authenticated()); // 일단 막기.
+//                        .anyRequest().permitAll());
 
         //세션 설정 : STATELESS
         http
