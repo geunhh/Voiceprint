@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 interface ImageUploaderProps {
   defaultImage: string;
-  onImageChange?: (imageDataUrl: string) => void;
+  onImageChange?: (file: File) => void;
 }
 
 export default function ImageUploader({
@@ -24,7 +24,7 @@ export default function ImageUploader({
     reader.onload = () => {
       if (typeof reader.result === "string") {
         setImageSrc(reader.result);
-        onImageChange?.(reader.result);
+        onImageChange?.(file);
       }
     };
     reader.readAsDataURL(file);
