@@ -36,7 +36,7 @@ const AudioRecorder = () => {
   const connectWebSocket = async () => {
     try {
       // 서버로부터 WebSocket 세션 URL 가져오기
-      const res = await fetch('http://localhost:8080/api/v1/voice/session', {
+      const res = await fetch('http://localhost:8080/api/v1/voice/session?chatbotId=1', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }

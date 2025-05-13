@@ -1,15 +1,16 @@
 package com.voiceprint.backend.api.chat.voice;
 
+import com.voiceprint.backend.api.chat.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.api.chat.voice.dto.VoiceSessionResponseDto;
 //import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.service.chat.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,20 +22,22 @@ public class VoiceController {
 
     private final AuthService authService;
     private final JWTUtil jwtUtil;
+    private final ChatSessionService chatSessionService;
     /**
      * 음성 대화 세션 정보를 반환합니다.
      * 웹소켓 연결에 필요한 토큰과 URL을 제공합니다.
      */
     @GetMapping("/session")
-    public ResponseEntity<VoiceSessionResponseDto> getVoiceSession(HttpServletRequest request) {
-        String token = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
+    public ResponseEntity<VoiceSessionResponseDto> getVoiceSession(HttpServletRequest HttpRequest,
+                                                                   @RequestParam("chatbotId") Long chatbotId) {
+        String token = jwtUtil.extractTokenFromHeader(HttpRequest.getHeader("Authorization"));
 
 
         if (token == null) {
             return ResponseEntity.status(401).body(null);
         }
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Long userId = authService.getUserIdFromRequest(HttpRequest);
 
         if (userId == null) {
             return ResponseEntity.status(401).body(null);
@@ -46,6 +49,7 @@ public class VoiceController {
                 .userId(userId)
                 .build();
         System.out.printf("######wsUrl= "+"ws://localhost:8080/ws?token=" + token);
+        chatSessionService.startSession(userId, (chatbotId != null)? chatbotId : 1L);
         return ResponseEntity.ok(responseDto);
     }
 }

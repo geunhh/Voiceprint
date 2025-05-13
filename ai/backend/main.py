@@ -252,15 +252,39 @@ async def websocket_endpoint(websocket: WebSocket):
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("WebSocket 연결 수락됨")
+    user_id = websocket.query_params.get("userId")
+    if not user_id:
+        await websocket.close(code=1008)
+        return
+
+    chatbot_info = r.hgetall(f"chat_session:{user_id}")
+    if not chatbot_info:
+        await websocket.close(code=1003)
+        print("❌ user id not correct or 세션 없음")
+        return
+    # try:
+    #     init_message = await websocket.receive_json()
+    #     user_id = init_message.get("user_id")
+    #     if user_id is None:
+    #         raise HTTPException(status_code=400, detail="user_id is required")
+    # except Exception as e:
+    #     print("초기 메시지 수신 실패:", e)
+    #     await websocket.close()
+    #     return
+
     # chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
     # userinfo = await websocket.receive()
-    user_id = websocket.query_params.get("userId")
+    # user_id = websocket.query_params.get("userId")
     # print("user_id", user_id)
 
-    chatbot_info = r.hgetall(f"chat_session:{user_id}") #챗봇 프롬프트
+    # chatbot_info = r.hgetall(f"chat_session:{user_id}") #챗봇 프롬프트
     #생각해보니까 이거 어차피 챗봇 프롬프트에서 Ai 성격 프롬프트가 있잖아? 매번 확인해야 하긴 하네
     chat_history  =r.lrange(f"chat_session_messages:{user_id}", 0, -1)
     # print(chat_history)
+    # 데이터 없으면 user id가 잘못된 상황으로 판단, not correct 예외 처리
+    # if not chatbot_info:
+    #     raise HTTPException(status_code=404, detail="user id not correct")
+    print(chatbot_info)
 
     if int(chatbot_info["total_token"]) > 700 : 
         return {"chatting_response": "챗봇 토큰 수를 초과하였습니다.", "token" : chatbot_info["total_token"]}
@@ -272,10 +296,6 @@ async def websocket_endpoint(websocket: WebSocket):
     # print(chat_history)
     chat_history = [{"role" : "system", "content" : chatbot_info["chatPrompt"]}] + chat_history 
 
-    # 데이터 없으면 user id가 잘못된 상황으로 판단, not correct 예외 처리
-    if not chatbot_info:
-        raise HTTPException(status_code=404, detail="user id not correct")
-    # print(chatbot_info)
 
 
     # 오디오 데이터 버퍼

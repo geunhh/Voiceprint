@@ -3,6 +3,7 @@ package com.voiceprint.backend.api.chat.voice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.service.chat.voice.AIServerClient;
+import com.voiceprint.backend.service.chat.voice.VoiceChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
 
     private final ObjectMapper objectMapper;
     private final AIServerClient aiServerClient;
+    private final VoiceChatService voiceChatService;
 
     // 세션 관리를 위한 맵
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
@@ -39,14 +41,23 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         String sessionId = session.getId();
         Long userId = (Long) session.getAttributes().get("userId");
 
+        // 2. WebSocket 세션 등록
         sessions.put(sessionId, session);
         userSessions.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(sessionId);
 
-        // 연결만 시도하고 더 이상 리턴값 저장은 필요 없음
+        // 3. AI 서버와 WebSocket 연결
         aiServerClient.connect(userId, sessionId);
 
-        log.info("WebSocket 연결 성공 - 사용자 ID: {}, 세션 ID: {}", userId, sessionId);
+        // 4. AI 서버에 유저 정보 전달 (user_id: Long)
+        Map<String, Object> initPayload = new HashMap<>();
+        initPayload.put("user_id", userId);
+        String initMessage = objectMapper.writeValueAsString(initPayload);
+        aiServerClient.sendTextMessage(sessionId, userId, initMessage);
+
+        log.info("✅ WebSocket 연결 성공 - 사용자 ID: {}, 세션 ID: {}", userId, sessionId);
     }
+
+
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -134,16 +145,37 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     // AI 서버로부터 받은 응답을 클라이언트에게 전달
     public void handleAIServerResponse(String sessionId, Object response) throws IOException {
         WebSocketSession session = sessions.get(sessionId);
-        if (session != null && session.isOpen()) {
-            if (response instanceof String) {
-                session.sendMessage(new TextMessage((String) response));
-            } else if (response instanceof byte[]) {
-                session.sendMessage(new BinaryMessage(ByteBuffer.wrap((byte[]) response)));
-            } else if (response instanceof ByteBuffer) {
-                session.sendMessage(new BinaryMessage((ByteBuffer) response));
+        if (session == null || !session.isOpen()) return;
+
+        Long userId = (Long) session.getAttributes().get("userId");
+
+        if (response instanceof String) {
+            String json = (String) response;
+
+            // 응답 JSON 파싱
+            Map<String, Object> map = objectMapper.readValue(json, Map.class);
+            String role = (String) map.get("role");
+            String content = (String) map.get("content");
+
+            if (role != null && content != null) {
+                // 1. Redis에 메시지 저장
+                voiceChatService.saveMessage(userId, role, content);
+
+                // 2. Redis에 토큰 누적 저장
+                voiceChatService.accumulateToken(userId, content.length());
             }
+
+            // 3. 프론트엔드로 메시지 전송
+            session.sendMessage(new TextMessage(json));
+
+        } else if (response instanceof byte[]) {
+            session.sendMessage(new BinaryMessage(ByteBuffer.wrap((byte[]) response)));
+        } else if (response instanceof ByteBuffer) {
+            session.sendMessage(new BinaryMessage((ByteBuffer) response));
         }
     }
+
+
 
     // 사용자 ID로 모든 세션에 메시지 전송
     public void sendToUser(Long userId, Object message) throws IOException {
