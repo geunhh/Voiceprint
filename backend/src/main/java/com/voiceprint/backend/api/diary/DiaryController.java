@@ -4,9 +4,12 @@ import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryDetailResponseDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
+import com.voiceprint.backend.api.diary.dto.SharedDiaryRequest;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.domain.diary.DiaryRepository;
+import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.diary.DiaryService;
+import com.voiceprint.backend.service.diary.GroupDiaryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +22,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
 @RequestMapping("/api/diaries")
 public class DiaryController {
     private final DiaryService diaryService;
-    private final DiaryRepository diaryRepository;
+    private final AuthService authService;
+    private final GroupDiaryService groupDiaryService;
 
     /**
      * diaryId를 기반으로 일기 상세정보를 조회하는 API
@@ -85,5 +88,15 @@ public class DiaryController {
         ));
     }
 
+    @PostMapping("/shared/{diaryId}")
+    public ResponseEntity<CommonResponse<String>> shareDiary(
+            @PathVariable Long diaryId,
+            @RequestBody SharedDiaryRequest request,
+            HttpServletRequest httpRequest) {
 
+        Long userId = authService.getUserIdFromRequest(httpRequest);
+
+        groupDiaryService.saveSharedDiary(diaryId, userId, request.getGroupIds());
+        return ResponseEntity.ok(new CommonResponse<>(200,"다이어리 공유 성공",null));
+    }
 }
