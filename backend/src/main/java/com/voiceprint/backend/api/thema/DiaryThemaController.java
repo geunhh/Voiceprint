@@ -28,8 +28,8 @@ public class DiaryThemaController {
     @GetMapping("/all")
     public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThmeas(
             HttpServletRequest request    ) {
-//        Long userId = 1L;
-        Long userId = authService.getUserIdFromRequest(request);
+        Long userId = 1L;
+//        Long userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 테마 전체 조회 / userid : {}",userId);
         DiaryThemaListResponseDTO response = diaryThemaService.getThemasForUser(userId);
         return ResponseEntity.ok(
@@ -40,9 +40,9 @@ public class DiaryThemaController {
     public ResponseEntity<CommonResponse<Void>> selectTheam(
             @PathVariable Long themaId,
             HttpServletRequest request) {
-//        Long userId = 1L;
+        Long userId = 2L;
 
-        Long userId = authService.getUserIdFromRequest(request);
+//        Long userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 테마 선택 / userid : {}",userId);
         diaryThemaService.selectThema(userId,themaId);
 
@@ -56,8 +56,8 @@ public class DiaryThemaController {
             @Valid @RequestBody DiaryThemaCreateRequest request,
             HttpServletRequest httprequest
     ) {
-//        Long userId = 1L;
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Long userId = 1L;
+//        Long userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 커스텀 테마 생성 / userid : {}",userId);
 
         DiaryThemaCreateResponse response = diaryThemaService.createCustomThema(userId, request.getExampleDiary());
@@ -90,7 +90,8 @@ public class DiaryThemaController {
             HttpServletRequest request
     ) {
         log.info("### UsingThema 조회 API 호출");
-        Long userId = authService.getUserIdFromRequest(request);
+//        Long userId = authService.getUserIdFromRequest(request);
+        Long userId =2L;
         UsingDiaryThemaResponseDTO response = diaryThemaService.getUsingThema(userId);
 
         return ResponseEntity.ok(new CommonResponse<>(
