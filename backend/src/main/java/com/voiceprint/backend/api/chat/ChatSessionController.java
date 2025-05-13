@@ -1,7 +1,6 @@
 package com.voiceprint.backend.api.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatMessageListWithTokenDTO;
-import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.chat.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.domain.chat.ChatSessionStatus;
@@ -67,7 +66,6 @@ public class ChatSessionController {
     @GetMapping("/messages")
     public ResponseEntity<CommonResponse<ChatMessageListWithTokenDTO>> getMessages(
             HttpServletRequest request) {
-//        Long userId = 1L;
         Long userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 기록 조회 / userid : {}",userId);
         ChatMessageListWithTokenDTO response = chatSessionService.getMessages(userId);
