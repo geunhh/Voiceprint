@@ -1,8 +1,10 @@
 package com.voiceprint.backend.api.groups;
 
+import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.groups.dto.*;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.service.diary.GroupDiaryService;
 import com.voiceprint.backend.service.groups.GroupService;
 import com.voiceprint.backend.service.groups.GroupUserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -21,6 +24,7 @@ public class GroupUserController {
     private final GroupUserService groupUserService;
     private final GroupService groupService;
     private final AuthService authService;
+    private final GroupDiaryService groupDiaryService;
 
     /**
      * 그룹 생성
@@ -62,6 +66,23 @@ public class GroupUserController {
         GroupUpdateResponse updatedGroup = groupService.updateGroup(groupId, userId, updateRequest);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 수정 완료", updatedGroup));
+    }
+
+    /**
+     * 내가 작성한 일기를 조회하는 API
+     * @param size
+     * @param request
+     */
+    @GetMapping("/{groupId}/diaries")
+    public ResponseEntity<CommonResponse<GroupDiaryListWithCursorDTO>> getGroupDiaries(
+            @PathVariable Long groupId,
+            @RequestParam(required = false) LocalDateTime cursor,
+            @RequestParam(defaultValue = "7") int size,
+            HttpServletRequest request
+    ) {
+
+        GroupDiaryListWithCursorDTO result = groupDiaryService.getGroupDiaries(request, groupId, cursor, size);
+        return ResponseEntity.ok(new CommonResponse<>(200, "그룹 내 공유 일기 조회 성공", result));
     }
 
     /**
