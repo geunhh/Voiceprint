@@ -1,12 +1,16 @@
 package com.voiceprint.backend.api.auth;
 
 import com.voiceprint.backend.api.auth.dto.*;
+import com.voiceprint.backend.api.auth.dto.ProfileResponse;
+import com.voiceprint.backend.api.auth.dto.TokenResponse;
+import com.voiceprint.backend.api.auth.dto.UserResponse;
 import com.voiceprint.backend.common.config.OAuth2SuccessHandler;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -157,5 +161,49 @@ public class AuthController {
         UserResponse response = new UserResponse(userId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reminder-setting")
+    public ResponseEntity<CommonResponse<Boolean>> isReminderEnabled(
+            HttpServletRequest request
+    ) {
+        Long userId = authService.getUserIdFromRequest(request);
+        Boolean isEnabled = authService.isReminderEnabled(userId);
+
+        return ResponseEntity.ok(
+                new CommonResponse<>(200, "유저 알람 여부 조회 성공", isEnabled));
+    }
+
+    @PatchMapping("/reminder-setting")
+    public ResponseEntity<CommonResponse<Boolean>> updateReminderSetting(
+            HttpServletRequest httprequest,
+            @RequestBody @Valid ReminderSettingRequest request
+    ) {
+       Long userId = authService.getUserIdFromRequest(httprequest);
+
+       Boolean response = authService.updateReminderSetting(request.getEnableAlarms(), userId);
+
+       return ResponseEntity.ok(new CommonResponse<>(
+               200, "알림 여부가 설정되었습니다.",  response
+       ));
+    }
+
+    @PatchMapping("/reminder-time")
+    public ResponseEntity<CommonResponse<String>> updateReminderTime(
+            HttpServletRequest httprequest,
+            @RequestBody @Valid ReminderTimeRequestDTO request
+    ) {
+        Long userId = authService.getUserIdFromRequest(httprequest);
+
+        String response = authService.updateReminderTime(request.getAlarmTime(), userId);
+
+        if (response==null) {
+            return ResponseEntity.ok(new CommonResponse<>(
+                    400, "알림 시간의 형식이 누락되거나 잘못되었습니다.", null
+            ));
+        }
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "알림 시간이 설정되었습니다.", response
+        ));
     }
 }

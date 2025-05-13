@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.auth;
 
+import com.voiceprint.backend.domain.auth.ProfileImage;
 import com.voiceprint.backend.domain.chat.Chatbot;
 import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.domain.thema.DiaryThema;
@@ -7,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,17 +69,24 @@ public class User {
     private DiaryThema customThema;
 
     // 현재 사용중인 테마 (단방향 연관)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "using_thema_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "using_thema_id", unique = false)
     private DiaryThema usingThema;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Diary> diaries = new ArrayList<>();
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")
     private Chatbot lastChatbot;
+
+    // 알림 여부
+    @Column(columnDefinition = "BOOLEAN")
+    private Boolean enableAlarm;
+
+    // 알람 시간 21:00 기본.
+    @Column(columnDefinition = "TIME DEFAULT '21:00'")
+    private LocalTime alarmTime = LocalTime.of(21,0);
 
     @PreUpdate
     public void preUpdate() {

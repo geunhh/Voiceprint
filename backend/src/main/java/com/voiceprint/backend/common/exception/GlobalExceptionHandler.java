@@ -3,12 +3,13 @@ package com.voiceprint.backend.common.exception;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
-import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
-import com.voiceprint.backend.common.exception.diary.DiaryThemaNotFoundException;
-import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
-import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
+import com.voiceprint.backend.common.exception.diary.*;
+import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.common.exception.s3.InvalidFileException;
+import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.common.exception.user.ExpiredJwtTokenException;
 import com.voiceprint.backend.common.exception.user.NicknameConflictException;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice // Spring 전역 예외처리 어노테이션
 public class GlobalExceptionHandler {
@@ -90,6 +93,36 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ProfileImageNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleProfileImageNotFound(ProfileImageNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(InvalidFileException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public String handleInvalidFile(InvalidFileException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(S3UnavailableException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) //500
+    public String handleS3Unavailable(S3UnavailableException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UnauthorizedGroupAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedGroup(UnauthorizedGroupAccessException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ExpiredJwtTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED) // 401
+    public String handleExpiredJwtToken(ExpiredJwtTokenException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UnauthorizedDiaryException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedDiary(UnauthorizedDiaryException e) {
         return e.getMessage();
     }
 

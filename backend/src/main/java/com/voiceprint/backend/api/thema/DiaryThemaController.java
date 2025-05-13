@@ -28,7 +28,7 @@ public class DiaryThemaController {
     @GetMapping("/all")
     public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThmeas(
             HttpServletRequest request    ) {
-//        Long userId = 1L;
+
         Long userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 테마 전체 조회 / userid : {}",userId);
         DiaryThemaListResponseDTO response = diaryThemaService.getThemasForUser(userId);
@@ -40,7 +40,6 @@ public class DiaryThemaController {
     public ResponseEntity<CommonResponse<Void>> selectTheam(
             @PathVariable Long themaId,
             HttpServletRequest request) {
-//        Long userId = 1L;
 
         Long userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 테마 선택 / userid : {}",userId);
@@ -56,7 +55,6 @@ public class DiaryThemaController {
             @Valid @RequestBody DiaryThemaCreateRequest request,
             HttpServletRequest httprequest
     ) {
-//        Long userId = 1L;
         Long userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 커스텀 테마 생성 / userid : {}",userId);
 
@@ -72,7 +70,6 @@ public class DiaryThemaController {
             @PathVariable Long diaryId,
             HttpServletRequest httprequest
     ) {
-//        Long userId = 1L;
         Long userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 일기에서 테마 추출 / userid : {}",userId);
         diaryThemaService.updateCustomThemaFromDiary(userId,diaryId);
