@@ -1,7 +1,7 @@
 // src/components/common/ThemaList.tsx
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
 
 import themaCharacter1 from "../../assets/icons/themaCharacter1.png";
 import themaCharacter2 from "../../assets/icons/themaCharacter2.png";
@@ -43,15 +43,7 @@ function ThemaList() {
   useEffect(() => {
     const fetchThemas = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/thema/all`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const res = await axiosInstance.get("/api/thema/all");
 
         const { default_themas, custom_themas } = res.data.data;
 
@@ -119,16 +111,9 @@ function ThemaList() {
     // 커스텀 테마 생성
     if (selected?.id === 9999 && examples[selected.id]) {
       try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/api/thema/create`,
-          { exampleDiary: examples[selected.id] },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const res = await axiosInstance.post("/api/thema/create", {
+          exampleDiary: examples[selected.id],
+        });
 
         const { themaId, example } = res.data.data;
 
@@ -160,16 +145,7 @@ function ThemaList() {
 
     // 기존 테마 선택
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/api/thema/select/${selectedId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axiosInstance.put(`/api/thema/select/${selectedId}`);
 
       setAlert({
         message: "테마가 성공적으로 설정되었습니다.",

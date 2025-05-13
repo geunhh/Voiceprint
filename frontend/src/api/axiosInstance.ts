@@ -35,15 +35,15 @@ axiosInstance.interceptors.response.use(
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/v1/user/reissue`,
           {
-            method: "GET",
+            method: "POST",
             credentials: "include", // 쿠키 포함
           }
         );
 
         if (res.ok) {
           const data = await res.json();
-          const newAccessToken = data.accessToken;
-          console.log("accessToken 재발급 성공", newAccessToken);
+          const newAccessToken = data.data.accessToken;
+          // console.log("accessToken 재발급 성공", newAccessToken);
           localStorage.setItem("Authorization", newAccessToken);
 
           // Authorization 헤더 갱신해서 재요청

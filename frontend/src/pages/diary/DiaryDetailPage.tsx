@@ -1,6 +1,6 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
 
 import DiaryContent from "../../components/diary/DiaryContent";
 import ChatHistoryModal from "../../components/modal/ChatHistoryModal";
@@ -43,14 +43,8 @@ export default function DiaryDetailPage() {
   useEffect(() => {
     const fetchDiary = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/diaries/diary/${diaryId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            },
-          }
-        );
+        const res = await axiosInstance.get(`/api/diaries/diary/${diaryId}`);
+
         setDiary(res.data.data);
       } catch (err) {
         console.error("다이어리 불러오기 실패", err);
