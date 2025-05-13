@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -17,19 +19,35 @@ public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String redisHost;
 
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
+
+    @Value("${spring.data.redis.password}")
+    private String redisPassword;
+
+    @Value("${spring.data.redis.ssl.enabled}")
+    private boolean sslEnabled;
+
     @PostConstruct
     public void printRedisHost() {
         log.debug("🔍 Redis 연결 호스트: " + redisHost);
     }
 
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
 
     @Bean
     public RedisConnectionFactory redisConnectFactory() {
         // Lettuce 기반 커넥션 팩토리
         // RedisPool 관리.
-        return new LettuceConnectionFactory(redisHost, redisPort);
+
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName(redisHost);
+        config.setPort(redisPort);
+        config.setPassword(redisPassword);
+
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .useSsl() // Upstash Redis는 SSL 사용
+                .build();
+        return new LettuceConnectionFactory(config, clientConfig);
     }
 
     @Bean

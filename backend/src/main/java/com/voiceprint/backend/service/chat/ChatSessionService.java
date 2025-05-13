@@ -94,7 +94,7 @@ public class ChatSessionService {
             String todayMessage = "오늘은 어떤일이 있었나요 >_< 꺄르륵 꺄르륵????";
             redisTemplate.delete(messageKey);
             redisTemplate.opsForList().rightPush(messageKey,
-                    new ChatMessage("SERVER", todayMessage));
+                    new ChatMessage("assistant", todayMessage));
 
             log.info("세션 생성 완료 : userId = {}, chatbotId={}", userId, chatbotId);
         } catch (RedisConnectionFailureException e ) {
@@ -132,17 +132,19 @@ public class ChatSessionService {
             String messageKey = message_key + ":" + userId;
             String sessionKey = session_key + ":" + userId;
 
+            int maxToken = 700;
+
             // 1. 채팅 로그 조회
             List<Object> rawMessages = redisTemplate.opsForList().range(messageKey, 0, -1);
             log.debug("채팅로그 {} ", rawMessages);
 
-            if (rawMessages == null) return new ChatMessageListWithTokenDTO(new ArrayList<>(),0);
+            if (rawMessages == null) return new ChatMessageListWithTokenDTO(new ArrayList<>(),0, maxToken);
 
             List<ChatMessageResponseDTO> result = new ArrayList<>();
 
             for (Object msj : rawMessages) {
                 ChatMessage msg = (ChatMessage) msj;
-                result.add(new ChatMessageResponseDTO(msg.getRole(), msg.getMessage()));
+                result.add(new ChatMessageResponseDTO(msg.getRole(), msg.getContent()));
             }
 
             // 2. 글자수 토큰 추출
@@ -153,7 +155,7 @@ public class ChatSessionService {
 
             // 3-1. 글자수 토큰이 0인 경우 return
             if (total_token == 0) {
-                return new ChatMessageListWithTokenDTO(result, 0) ;
+                return new ChatMessageListWithTokenDTO(result, 0, maxToken) ;
 
             }
 
@@ -162,7 +164,7 @@ public class ChatSessionService {
             int limit_token = 700;  // 글자수 제한
             int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
-            return new ChatMessageListWithTokenDTO(result, usageRate) ;
+            return new ChatMessageListWithTokenDTO(result, usageRate, maxToken) ;
         }
         catch (RedisConnectionFailureException e) {
             log.error("Redis 연결 실패",e);
@@ -201,11 +203,11 @@ public class ChatSessionService {
         CompletableFuture.runAsync(() -> {
             try {
                 // reqeustBody 초기화
-                Map<String, String> requestBody = new HashMap<>();
-                requestBody.put("user_id", userId.toString());
+                Map<String, Long> requestBody = new HashMap<>();
+                requestBody.put("user_id", userId);
 
                 Map<String, Object> fastApiResponse = fastApiWebClient.post()
-                        .uri("/api/v1/diary")
+                        .uri("/api/v1/to_diary")
                         .bodyValue(requestBody)
                         .retrieve()
                         .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),

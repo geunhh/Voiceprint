@@ -3,15 +3,13 @@ package com.voiceprint.backend.common.exception;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
-import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
-import com.voiceprint.backend.common.exception.diary.DiaryThemaNotFoundException;
-import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
-import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
+import com.voiceprint.backend.common.exception.diary.*;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.common.exception.user.ExpiredJwtTokenException;
 import com.voiceprint.backend.common.exception.user.NicknameConflictException;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
@@ -113,6 +111,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedGroupAccessException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public String handleUnauthorizedGroup(UnauthorizedGroupAccessException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ExpiredJwtTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED) // 401
+    public String handleExpiredJwtToken(ExpiredJwtTokenException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UnauthorizedDiaryException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedDiary(UnauthorizedDiaryException e) {
         return e.getMessage();
     }
 

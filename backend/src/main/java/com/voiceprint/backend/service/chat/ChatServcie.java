@@ -32,8 +32,10 @@ public class ChatServcie {
     public ChatTextResponseDTO processChat(Long userId, String message) {
         // requestBody 초기화
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("userid",userId.toString());
+        requestBody.put("user_id",userId);
         requestBody.put("chatting",message);
+
+        log.info("requestBody : {}",requestBody);
 
         // 변수 초기화
         int limit_token = 700;  // 글자수 제한
@@ -75,16 +77,16 @@ public class ChatServcie {
         redisTemplate.opsForHash().put(sessionKey,"total_token",total_token);
 
         // 레디스에 유저 request 저장
-        ChatMessage userMsg = new ChatMessage("USER",message);
+        ChatMessage userMsg = new ChatMessage("user",message);
         redisTemplate.opsForList().rightPush(messageKey,userMsg);
 
         // 레디스에 서버 response 저장
-        ChatMessage botMsg = new ChatMessage("SERVER",botResponse);
+        ChatMessage botMsg = new ChatMessage("assistant",botResponse);
         redisTemplate.opsForList().rightPush(messageKey,botMsg);
 
         int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
         //2. 응답 처리
-        return new ChatTextResponseDTO(botResponse,usageRate);
+        return new ChatTextResponseDTO(botResponse, usageRate, total_token);
     }
 }
