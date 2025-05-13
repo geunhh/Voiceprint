@@ -1,20 +1,20 @@
 // AudioRecorder.tsx
 // 기존 AudioRecorder.jsx를 TypeScript로 변환 (주석 유지)
 
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useRef, useState } from "react";
 import { FaMicrophone, FaStop } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch } from "react-redux";
+import axiosInstance from "../../api/axiosInstance";
 import { setCharacter } from "../../store/characterSlice";
 
-import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
+import Button from "../common/Button";
 
-import AlertModal from "../modal/AlertModal";
-import DiaryCreatingModal from "../modal/DiaryCreatingModal";
-import DiaryCreateFailModal from "../modal/DiaryCreateFailModal";
 import ProgressBar from "../common/ProgressBar";
+import AlertModal from "../modal/AlertModal";
+import DiaryCreateFailModal from "../modal/DiaryCreateFailModal";
+import DiaryCreatingModal from "../modal/DiaryCreatingModal";
 
 // 로컬 기본 아이콘
 import chatBlack from "../../assets/icons/chatBlack.png";
@@ -103,15 +103,7 @@ const AudioRecorder: React.FC = () => {
   useEffect(() => {
     const fetchRecent = async () => {
       try {
-        const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        const Authorization = localStorage.getItem("Authorization");
-
-        const res = await axios.get(`${BASE_URL}/api/chatbot`, {
-          headers: {
-            Authorization: `Bearer ${Authorization}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const res = await axiosInstance.get("/api/chatbot");
 
         const { recentChatbotId, chatbots } = res.data.data;
         const bot =
@@ -213,7 +205,6 @@ const AudioRecorder: React.FC = () => {
     return () => {
       websocketRef.current?.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // WebSocket이 열리면 자동으로 녹음 시작
@@ -698,23 +689,14 @@ const AudioRecorder: React.FC = () => {
     setShowConfirm(false);
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/end`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axiosInstance.post("/api/chat/end");
 
       // 1.5초 후 확인 버튼 생성 + 4초 후 임시 저장으로 이동하기
-      setTimeout(() => setShowConfirm(true), 1500);
+      setTimeout(() => setShowConfirm(true), 0);
       setTimeout(() => {
         setCreatingModalOpen(false);
         navigate("/diary/temp");
-      }, 4000);
+      }, 0);
     } catch (err) {
       console.error("일기 생성 실패:", err);
       setCreatingModalOpen(false);

@@ -1,6 +1,6 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
 import closeIcon from "../../assets/icons/close.png";
 import { ChatBubbleProps } from "../chat/ChatBubble";
 import ChatList from "../chat/ChatList";
@@ -16,13 +16,8 @@ function ChatHistoryModal({ onClose }: ChatHistoryModalProps) {
   useEffect(() => {
     const fetchChat = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/diaries/diary/${diaryId}/chat`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            },
-          }
+        const res = await axiosInstance.get(
+          `/api/diaries/diary/${diaryId}/chat`
         );
 
         const rawMessages = res.data.data;

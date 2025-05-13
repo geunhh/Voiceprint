@@ -1,7 +1,7 @@
-import axios from "axios";
 import { addMonths, format, subMonths } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import axiosInstance from "../../api/axiosInstance";
 
 import Calendar from "../../components/my/Calendar";
 import DiaryCard from "../../components/my/DiaryCard";
@@ -47,15 +47,9 @@ export default function MyPage() {
   // 전체 일기 불러오기
   const fetchAllDiaries = async (cursor?: number) => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/diaries/me/all`,
-        {
-          params: cursor ? { cursor } : {},
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-          },
-        }
-      );
+      const res = await axiosInstance.get("/api/diaries/me/all", {
+        params: cursor ? { cursor } : {},
+      });
 
       const newDiaries = res.data.data.diaries;
       setAllDiaries((prev) => {
@@ -101,15 +95,9 @@ export default function MyPage() {
       try {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth() + 1;
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/diaries/monthly`,
-          {
-            params: { year, month },
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            },
-          }
-        );
+        const res = await axiosInstance.get("/api/diaries/monthly", {
+          params: { year, month },
+        });
         setDiaries(res.data.data.diaries || []);
       } catch (error) {
         console.error("다이어리 불러오기 실패:", error);

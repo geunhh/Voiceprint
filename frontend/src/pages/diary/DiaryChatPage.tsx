@@ -1,16 +1,16 @@
 // src/pages/diary/DiaryChatPage.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
 
-import ProgressBar from "../../components/common/ProgressBar";
-import ChatList from "../../components/chat/ChatList";
 import ChatInput from "../../components/chat/ChatInput";
+import ChatList from "../../components/chat/ChatList";
 import Button from "../../components/common/Button";
+import ProgressBar from "../../components/common/ProgressBar";
 
-import DiaryCreatingModal from "../../components/modal/DiaryCreatingModal";
-import DiaryCreateFailModal from "../../components/modal/DiaryCreateFailModal";
 import AlertModal from "../../components/modal/AlertModal";
+import DiaryCreateFailModal from "../../components/modal/DiaryCreateFailModal";
+import DiaryCreatingModal from "../../components/modal/DiaryCreatingModal";
 
 export default function DiaryChatPage() {
   const navigate = useNavigate();
@@ -37,15 +37,7 @@ export default function DiaryChatPage() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/chat/session/messages`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const { data } = await axiosInstance.get("/api/chat/session/messages");
 
         const savedMessages = data.data.chatlog;
         const token = data.data.curToken;
@@ -75,16 +67,9 @@ export default function DiaryChatPage() {
     setLoading(true);
 
     try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/text`,
-        { message: input },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const { data } = await axiosInstance.post("/api/chat/text", {
+        message: input,
+      });
 
       const response = data.data.response;
       const limitVal = data.data.limit;
@@ -116,23 +101,14 @@ export default function DiaryChatPage() {
     setShowConfirm(false);
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/end`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axiosInstance.post("/api/chat/end", {});
 
       // 1.5초 후 확인 버튼 생성 + 4초 후 임시 저장으로 이동하기
-      setTimeout(() => setShowConfirm(true), 1500);
+      setTimeout(() => setShowConfirm(true), 0);
       setTimeout(() => {
         setCreatingModalOpen(false);
         navigate("/diary/temp");
-      }, 4000);
+      }, 0);
     } catch (err) {
       console.error("일기 생성 실패:", err);
       setCreatingModalOpen(false);
@@ -147,11 +123,11 @@ export default function DiaryChatPage() {
   };
 
   // 남은 글자 수 계산
-  const remainingChars = Math.round(((100 - limit) / 100) * totalToken);
+  // const remainingChars = Math.round(((100 - limit) / 100) * totalToken);
 
   // 30퍼센트까지 도달하기 위해 남은 글자 수 계산
   const remainingFor30 =
-    limit >= 30 ? 0 : Math.round(((30 - limit) / 100) * totalToken);
+    limit >= 30 ? 0 : Math.round(((30 - limit) / 100) * totalToken) || 0;
 
   return (
     <div className="flex flex-col h-screen bg-white">
