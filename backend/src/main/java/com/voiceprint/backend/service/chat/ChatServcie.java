@@ -87,6 +87,6 @@ public class ChatServcie {
         int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
         //2. 응답 처리
-        return new ChatTextResponseDTO(botResponse,usageRate);
+        return new ChatTextResponseDTO(botResponse, usageRate, total_token);
     }
 }

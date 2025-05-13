@@ -132,11 +132,13 @@ public class ChatSessionService {
             String messageKey = message_key + ":" + userId;
             String sessionKey = session_key + ":" + userId;
 
+            int maxToken = 700;
+
             // 1. 채팅 로그 조회
             List<Object> rawMessages = redisTemplate.opsForList().range(messageKey, 0, -1);
             log.debug("채팅로그 {} ", rawMessages);
 
-            if (rawMessages == null) return new ChatMessageListWithTokenDTO(new ArrayList<>(),0);
+            if (rawMessages == null) return new ChatMessageListWithTokenDTO(new ArrayList<>(),0, maxToken);
 
             List<ChatMessageResponseDTO> result = new ArrayList<>();
 
@@ -153,7 +155,7 @@ public class ChatSessionService {
 
             // 3-1. 글자수 토큰이 0인 경우 return
             if (total_token == 0) {
-                return new ChatMessageListWithTokenDTO(result, 0) ;
+                return new ChatMessageListWithTokenDTO(result, 0, maxToken) ;
 
             }
 
@@ -162,7 +164,7 @@ public class ChatSessionService {
             int limit_token = 700;  // 글자수 제한
             int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
-            return new ChatMessageListWithTokenDTO(result, usageRate) ;
+            return new ChatMessageListWithTokenDTO(result, usageRate, maxToken) ;
         }
         catch (RedisConnectionFailureException e) {
             log.error("Redis 연결 실패",e);

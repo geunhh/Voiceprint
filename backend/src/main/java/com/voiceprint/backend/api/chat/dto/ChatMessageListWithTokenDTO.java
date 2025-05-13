@@ -10,4 +10,5 @@ import java.util.List;
 public class ChatMessageListWithTokenDTO {
     private List<ChatMessageResponseDTO> chatlog;
     private int curToken;
+    private int totalToken;
 }
