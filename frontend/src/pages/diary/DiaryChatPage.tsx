@@ -45,7 +45,7 @@ export default function DiaryChatPage() {
 
         const formatted = savedMessages.map((msg: any) => ({
           from: msg.role === "user" ? "user" : "ai",
-          text: msg.message,
+          text: msg.content,
         }));
 
         setMessages(formatted);
