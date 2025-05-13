@@ -1,0 +1,101 @@
+@font-face {
+  font-family: "ONEMobilePOP";
+  src: url("/src/assets/fonts/ONEMobilePOP.ttf") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PretendardBold";
+  src: url("/src/assets/fonts/Pretendard-Bold.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("/src/assets/fonts/Pretendard-Medium.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PretendardLight";
+  src: url("/src/assets/fonts/Pretendard-Light.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PretendardSemiBold";
+  src: url("/src/assets/fonts/Pretendard-SemiBold.woff") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.canvas {
+  height: 100dvh; /* 정확히 화면 높이 */
+  overflow-y: auto; /* 내용이 넘칠 때만 스크롤 */
+}
+
+/* 아이폰 se인 경우 일기 상세 높이 제한 */
+@media (max-height: 667px) {
+  .diary-content {
+    max-height: 320px !important;
+  }
+}
+
+/*  아이폰 se인 경우 그룹 카드 크기 축소 */
+@media (max-height: 667px) {
+  .group-card-small {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+}
+
+/* 화면 크기가 740 이하인 경우 특정 페이지 하단 여백 추가 */
+@media (max-height: 740px) {
+  .short-screen-padding {
+    padding-bottom: 6rem;
+  }
+}
+
+/* 화면 크기가 740 이하인 경우 댓글 내용 높이 제한 */
+@media (max-height: 740px) {
+  .comment-list {
+    max-height: 350px !important;
+  }
+}
+
+/* 아이폰 se인 경우 댓글 내용 높이 제한 */
+@media (max-height: 667px) {
+  .comment-list {
+    max-height: 300px !important;
+  }
+}
+
+/* 화면 크기가 915 이하인 경우 정보 수정 페이지 하단 여백 추가 */
+@media (max-height: 915px) {
+  .thema-list-padding {
+    padding-bottom: 7rem;
+  }
+}
+
+/* 커스텀 스크롤 제작 */
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #facc15; /* yellow-400 */
+  border-radius: 9999px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background-color: #fefce8; /* yellow-50 */
+  border-radius: 9999px;
+}
