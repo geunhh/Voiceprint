@@ -1,5 +1,6 @@
-package com.voiceprint.backend.domain;
+package com.voiceprint.backend.domain.Repository;
 
+import com.voiceprint.backend.domain.Entity.GroupDiary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

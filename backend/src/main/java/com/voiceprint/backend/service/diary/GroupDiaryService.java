@@ -1,9 +1,9 @@
 package com.voiceprint.backend.service.diary;
 
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
-import com.voiceprint.backend.domain.GroupDiary;
-import com.voiceprint.backend.domain.GroupDiaryRepository;
-import com.voiceprint.backend.domain.GroupRepository;
+import com.voiceprint.backend.domain.Entity.GroupDiary;
+import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
+import com.voiceprint.backend.domain.Repository.GroupRepository;
 import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.domain.diary.DiaryRepository;
 import lombok.RequiredArgsConstructor;

@@ -3,18 +3,19 @@ package com.voiceprint.backend.service.groups;
 
 import com.voiceprint.backend.api.groups.dto.*;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
-import com.voiceprint.backend.domain.*;
+import com.voiceprint.backend.domain.Entity.Group;
+import com.voiceprint.backend.domain.Entity.GroupUser;
+import com.voiceprint.backend.domain.Entity.GroupUserId;
+import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
+import com.voiceprint.backend.domain.Repository.GroupRepository;
+import com.voiceprint.backend.domain.Repository.GroupUserRepository;
 import com.voiceprint.backend.domain.auth.User;
 import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
-import java.time.DayOfWeek;
 import java.util.List;
 import java.util.stream.Collectors;
 
