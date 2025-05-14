@@ -1,9 +1,9 @@
 package com.voiceprint.backend.service.groups;
 
 import com.voiceprint.backend.common.dto.CommonResponse;
-import com.voiceprint.backend.domain.GroupUser;
-import com.voiceprint.backend.domain.GroupUserId;
-import com.voiceprint.backend.domain.GroupUserRepository;
+import com.voiceprint.backend.domain.Entity.GroupUser;
+import com.voiceprint.backend.domain.Entity.GroupUserId;
+import com.voiceprint.backend.domain.Repository.GroupUserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
