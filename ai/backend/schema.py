@@ -9,13 +9,13 @@ class Chat(BaseModel):
     message: List[Message]
 
 class ChatResponse(BaseModel) :
-    userid : int
+    user_id : int
     chatting : str
 
 
 class MyChat(BaseModel):
     # mychat: str
-    userid : int
+    user_id : int
 
 class PromtTest(BaseModel) :
     prev_diary : str
