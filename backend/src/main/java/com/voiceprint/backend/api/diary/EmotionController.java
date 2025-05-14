@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/emtions")
+@RequestMapping("/api/emotions")
 public class EmotionController {
 
     private final EmotionService emotionService;
