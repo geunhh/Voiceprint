@@ -17,7 +17,7 @@ function UserProfile(props: UserProfileProps) {
 
   return (
     <div
-      className="flex bg-yellow-50 p-2 rounded-2xl gap-2"
+      className="flex bg-yellow-50 p-2 rounded-2xl gap-2 cursor-pointer"
       onClick={handleClick}
     >
       <img src={userImage} className="rounded-full w-20 h-20 object-cover" />

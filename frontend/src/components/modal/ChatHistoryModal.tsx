@@ -23,8 +23,8 @@ function ChatHistoryModal({ onClose }: ChatHistoryModalProps) {
         const rawMessages = res.data.data;
 
         const converted: ChatBubbleProps[] = rawMessages.map((m: any) => ({
-          from: m.role === "SERVER" ? "ai" : "user",
-          text: m.message,
+          from: m.role === "assistant" ? "ai" : "user",
+          text: m.content,
         }));
 
         setMessages(converted);

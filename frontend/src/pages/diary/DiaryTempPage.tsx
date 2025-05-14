@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import arrowButton from "../../assets/icons/button/arrowButton.png";
+import happyIcon from "../../assets/icons/happyCharacter.png";
+import questionIcon from "../../assets/icons/questionCharacter.png";
 import Button from "../../components/common/Button";
 import PageTitle from "../../components/common/PageTitle";
 import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import AlertModal from "../../components/modal/AlertModal";
-import happyIcon from "../../assets/icons/happyCharacter.png";
-import questionIcon from "../../assets/icons/questionCharacter.png";
 
 interface Diary {
   title: string;
   dateText: string;
-  emotion: "행복" | "기쁨" | "슬픔" | "화남" | "그냥그래";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   content: string;
 }
 

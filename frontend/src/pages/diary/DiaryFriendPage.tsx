@@ -90,7 +90,7 @@ export default function DiaryFriendPage() {
       const res = await axiosInstance.get("/api/chat/session/status");
       const status: string | null = res.data.data;
 
-      if (!status || status === "WAITING") {
+      if (!status || status === "WAITING" || status === "IN_PROGRESS") {
         await axiosInstance.post("/api/chat/session/start", {
           chatbotId: selectedCharacter.id,
         });
