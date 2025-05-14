@@ -1,7 +1,6 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 
-import userAvatar from "../../assets/icons/chatBlue.png";
 import defaultAI from "../../assets/icons/chatYellow.png"; // fallback
 
 export interface ChatBubbleProps {
@@ -30,13 +29,13 @@ export default function ChatBubble({ from, text }: ChatBubbleProps) {
       >
         {text}
       </div>
-      {from === "user" && (
+      {/* {from === "user" && (
         <img
           src={userAvatar}
           alt="User"
           className="w-8 h-8 rounded-full ml-2"
         />
-      )}
+      )} */}
     </div>
   );
 }

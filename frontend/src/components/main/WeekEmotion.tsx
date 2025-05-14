@@ -6,7 +6,7 @@ import emotion5 from "../../assets/temp/emotion5.png";
 import emotion6 from "../../assets/temp/emotion6.png";
 
 interface WeekEmotionProps {
-  emotions: ("행복" | "설렘" | "피곤" | "짜증" | "우울" | null)[];
+  emotions: ("행복" | "설렘" | "피로" | "짜증" | "우울" | null)[];
 }
 
 const days = ["일", "월", "화", "수", "목", "금", "토"] as const;
@@ -17,7 +17,7 @@ const emotionImageMap: Record<
 > = {
   행복: emotion1,
   설렘: emotion2,
-  피곤: emotion3,
+  피로: emotion3,
   짜증: emotion4,
   우울: emotion5,
 };

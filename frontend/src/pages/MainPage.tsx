@@ -16,18 +16,6 @@ const todayQuestion = [
   "최근 나를 가장 몰입하게 만든 소소한 취미나 관심사가 있나요?",
 ];
 
-// 주간 감정
-const weekEmotions = ["행복", "짜증", "설렘", "피곤", "우울", null, null];
-
-// 월별 감정 통계
-const monthEmotions = [
-  { emotion: "행복", count: 15 },
-  { emotion: "설렘", count: 7 },
-  { emotion: "피로", count: 6 },
-  { emotion: "짜증", count: 4 },
-  { emotion: "우울", count: 3 },
-];
-
 // 최근 말자국 모음
 const diaries = [
   {
@@ -103,14 +91,23 @@ const diaries = [
   },
 ];
 
+type EmotionType = "행복" | "설렘" | "피로" | "짜증" | "우울";
+interface EmotionCount {
+  emotion: EmotionType;
+  count: number;
+}
+
 export default function MainPage() {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user); // Redux에서 유저 정보 가져오기
+  const [weekEmotions, setWeekEmotions] = useState<(EmotionType | null)[]>([]);
+  const [monthEmotions, serMonthEmotions] = useState<EmotionCount[]>([]);
 
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false); // 보이지 않도록 설정(임시) -> 유저 정보를 받아 처리 예정
 
+  // 유저 정보 불러오기
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -134,6 +131,31 @@ export default function MainPage() {
 
     fetchUser();
   }, [dispatch]);
+
+  // 주간 감정 불러오기
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axiosInstance.get("/api/emotions/weekly");
+        setWeekEmotions(res.data.data.emotions);
+      } catch (err) {
+        console.error("주간 감정 불러오기 오류: ", err);
+      }
+    })();
+  }, []);
+
+  // 월별 감정 통계 불러오기
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axiosInstance.get("/api/emotions/monthly");
+        serMonthEmotions(res.data.data.emotions);
+        console.log("월별 감정 결과: ", res.data.data.emotions);
+      } catch (err) {
+        console.error("월별 감정 불러오기 오류: ", err);
+      }
+    })();
+  }, []);
 
   if (!user || !user.userId) return null;
 
@@ -178,7 +200,7 @@ export default function MainPage() {
             weekEmotions as (
               | "행복"
               | "설렘"
-              | "피곤"
+              | "피로"
               | "짜증"
               | "우울"
               | null

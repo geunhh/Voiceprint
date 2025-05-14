@@ -6,7 +6,7 @@ interface GroupCardProps {
   groupImageUrl: string;
   memberCount: number;
   memberProfileImages: string[];
-  createdAt: string;
+  createdAt?: string;
   onClick: () => void;
 }
 
@@ -31,7 +31,7 @@ function GroupCard({
         <div className="relative w-full flex-1 overflow-hidden">
           <img
             src={groupImageUrl}
-            alt="group"
+            alt="그룹 이미지"
             className="absolute w-full h-full object-cover"
           />
         </div>
@@ -39,9 +39,16 @@ function GroupCard({
         {/* 텍스트 영역 */}
         <div className="bg-white px-4 py-2">
           <p className="font-bold text-lg">{groupName}</p>
-          <p className="text-sm text-gray-500 mt-1">
-            {memberCount}명이 함께 하는 중
-          </p>
+          {createdAt ? (
+            <p className="text-sm text-gray-500 mt-1">
+              {memberCount}명이 함께 하는 중
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500 mt-1">
+              친구들과 말자국을 공유해 보세요
+            </p>
+          )}
+
           <div className="flex justify-end mt-2 gap-1">
             {displayed.map((url, idx) => (
               <img
@@ -56,9 +63,11 @@ function GroupCard({
       </div>
 
       {/* 카드 바깥에 위치한 생성일 */}
-      <p className="text-sm text-gray-500 text-center mt-2 mb-4">
-        생성일 {format(new Date(createdAt), "yyyy.MM.dd", { locale: ko })}
-      </p>
+      {createdAt && (
+        <p className="text-sm text-gray-500 text-center mt-2 mb-4">
+          생성일 {format(new Date(createdAt), "yyyy.MM.dd", { locale: ko })}
+        </p>
+      )}
     </div>
   );
 }
