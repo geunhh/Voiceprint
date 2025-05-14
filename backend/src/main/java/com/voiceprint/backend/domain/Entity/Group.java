@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain;
+package com.voiceprint.backend.domain.Entity;
 
 
 import jakarta.persistence.Table;
@@ -32,7 +32,7 @@ public class Group {
     @Column(length = 10)
     private String invitationCode;
 
-    @Column(length = 512)
+    @Column(length = 100)
     private String groupImage;
 
     @Column(name = "alarm_day")

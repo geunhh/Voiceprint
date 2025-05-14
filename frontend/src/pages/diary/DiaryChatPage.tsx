@@ -44,7 +44,7 @@ export default function DiaryChatPage() {
         const total = data.data.totalToken;
 
         const formatted = savedMessages.map((msg: any) => ({
-          from: msg.role === "USER" ? "user" : "ai",
+          from: msg.role === "user" ? "user" : "ai",
           text: msg.content,
         }));
 
@@ -141,7 +141,7 @@ export default function DiaryChatPage() {
             type="fill"
             size="S"
             onClick={handleCreate}
-            disabled={limit < 60}
+            disabled={limit < 30}
           />
         </div>
         <ProgressBar label="" progress={limit} />

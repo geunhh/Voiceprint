@@ -1,20 +1,18 @@
 /* src/components/diary/DiaryEntryCard.tsx */
 
-import React from "react";
-
 interface DiaryEntryCardProps {
   dateText: string; // "4월 24일 (목)"
-  emotion: "행복" | "기쁨" | "슬픔" | "화남" | "그냥그래";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   title: string;
   content: string;
 }
 
 const badgeColor: Record<string, string> = {
   행복: "bg-pink-50 text-pink-600 border-pink-300",
-  기쁨: "bg-yellow-50 text-yellow-600 border-yellow-300",
-  슬픔: "bg-blue-50 text-blue-600 border-blue-300",
-  화남: "bg-red-50 text-red-600 border-red-300",
-  그냥그래: "bg-gray-50 text-gray-600 border-gray-300",
+  설렘: "bg-yellow-50 text-yellow-600 border-yellow-300",
+  피로: "bg-blue-50 text-blue-600 border-blue-300",
+  짜증: "bg-red-50 text-red-600 border-red-300",
+  우울: "bg-gray-50 text-gray-600 border-gray-300",
 };
 
 export default function DiaryEntryCard({
