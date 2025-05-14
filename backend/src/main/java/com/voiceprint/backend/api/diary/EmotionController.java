@@ -40,8 +40,8 @@ public class EmotionController {
     public ResponseEntity<CommonResponse<MonthlyEmotionResponseDTO>> getMonthlyEmotion(
             HttpServletRequest request
     ) {
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 2L;
+        Long userId = authService.getUserIdFromRequest(request);
+//        Long userId = 2L;
         log.info("이번달 사용자의 감정 통계 정보 조회// userId : {}",userId);
 
         MonthlyEmotionResponseDTO response = emotionService.getMonthlyEmotions(userId);

@@ -20,4 +20,5 @@ public class GroupMainPageResponse {
     private LocalDateTime createdAt;
     private List<UserInfoDTO> groupUserList;
     private LocalDateTime joinedAt;
+    private String groupImage;
 }

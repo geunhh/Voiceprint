@@ -88,6 +88,7 @@ public class ChatSessionService {
             metadata.put("chatbotId", chatbotId);   //id
             metadata.put("chatPrompt", prompt);     //prompt
             metadata.put("status", ChatSessionStatus.IN_PROGRESS.name()); //status
+            metadata.put("total_token", 0);
             redisTemplate.opsForHash().putAll(sessionKey, metadata);
 
             // 첫 메시지 초기화
@@ -350,7 +351,6 @@ public class ChatSessionService {
         String emotionStr = (String) sessionData.get("emotion"); // null일 수 있음
         String prompt = (String) sessionData.get("chatPrompt");
 
-        emotionStr = "슬픔"; // TODO: 임시 데이터
 
         // 2. Redis 메시지 파싱
         List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);

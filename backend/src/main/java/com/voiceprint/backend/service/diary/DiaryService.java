@@ -24,8 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -135,8 +137,7 @@ public class DiaryService {
 
     public List<ChatMessageResponseDTO> getChatRecordFromDiary(HttpServletRequest request, Long diaryId) {
         // 유저 정보 조회
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
 
         // 일기 정보 조회

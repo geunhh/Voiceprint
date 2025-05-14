@@ -104,6 +104,8 @@ public class DiaryThemaService {
         // FastAPi 응답 파싱
         String prompt = fastApiResponse.get("prompt").toString();
         String example = fastApiResponse.get("example").toString();
+        log.debug("example : {}",example);
+        log.debug("prompt : {}",prompt);
 
         // 기존 커스텀 테마 확인 후 업데이트
         DiaryThema existingThema = user.getCustomThema();

@@ -1,17 +1,35 @@
 package com.voiceprint.backend.service.groups;
 
 
+import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
+import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.api.groups.dto.*;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.domain.*;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.domain.Entity.Group;
+import com.voiceprint.backend.domain.Entity.GroupUser;
+import com.voiceprint.backend.domain.Entity.GroupUserId;
+import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
+import com.voiceprint.backend.domain.Repository.GroupRepository;
+import com.voiceprint.backend.domain.Repository.GroupUserRepository;
+import com.voiceprint.backend.domain.auth.User;
+import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.service.S3Service;
+import com.voiceprint.backend.service.auth.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
+@Slf4j
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +40,7 @@ public class GroupService {
     private final GroupUserRepository groupUserRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
+    private final AuthService authService;
 
     @Transactional
     public GroupCreateResponse createGroup(Long userId, GroupCreateRequest request) {
@@ -123,7 +142,30 @@ public class GroupService {
                 group.getAlarmTime(),
                 group.getCreatedAt(),
                 groupUserList,
-                groupUser.getJoinedAt()
+                groupUser.getJoinedAt(),
+                group.getGroupImage()
         );
+    }
+
+    public List<MyGroupResponse> getMyGroups(Long userId) {
+        List<Group> groups = groupRepository.findAllByUserId(userId);
+
+        return groups.stream().map(group -> {
+            List<GroupUser> groupUsers = groupUserRepository.findAllByGroupId(group.getId());
+            int memberCount = groupUsers.size();
+            List<String> profileImages = groupUsers.stream()
+                    .limit(3)
+                    .map(gu -> gu.getUser().getProfileImage().getImageUrl())
+                    .collect(Collectors.toList());
+
+            return new MyGroupResponse(
+                    group.getId(),
+                    group.getName(),
+                    group.getGroupImage(),
+                    memberCount,
+                    profileImages,
+                    group.getCreatedAt()
+            );
+        }).collect(Collectors.toList());
     }
 }

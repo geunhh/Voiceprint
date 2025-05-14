@@ -11,7 +11,7 @@ import subprocess
 import json
 import openai
 from starlette.websockets import WebSocketState
-import redis
+# import redis
 import asyncio
 from schema import Chat, MyChat
 from typing import Annotated
@@ -125,12 +125,11 @@ async def tts(message):
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("WebSocket 연결 수락됨")
-    chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
+    # chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
 
     # 오디오 데이터 버퍼
     audio_buffer = None
-    chat_history = [{"role" :"system", "content": chat_character}]
-    
+    chat_history = []
     try:
         while True:
             # 메시지 수신 (바이너리 또는 텍스트)
@@ -174,7 +173,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         # LLM 에서 대댑을 해줌
                         response = await llm(transcription)
-                        chat_history.append({"role" : "assistant", "content" : response})
+                        # chat_history.append({"role" : "assistant", "content" : response})
                         
                         # openai TTS 
                         return_voice = await tts(response)
@@ -189,7 +188,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         print("여기까지됨 2222")
                         await websocket.send_bytes(return_voice)
                         
-
+                        
                 except json.JSONDecodeError:
                     print("잘못된 JSON 형식")
             
@@ -202,36 +201,5 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close()
     except Exception as e:
         print(f"오류 발생: {e}")
-
-
-async def chat(request) : 
-    response = client.chat.completions.create(
-        model = 'gpt-3.5-turbo',
-        messages=request
-    )
-    return response.choices[0].message.content
-
-# 1. 가장 먼저 구현해야 하는 것은 채팅창
-@app.post("/api/v1/chat")
-async def chat_text(request : Chat) : 
-    response  = await chat(request.message)
-    if not response :
-        raise HTTPException(status_code=500, detail="no response from server")
-    else : 
-        return {"code" : 200, "data" : response}
-
-@app.post("/api/v1/to_diary")
-async def diary(request : MyChat):
-    # openai api 로 일기 만들기
-    content = ""
-    messages = [
-        {"role": "system", "content": f"이 내용으로 일기를 만들어줘.{request.mychat}"},
-        {"role": "system", "content": f"이런 양식으로 만들어줘 : {content}"},
-    ]
-    response = chat(messages)
-    if not response : 
-        raise HTTPException(status_code=500, detail="no response from server")
-    else : 
-        return {"code" : 200, "data" : response}
 
 

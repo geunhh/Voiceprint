@@ -11,14 +11,14 @@ import subprocess
 import json
 import openai
 from starlette.websockets import WebSocketState
-# import redis
+import redis
 import asyncio
-from schema import Chat, MyChat
+from schema import Chat, MyChat, PromtTest
 from typing import Annotated
-
+import datetime
 
 app = FastAPI()
-
+r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
 # 백엔드 origin 으로 변경 필요 
 origins = [
@@ -125,11 +125,12 @@ async def tts(message):
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("WebSocket 연결 수락됨")
-    # chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
+    chat_character = await websocket.receive()  # 일단 성격을 줘야 함.
 
     # 오디오 데이터 버퍼
     audio_buffer = None
-    chat_history = []
+    chat_history = [{"role" :"system", "content": chat_character}]
+    
     try:
         while True:
             # 메시지 수신 (바이너리 또는 텍스트)
@@ -173,13 +174,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         # LLM 에서 대댑을 해줌
                         response = await llm(transcription)
-                        # chat_history.append({"role" : "assistant", "content" : response})
+                        chat_history.append({"role" : "assistant", "content" : response})
                         
                         # openai TTS 
                         return_voice = await tts(response)
                         # response를 redis에 저장하는 기능을 여기 넣자. 
-
-
+                        
                         # 처음에는 음성이랑 데이터랑 같이 보낸다고 했는데, 그러면 음성 데이터(byte 데이터)를 인코딩을 해야 함 
                         # 다소 좋지 않은 방법이기 때문에, 먼저 텍스트를 보내고 음성을 보내려고 했으나, 생각해보니 운전하는 중에는 텍스트보단 음성을 먼저 기대할 것 같음. 
                         # 그리고 텍스트를 볼 수 있는 상황이면 굳이 음성 출력을 기다리지 않을 것 같음. 
@@ -188,7 +188,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         print("여기까지됨 2222")
                         await websocket.send_bytes(return_voice)
                         
-                        
+
                 except json.JSONDecodeError:
                     print("잘못된 JSON 형식")
             
@@ -203,3 +203,98 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"오류 발생: {e}")
 
 
+async def chat(request) : 
+    response = client.chat.completions.create(
+        model = 'gpt-3.5-turbo',
+        messages=request
+    )
+    return response.choices[0].message.content
+
+#테스트용 redis 데이터 저장용 함수
+
+@app.post("/test/redis_save")
+async def redis_save(user_key : str, chatbot_id : str, chat_prompt : str, status : str, tempDiary : str, temptitle : str, emotion : str) :
+    current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    r.hset(
+        f'chat_session:{user_key}',
+        mapping={  # mapping을 사용하여 키-값 쌍을 전달
+            "chatbotId": chatbot_id,
+            "chatPrompt": chat_prompt,
+            "status": status,
+            "tempDiary": tempDiary,
+            "tempTitle": temptitle,
+            "createdAt": current_time,
+            "emotion": emotion
+        }
+    )
+    return None 
+
+#대략 3만자 정도면 컷 해야 하네. 인풋 아웃풋 합쳐서. 그럼 대략 10000자 정도면 음...
+
+
+# chat history 저장 테스트용 함수
+@app.post("/test/chat_history")
+async def chat_history(user_key : str, role : str,text: str) :
+    json_transform = json.dumps({"role" : role, "content" : text})
+    print(json_transform)
+    r.rpush(f"chat_session_messages:{user_key}",json_transform )
+    return 
+    
+# 백엔드 redis 버전 7.4.3이라는데
+
+# 1. 가장 먼저 구현해야 하는 것은 채팅창
+@app.post("/api/v1/chat")
+async def chat_text(user_key) :
+    #여기서 redis 접속
+
+    # 이전 채팅 기록 확인
+    chatbot_info = r.hgetall(f"chat_session:{user_key}") #챗봇 프롬프트
+    #생각해보니까 이거 어차피 챗봇 프롬프트에서 Ai 성격 프롬프트가 있잖아? 매번 확인해야 하긴 하네
+    chat_history  =r.lrange(f"chat_session_messages:{user_key}", 0, -1)
+    print(chat_history)
+    
+    #기존 채팅 히스토리 가져오기. json형태이므로, 안타깝게도 이건 바이너리 형태.....하 
+    chat_history = list(map(json.loads,chat_history))
+    print(chat_history)
+    chat_history = [{"role" : "system", "content" : chatbot_info["chatPrompt"]}] + chat_history
+
+    # 데이터 없으면 user id가 잘못된거니까 not correct
+    if not chatbot_info:
+        raise HTTPException(status_code=404, detail="user id not correct")
+    # print(chatbot_info)
+    
+    # Now try to access with the correct key
+    response  = await chat(chat_history)
+    # 여기서 redis 에 답변을 저장해야 함. 
+    
+    if not response :
+        raise HTTPException(status_code=500, detail="no response from server")
+    else : 
+        r.rpush(f"chat_session_messages:{user_key}", json.dumps({"role": "assistant", "content": response}))
+        raise HTTPException(status_code=200, detail=response)
+
+@app.post("/api/v1/to_diary")
+async def diary(request : MyChat):
+    # openai api 로 일기 만들기
+    content = ""
+    messages = [
+        {"role": "system", "content": f"이 내용으로 일기를 만들어줘.{request.mychat}"},
+        {"role": "system", "content": f"이런 양식으로 만들어줘 : {content}"},
+    ]
+    response = chat(messages)
+    if not response : 
+        raise HTTPException(status_code=500, detail="no response from server")
+    else : 
+        return {"code" : 200, "data" : response}
+
+
+@app.post("/api/v1/prompt_test")
+async def prompt_test(request : PromtTest) : 
+    try : 
+        response = await llm([{"role" : "system", "content" : "사용자의 요청에 따라 일기를 다시 써줘. 제공된 일기에 있었던 일만 언급해야 해."}, 
+                {"role" : "system", "content" : request.user_prompt }, 
+                {"role" : "user", "content" : request.prev_diary}])
+        print(response)
+    except Exception as e : 
+        print(e)
+    
