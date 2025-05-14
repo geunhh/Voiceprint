@@ -162,30 +162,32 @@ export default function GroupDetailPage() {
       </div>
 
       {/* 공유 루틴 및 디데이 정보 */}
-      <div className="mb-3 w-full">
-        {/* <p className="text-darkmint font-semibold mb-2">일기 공유 루틴</p> */}
+      {group.enableAlarm && (
+        <div className="mb-3 w-full">
+          <div className="flex items-center gap-4">
+            {/* 시간 */}
+            <div className="flex items-center">
+              <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
+              <p className="font-bold text-gray-700">
+                {routineHour < 12
+                  ? `오전 ${group.alarmTime.slice(0, 5)}`
+                  : `오후 ${group.alarmTime.slice(0, 5)}`}
+              </p>
+            </div>
 
-        <div className="flex items-center gap-4">
-          {/* 시간 */}
-          <div className="flex items-center">
-            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
-            <p className="font-bold text-gray-700">
-              {routineHour < 12
-                ? `오전 ${group.alarmTime.slice(0, 5)}`
-                : `오후 ${group.alarmTime.slice(0, 5)}`}
-            </p>
-          </div>
-
-          {/* 요일 */}
-          <div className="flex items-center">
-            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
-            <p className="font-medium text-gray-500">
-              <span className="font-semibold text-gray-700">{routineText}</span>{" "}
-              기록해요
-            </p>
+            {/* 요일 */}
+            <div className="flex items-center">
+              <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
+              <p className="font-medium text-gray-500">
+                <span className="font-semibold text-gray-700">
+                  {routineText}
+                </span>{" "}
+                기록해요
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 디데이 */}
       <div className="mb-3 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
