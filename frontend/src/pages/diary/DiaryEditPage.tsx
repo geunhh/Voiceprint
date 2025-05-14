@@ -10,7 +10,7 @@ import AlertModal from "../../components/modal/AlertModal";
 interface TempDiary {
   title: string;
   dateText: string;
-  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   content: string;
 }
 
@@ -21,7 +21,7 @@ export default function DiaryEditPage() {
   const diary = (location.state as TempDiary) || {
     title: "",
     dateText: "",
-    emotion: "피곤" as const,
+    emotion: "피로" as const,
     content: "",
   };
 

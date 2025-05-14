@@ -1,5 +1,5 @@
 // src/components/diary/DiaryEditCard.tsx
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 // 감정 태그 이미지 import
 import emotionTag1 from "../../assets/temp/emotionTag1.png";
@@ -10,7 +10,7 @@ import emotionTag5 from "../../assets/temp/emotionTag5.png";
 
 interface DiaryEditCardProps {
   dateText: string;
-  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   title: string;
   content: string;
   onTitleChange: (newTitle: string) => void;
@@ -21,7 +21,7 @@ interface DiaryEditCardProps {
 const emotionTagMap: Record<string, string> = {
   행복: emotionTag1,
   설렘: emotionTag2,
-  피곤: emotionTag3,
+  피로: emotionTag3,
   짜증: emotionTag4,
   우울: emotionTag5,
 };

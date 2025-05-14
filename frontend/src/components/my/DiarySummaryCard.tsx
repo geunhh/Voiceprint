@@ -7,16 +7,16 @@ import emotionTag5 from "../../assets/temp/emotionTag5.png";
 
 interface DiarySummaryCardProps {
   date: string;
-  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   title: string;
   diaryId: number;
-  content:string;
+  content: string;
 }
 
 const emotionImageMap: Record<DiarySummaryCardProps["emotion"], string> = {
   행복: emotionTag1,
   설렘: emotionTag2,
-  피곤: emotionTag3,
+  피로: emotionTag3,
   짜증: emotionTag4,
   우울: emotionTag5,
 };
@@ -37,16 +37,16 @@ function DiarySummaryCard(props: DiarySummaryCardProps) {
       onClick={handleClick}
     >
       <div className="flex-col">
-      <div className="flex-col gap-2 text-sm">
-        <span className="text-gray-500">{date}</span>
-        <div className="flex gap-2">
-          <span className="font-semibold text-gray-700">{title}</span>
-          <img src={emotionImage} className="w-11"/>
+        <div className="flex-col gap-2 text-sm">
+          <span className="text-gray-500">{date}</span>
+          <div className="flex gap-2">
+            <span className="font-semibold text-gray-700">{title}</span>
+            <img src={emotionImage} className="w-11" />
+          </div>
         </div>
-      </div>
-      <div>
-        <span className="text-gray-500 text-sm line-clamp-2">{content}</span>
-      </div>
+        <div>
+          <span className="text-gray-500 text-sm line-clamp-2">{content}</span>
+        </div>
       </div>
     </div>
   );
