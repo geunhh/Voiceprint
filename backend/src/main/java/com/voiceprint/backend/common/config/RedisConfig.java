@@ -25,8 +25,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String redisPassword;
 
-    @Value("${spring.data.redis.ssl.enabled}")
-    private boolean sslEnabled;
+    // @Value("${spring.data.redis.ssl.enabled}")
+    // private boolean sslEnabled;
 
     @PostConstruct
     public void printRedisHost() {
