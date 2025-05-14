@@ -2,7 +2,7 @@ package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.common.filter.JWTFilter;
 import com.voiceprint.backend.common.util.JWTUtil;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.service.auth.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
