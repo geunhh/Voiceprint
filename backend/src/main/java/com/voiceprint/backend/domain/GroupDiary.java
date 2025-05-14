@@ -1,6 +1,6 @@
 package com.voiceprint.backend.domain;
 
-import com.voiceprint.backend.domain.diary.Diary;
+import com.voiceprint.backend.domain.Entity.Diary;
 import jakarta.persistence.*;
 import lombok.*;
 

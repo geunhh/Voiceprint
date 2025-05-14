@@ -10,15 +10,11 @@ import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
-import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.GroupDiary;
-import com.voiceprint.backend.domain.GroupDiaryRepository;
-import com.voiceprint.backend.domain.GroupRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.diary.Diary;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

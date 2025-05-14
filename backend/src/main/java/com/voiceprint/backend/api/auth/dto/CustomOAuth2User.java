@@ -1,6 +1,6 @@
 package com.voiceprint.backend.api.auth.dto;
 
-import com.voiceprint.backend.domain.auth.User;
+import com.voiceprint.backend.domain.Entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

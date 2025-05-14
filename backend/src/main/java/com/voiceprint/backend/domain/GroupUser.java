@@ -1,6 +1,6 @@
 package com.voiceprint.backend.domain;
 
-import com.voiceprint.backend.domain.auth.User;
+import com.voiceprint.backend.domain.Entity.User;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

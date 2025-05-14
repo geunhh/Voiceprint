@@ -1,10 +1,9 @@
 package com.voiceprint.backend.api.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatMessageListWithTokenDTO;
-import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.chat.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
-import com.voiceprint.backend.domain.chat.ChatSessionStatus;
+import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.chat.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
