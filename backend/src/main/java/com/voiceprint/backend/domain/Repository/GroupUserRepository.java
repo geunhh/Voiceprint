@@ -1,12 +1,13 @@
-package com.voiceprint.backend.domain;
+package com.voiceprint.backend.domain.Repository;
 
 import com.voiceprint.backend.api.groups.dto.UserInfoDTO;
+import com.voiceprint.backend.domain.Entity.GroupUser;
+import com.voiceprint.backend.domain.Entity.GroupUserId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
