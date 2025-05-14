@@ -1,9 +1,5 @@
-package com.voiceprint.backend.domain.auth;
+package com.voiceprint.backend.domain.Entity;
 
-import com.voiceprint.backend.domain.auth.ProfileImage;
-import com.voiceprint.backend.domain.chat.Chatbot;
-import com.voiceprint.backend.domain.diary.Diary;
-import com.voiceprint.backend.domain.thema.DiaryThema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -88,6 +84,10 @@ public class User {
     @Column(columnDefinition = "TIME DEFAULT '21:00'")
     private LocalTime alarmTime = LocalTime.of(21,0);
 
+    // 알림 목록
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) //
+    private List<Notification> notifications = new ArrayList<>();
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
@@ -95,5 +95,11 @@ public class User {
 
     public enum AuthProvider {
         google, kakao
+    }
+
+    //== 헬퍼 메서드 ==//
+    public void addNotification(Notification notification) {
+        notifications.add(notification);
+        notification.setUser(this);
     }
 }

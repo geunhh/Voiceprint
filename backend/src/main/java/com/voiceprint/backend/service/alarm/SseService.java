@@ -1,7 +1,7 @@
 package com.voiceprint.backend.service.alarm;
 
 import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
-import com.voiceprint.backend.domain.alarm.SseEmitterManager;
+import com.voiceprint.backend.domain.Repository.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +20,12 @@ public class SseService {
         return emitterManager.add(userId); // Emitter 생성 및 저장
     }
 
-    // 실제 알림을 전송하는 메서드
+    // 실제 알림을 전송하는 메서드 : 테스트용
     public void sendNotification(Long userId, String eventName, NotificationDTO payload) {
         emitterManager.sendTo(userId, eventName, payload);
     }
 
-    // 구독중인 사용자 조회하는 메서드
+    // 구독중인 사용자 조회하는  : 그룹 용
     public Set<Long> getSubscribedUserIds() {
         return emitterManager.getSubscribedUserIds();
     }
