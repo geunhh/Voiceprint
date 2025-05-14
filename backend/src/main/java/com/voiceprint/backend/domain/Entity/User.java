@@ -84,6 +84,7 @@ public class User {
     @Column(columnDefinition = "TIME DEFAULT '21:00'")
     private LocalTime alarmTime = LocalTime.of(21,0);
 
+    // 알림 목록
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) //
     private List<Notification> notifications = new ArrayList<>();
 
