@@ -141,7 +141,7 @@ export default function DiaryChatPage() {
             type="fill"
             size="S"
             onClick={handleCreate}
-            disabled={limit < 60}
+            disabled={limit < 30}
           />
         </div>
         <ProgressBar label="" progress={limit} />

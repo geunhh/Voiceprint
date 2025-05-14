@@ -86,8 +86,6 @@ export default function DiaryFriendPage() {
 
     dispatch(setCharacter(selectedCharacter));
 
-    // navigate("/diary/chat");
-
     try {
       const res = await axiosInstance.get("/api/chat/session/status");
       const status: string | null = res.data.data;
