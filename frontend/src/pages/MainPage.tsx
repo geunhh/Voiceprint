@@ -91,11 +91,17 @@ const diaries = [
   },
 ];
 
+type EmotionType = "행복" | "설렘" | "피로" | "짜증" | "우울";
+interface EmotionCount {
+  emotion: EmotionType;
+  count: number;
+}
+
 export default function MainPage() {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user); // Redux에서 유저 정보 가져오기
-  const [weekEmotions, setWeekEmotions] = useState<any>([]);
-  const [monthEmotions, serMonthEmotions] = useState<any>([]);
+  const [weekEmotions, setWeekEmotions] = useState<(EmotionType | null)[]>([]);
+  const [monthEmotions, serMonthEmotions] = useState<EmotionCount[]>([]);
 
   const navigate = useNavigate();
 
