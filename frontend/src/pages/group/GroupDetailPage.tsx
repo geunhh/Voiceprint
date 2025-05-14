@@ -1,4 +1,6 @@
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import axiosInstance from "../../api/axiosInstance";
 
 import calendarIcon from "../../assets/icons/calendar.png";
 import clockIcon from "../../assets/icons/clock.png";
@@ -6,39 +8,11 @@ import QuestionCharacter from "../../assets/icons/lovelyCharacter.png";
 import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
 
+// 임시데이터
+// 그룹에 공유된 일기 정보는 수정 예정
 import profile1 from "../../assets/temp/profile1.png";
 import profile2 from "../../assets/temp/profile2.png";
 import profile3 from "../../assets/temp/profile3.png";
-
-// 임시 데이터
-const group = {
-  groupId: 1,
-  groupName: "아이스크림 조아 모임",
-  groupImage:
-    "https://i.pinimg.com/736x/a4/d2/b9/a4d2b9a45a2083eb4118f4ef7421cc14.jpg",
-  groupUsers: [
-    {
-      userId: 1,
-      userName: "민태홍",
-      userImage: profile1,
-    },
-    {
-      userId: 2,
-      userName: "김근휘",
-      userImage: profile2,
-    },
-    {
-      userId: 3,
-      userName: "이지은",
-      userImage: profile3,
-    },
-  ],
-  routineTime: "12:00",
-  routineDays: ["토", "일"],
-  isAlertEnabled: false,
-  createdAt: "2025-04-23T14:22:30",
-  joinedAt: "2025-05-01T12:00:00",
-};
 
 const groupDiaries = [
   {
@@ -83,19 +57,60 @@ const groupDiaries = [
 ];
 
 export default function GroupDetailPage() {
+  const navigate = useNavigate();
+
+  const { groupId } = useParams();
+  const [group, setGroup] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      try {
+        const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
+        setGroup(res.data.data);
+        console.log(res.data.data);
+      } catch (err) {
+        console.error("그룹 데이터 불러오기 실패", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroupData();
+  }, [groupId]);
+
+  if (loading || !group) {
+    return (
+      <p className="p-4 flex justify-center items-center">
+        그룹 정보를 불러오는 중입니다...
+      </p>
+    );
+  }
+
   const date = new Date(group.createdAt);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  const navigate = useNavigate();
-
-  const routineHour = Number(group.routineTime.slice(0, 2));
+  const routineHour = group.alarmTime ? Number(group.alarmTime.slice(0, 2)) : 0;
 
   const joinedDate = new Date(group.joinedAt);
   const todayDate = new Date();
   const diffTime = todayDate.getTime() - joinedDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // 디데이 계산
+
+  // 요일 영어 -> 한글 변환
+  const dayMap: Record<string, string> = {
+    MONDAY: "월",
+    TUESDAY: "화",
+    WEDNESDAY: "수",
+    THURSDAY: "목",
+    FRIDAY: "금",
+    SATURDAY: "토",
+    SUNDAY: "일",
+  };
+
+  const routineDays = (group.alarmDays ?? []).map((day: string) => dayMap[day]);
 
   // 일기 공유 요일 출력을 위한 로직
   const fullWeek = ["월", "화", "수", "목", "금", "토", "일"];
@@ -104,7 +119,7 @@ export default function GroupDetailPage() {
 
   let routineText = "";
 
-  const sortedDays = [...group.routineDays].sort(
+  const sortedDays = [...routineDays].sort(
     (a, b) => fullWeek.indexOf(a) - fullWeek.indexOf(b)
   );
 
@@ -142,7 +157,7 @@ export default function GroupDetailPage() {
         </div>
         {/* 그룹명 */}
         <div>
-          <p className="font-semibold text-2xl">{group.groupName}</p>
+          <p className="font-semibold text-2xl">{group.name}</p>
         </div>
       </div>
 
@@ -156,8 +171,8 @@ export default function GroupDetailPage() {
             <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
             <p className="font-bold text-gray-700">
               {routineHour < 12
-                ? `오전 ${group.routineTime}`
-                : `오후 ${group.routineTime}`}
+                ? `오전 ${group.alarmTime.slice(0, 5)}`
+                : `오후 ${group.alarmTime.slice(0, 5)}`}
             </p>
           </div>
 
@@ -194,24 +209,24 @@ export default function GroupDetailPage() {
         {/* 메이트 인원수 정보 */}
         <div className="flex mb-2">
           <p className="text-darkmint font-semibold">
-            {group.groupUsers.length}명
+            {group.groupUserList.length}명
           </p>
           <p className="font-semibold text-gray-700">의 일기 메이트</p>
         </div>
         {/* 메이트 프로필 이미지 */}
         <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
-          {group.groupUsers.map((user) => (
+          {group.groupUserList.map((user) => (
             <div
               key={user.userId}
               className="flex flex-col items-center gap-2 shrink-0"
             >
               <img
-                src={user.userImage}
+                src={user.profileImageUrl}
                 alt="유저 프로필"
                 className="w-20 h-20 rounded-full"
               />
               <p className="font-semibold text-gray-500 whitespace-nowrap">
-                {user.userName}
+                {user.nickname}
               </p>
             </div>
           ))}

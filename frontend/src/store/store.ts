@@ -35,7 +35,7 @@ export const store = configureStore({
 });
 
 store.subscribe(() => {
-  saveToLocalStorage(store.getState().character); // 상태가 바뀔 때마다 저장
+  saveToLocalStorage(store.getState().character);
 });
 
 export type RootState = ReturnType<typeof store.getState>;
