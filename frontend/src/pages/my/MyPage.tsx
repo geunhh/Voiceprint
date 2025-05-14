@@ -27,7 +27,7 @@ interface Diary {
   diaryId: number;
   title: string;
   createdAt: string;
-  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   content: string;
 }
 
@@ -166,7 +166,7 @@ export default function MyPage() {
                   date={formatDate(diary.createdAt)}
                   title={diary.title}
                   emotion={
-                    diary.emotion as "행복" | "설렘" | "피곤" | "짜증" | "우울"
+                    diary.emotion as "행복" | "설렘" | "피로" | "짜증" | "우울"
                   }
                   diaryId={diary.diaryId}
                   content={diary.content}
