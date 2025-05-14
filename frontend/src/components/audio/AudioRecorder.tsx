@@ -4,24 +4,32 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaMicrophone, FaStop } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 import axiosInstance from "../../api/axiosInstance";
 import { setCharacter } from "../../store/characterSlice";
-
 import { useNavigate } from "react-router-dom";
-import Button from "../common/Button";
 
+import Button from "../common/Button";
 import ProgressBar from "../common/ProgressBar";
 import AlertModal from "../modal/AlertModal";
 import DiaryCreateFailModal from "../modal/DiaryCreateFailModal";
 import DiaryCreatingModal from "../modal/DiaryCreatingModal";
 
-// 로컬 기본 아이콘
+// 로컬 아이콘 (서버 imageUrl이 없을 때 fallback 용)
 import chatBlack from "../../assets/icons/chatBlack.png";
 import chatBlue from "../../assets/icons/chatBlue.png";
 import chatPink from "../../assets/icons/chatPink.png";
 import chatRed from "../../assets/icons/chatRed.png";
 import chatYellow from "../../assets/icons/chatYellow.png";
+
+const localIcons: Record<string, string> = {
+  따분이: chatBlack,
+  맑음이: chatBlue,
+  설렘이: chatPink,
+  열정이: chatRed,
+  햇살이: chatYellow,
+};
 
 // MediaRecorder 확장 모델에 autoSend 속성 추가
 interface ExtendedMediaRecorder extends MediaRecorder {
@@ -51,20 +59,7 @@ const AudioRecorder: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 캐릭터(챗봇) 정보 ------------------------------------------------
-  const [character, setCharacterState] = useState({
-    id: 0,
-    img: chatYellow, // 기본 햇살이
-    name: "햇살이",
-    tag: "기본 캐릭터",
-  });
-  const localIcons: Record<string, string> = {
-    따분이: chatBlack,
-    맑음이: chatBlue,
-    설렘이: chatPink,
-    열정이: chatRed,
-    햇살이: chatYellow,
-  };
+  const character = useSelector((state: RootState) => state.character);
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [status, setStatus] = useState<RecorderStatus>("idle");
@@ -101,35 +96,26 @@ const AudioRecorder: React.FC = () => {
   // 1. 최근 챗봇 정보 로드 (+fallback)
   // ────────────────────────────────────────────────────────────────
   useEffect(() => {
+    // 이미 Redux에 캐릭터(id)가 있으면 그대로 사용
+    if (character.id) return;
+
     const fetchRecent = async () => {
       try {
         const res = await axiosInstance.get("/api/chatbot");
-
         const { recentChatbotId, chatbots } = res.data.data;
         const bot =
           chatbots.find((b: any) => b.id === recentChatbotId) || chatbots[0];
-
-        const img = bot.imageUrl || localIcons[bot.name] || chatYellow;
+        const img = bot.imageUrl || localIcons[bot.name] || "";
         const tag = bot.description.split(",").join(" ");
-
-        // slice 구조(img / name / tag)에 맞게
-        const characterObj = { img, name: bot.name, tag };
-
-        setCharacterState(characterObj); // 로컬 상태
-        dispatch(setCharacter(characterObj)); // 전역 상태
+        dispatch(setCharacter({ id: bot.id, img, name: bot.name, tag }));
       } catch (err) {
-        console.error("챗봇 정보 실패, 기본 캐릭터 사용", err);
-        const fallback = {
-          img: chatYellow,
-          name: "햇살이",
-          tag: "기본 캐릭터",
-        };
-        setCharacterState(fallback);
-        dispatch(setCharacter(fallback));
+        console.error("챗봇 정보 실패", err);
       }
     };
     fetchRecent();
-  }, [dispatch]);
+  }, [character.id, dispatch]);
+  // 이미지 로딩 상태
+  const isCharacterReady = !!character.img;
 
   // 오디오 요소 생성
   useEffect(() => {
@@ -713,24 +699,26 @@ const AudioRecorder: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-36 pb-36">
       <div className="flex flex-col items-center gap-8">
-        {/* 진행바 예시 */}
+        {/* 진행바 */}
         <div className="w-full max-w-[320px]">
           <ProgressBar label="" progress={30} />
         </div>
 
         {/* 캐릭터 애니메이션 */}
         <div
-          className={`
-    w-60 h-60 rounded-full flex items-center justify-center
-    transition-transform duration-300
-    ${isSpeaking ? "animate-shake" : "animate-float"}
-  `}
+          className={`w-60 h-60 rounded-full flex items-center justify-center transition-transform duration-300 ${
+            isSpeaking ? "animate-shake" : "animate-float"
+          }`}
         >
-          <img
-            src={character.img}
-            alt={character.name}
-            className="w-64 h-64 object-contain"
-          />
+          {isCharacterReady ? (
+            <img
+              src={character.img}
+              alt={character.name}
+              className="w-64 h-64 object-contain"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse" />
+          )}
         </div>
 
         {/* 녹음/중지 버튼 */}
