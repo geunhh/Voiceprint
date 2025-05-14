@@ -23,28 +23,31 @@ function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
 
   return (
     <div
-      className="flex mx-auto rounded-xl border border-darkmint p-4 w-full"
+      className="flex flex-col mx-auto rounded-xl border border-lightmint shadow-sm shadow-mint/50 p-6 w-full hover:bg-lightmint cursor-pointer"
       onClick={handleClick}
     >
+      {/* 유저 정보 및 일기 제목, 일자 */}
       <div className="flex items-start gap-3">
         <img
           src={userImage}
           alt="User"
-          className="h-10 w-10 rounded-full object-cover"
+          className="h-12 w-12 rounded-full object-cover"
         />
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-base font-semibold">{userName}</p>
-              <p className="text-sm text-gray-500">[{title}]</p>
-            </div>
+        <div className="flex flex-col flex-1">
+          <div className="flex justify-between items-center">
+            <p className="text-base font-semibold">{title}</p>
             <span className="text-sm text-gray-400 whitespace-nowrap">
               {timeAgo}
             </span>
           </div>
-          <p className="mt-2 text-sm text-gray-700 line-clamp-2">{content}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{userName}</p>
         </div>
       </div>
+
+      {/* 일기 내용 */}
+      <p className="mt-3 text-sm text-gray-700 line-clamp-3 text-justify">
+        {content}
+      </p>
     </div>
   );
 }

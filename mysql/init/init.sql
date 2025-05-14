@@ -1,43 +1,44 @@
-DROP DATABASE IF EXISTS voiceprint;
-CREATE DATABASE voiceprint
+DROP DATABASE IF EXISTS voiceprint_db;
+CREATE DATABASE voiceprint_db
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
-USE voiceprint;
+USE voiceprint_db;
 
 -- 1) profile_images
-CREATE TABLE profile_images (
-  id           TINYINT       NOT NULL AUTO_INCREMENT COMMENT '프로필 이미지 ID',
-  title        VARCHAR(10)   NOT NULL COMMENT '이미지 제목',
-  image_url    VARCHAR(512)  NOT NULL COMMENT '이미지 URL',
-  created_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+CREATE TABLE `profile_images` (
+	`id` TINYINT NOT NULL AUTO_INCREMENT COMMENT "프로필 이미지 ID",
+  `title` VARCHAR(10) NOT NULL COMMENT "이미지 제목",
+  `image_url` VARCHAR(512) NOT NULL COMMENT '이미지 URL',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT "생성일시",
   PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 2) emotion
-CREATE TABLE emotion (
-  id        TINYINT      NOT NULL AUTO_INCREMENT COMMENT '감정 ID',
-  name      VARCHAR(10)  NOT NULL COMMENT '감정 내용',
-  color     VARCHAR(7)   null COMMENT '감정 색상',
+CREATE TABLE `emotion` (
+	`id` TINYINT NOT NULL AUTO_INCREMENT COMMENT "감정 ID",
+  `name` VARCHAR(10) NOT NULL COMMENT "감정 내용",
+  `color` VARCHAR(7) NULL COMMENT "감정 색상",
   PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 3) prompt_questions
-CREATE TABLE prompt_questions (
-  id         INT          NOT NULL AUTO_INCREMENT COMMENT '유도 질문 ID',
-  question   VARCHAR(50)  NOT NULL COMMENT '질문',
-  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
-  PRIMARY KEY(id)
+-- 3) prompt_questions 
+CREATE TABLE `prompt_questions` (
+	`id` TINYINT NOT NULL AUTO_INCREMENT COMMENT "유도 질문 ID",
+  `question` VARCHAR(50) NOT NULL COMMENT '질문',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT "생성일시",
+	PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 4) diary_themas
 CREATE TABLE diary_themas (
-  id            INT          NOT NULL AUTO_INCREMENT COMMENT '테마 ID',
-  title         VARCHAR(10)  NULL COMMENT '제목',
-  description   VARCHAR(100) NULL COMMENT '설명',
-  example       VARCHAR(255) NULL COMMENT '예시',
-  prompt        TEXT         NOT NULL COMMENT '프롬프트',
-  created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
-  updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+  `id`            INT          NOT NULL AUTO_INCREMENT COMMENT '테마 ID',
+  `user_id`       INT          NULL COMMENT '유저 아이디',
+  `title`         VARCHAR(10)  NULL COMMENT '제목',
+  `description`   VARCHAR(100) NULL COMMENT '설명',
+  `example`       VARCHAR(255) NULL COMMENT '예시',
+  `prompt`        TEXT         NOT NULL COMMENT '프롬프트',
+  `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+  `updated_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
   PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -51,7 +52,8 @@ CREATE TABLE chatbot (
   is_deleted   BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '삭제여부',
   created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
   updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-  PRIMARY KEY(id)
+  PRIMARY KEY(id),
+  KEY
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 5) users
@@ -85,6 +87,9 @@ CREATE TABLE `groups` (
   description      VARCHAR(255)  NULL COMMENT '설명',
   invitation_code  CHAR(10)      NULL COMMENT '초대코드',
   group_image      VARCHAR(512)  NULL COMMENT '이미지',
+	enable_alarm     BOOLEAN       NOT NULL DEFAULT FALSE COMMENT '알람여부', 
+	alarm_day        VARCHAR(50)   NULL  COMMENT '알림요일',
+  alarm_time       TIME          NULL  COMMENT '알림시간',
   is_deleted       BOOLEAN       NOT NULL DEFAULT FALSE COMMENT '삭제여부',
   created_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
   updated_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',

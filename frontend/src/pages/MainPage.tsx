@@ -1,17 +1,15 @@
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import axiosInstance from "../api/axiosInstance";
+import notificationIcon from "../assets/icons/notification.png";
 import DiaryPreview from "../components/common/DiaryPreview";
+import MonthEmotion from "../components/main/MonthEmotion";
 import TodayQuestion from "../components/main/TodayQuestion";
 import WeekEmotion from "../components/main/WeekEmotion";
-import MonthEmotion from "../components/main/MonthEmotion";
-
-// 임시 데이터
-// 유저 정보
-const user = {
-  userId: 1,
-  userName: "김혜민",
-  userImage:
-    "https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
-  customThemaId: null,
-};
+import NotificationModal from "../components/modal/NotificationModal";
+import { RootState } from "../store/store";
+import { setUser } from "../store/userSlice";
 
 // 오늘의 질문
 const todayQuestion = [
@@ -106,27 +104,75 @@ const diaries = [
 ];
 
 export default function MainPage() {
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user); // Redux에서 유저 정보 가져오기
+
+  const navigate = useNavigate();
+
+  const [showModal, setShowModal] = useState(false); // 보이지 않도록 설정(임시) -> 유저 정보를 받아 처리 예정
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axiosInstance.get("/api/v1/user/profile");
+
+        const { userId, nickname, imageUrl } = res.data.data;
+
+        dispatch(
+          setUser({
+            userId,
+            nickname,
+            imageUrl,
+          })
+        );
+
+        console.log("유저 정보 불러오기 성공", res.data.data);
+      } catch (err) {
+        console.error("유저 정보 불러오기 실패:", err);
+      }
+    };
+
+    fetchUser();
+  }, [dispatch]);
+
+  if (!user || !user.userId) return null;
+
   return (
-    <>
+    <div className="p-4">
       {/* 유저 정보 */}
-      <div className="flex mx-4 my-5 p-2 gap-2">
-        <img src={user.userImage} className="rounded-full w-14" />
-        <div className="flex-row self-center">
-          <div className="flex items-end">
-            <p className="text-xl font-semibold">{user.userName}</p>
-            <p className="text-gray-700">님</p>
+      <div className="flex items-center justify-between my-3 p-2">
+        {/* 유저 정보 */}
+        <div className="flex items-center gap-3">
+          <img
+            src={user.imageUrl}
+            className="rounded-full w-14 h-14 object-cover"
+            alt="프로필"
+          />
+          <div className="flex flex-col">
+            <div className="flex items-baseline">
+              <p className="text-xl font-semibold text-gray-700">
+                {user.nickname}
+              </p>
+              <p className="ml-1 text-gray-700">님</p>
+            </div>
+            <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
           </div>
-          <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
         </div>
+
+        {/* 알림 버튼 */}
+        <button onClick={() => navigate("/notification")}>
+          <img src={notificationIcon} alt="알림" className="w-6 h-6" />
+        </button>
       </div>
+
       {/* 오늘의 질문 */}
-      <div className="mb-2">
+      <div className="mb-3">
         <TodayQuestion question={todayQuestion} />
       </div>
 
       {/* 이번 주 기록 */}
-      <p className="ml-4 text-yellow-400 font-semibold">이번 주 기록</p>
-      <div className="p-4">
+      <p className=" text-yellow-400 font-semibold mb-2">이번 주 기록</p>
+      <div className="mb-3">
         <WeekEmotion
           emotions={
             weekEmotions as (
@@ -142,20 +188,22 @@ export default function MainPage() {
       </div>
 
       {/* 이번 달 통계 */}
-      <p className="ml-4 text-yellow-400 font-semibold">이번 달 내 마음</p>
-      <div className="p-4">
+      <p className=" text-yellow-400 font-semibold mb-2">이번 달 내 마음</p>
+      <div className="mb-3">
         <MonthEmotion emotions={monthEmotions} />
       </div>
 
       {/* 최근 말자국 모음 */}
-      <p className="ml-4 text-yellow-400 font-semibold">최근 말자국</p>
-      <div className="mb-16">
+      <p className=" text-yellow-400 font-semibold mb-2">최근 말자국</p>
+      <div className="pb-20">
         {diaries.map((diary) => (
-          <div className="mb-2">
+          <div className="mb-3">
             <DiaryPreview {...diary} />
           </div>
         ))}
       </div>
-    </>
+
+      {showModal && <NotificationModal onClose={() => setShowModal(false)} />}
+    </div>
   );
 }

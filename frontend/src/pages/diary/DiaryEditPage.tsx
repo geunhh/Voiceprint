@@ -1,11 +1,11 @@
 // src/pages/diary/DiaryEditPage.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import PageTitle from "../../components/PageTitle";
-import DiaryEditCard from "../../components/diaryCreate/DiaryEditCard";
+import axiosInstance from "../../api/axiosInstance";
 import Button from "../../components/common/Button";
+import PageTitle from "../../components/common/PageTitle";
+import DiaryEditCard from "../../components/diaryCreate/DiaryEditCard";
 import AlertModal from "../../components/modal/AlertModal";
-import axios from "axios";
 
 interface TempDiary {
   title: string;
@@ -37,16 +37,11 @@ export default function DiaryEditPage() {
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/diary/temp/update`,
-        { title, diary: content },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Authorization")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axiosInstance.patch("/api/chat/diary/temp/update", {
+        title,
+        diary: content,
+      });
+
       setAlert({
         message: "일기 수정이 완료되었습니다.",
         type: "success",

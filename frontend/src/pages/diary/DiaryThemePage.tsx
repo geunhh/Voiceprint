@@ -1,5 +1,4 @@
-import React from "react";
-import PageTitle from "../../components/PageTitle";
+import PageTitle from "../../components/common/PageTitle";
 import ThemaList from "../../components/common/ThemaList";
 
 export default function DiaryThemePage() {

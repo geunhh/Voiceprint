@@ -1,56 +1,68 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import axiosInstance from "../../api/axiosInstance";
+
 import Add from "../../assets/icons/add.png";
-
-import profile1 from "../../assets/temp/profile1.png";
-import profile2 from "../../assets/temp/profile2.png";
-import profile3 from "../../assets/temp/profile3.png";
-
 import Button from "../../components/common/Button";
+import { DayPicker } from "../../components/group/DayPicker";
+import ImageUploader from "../../components/group/ImageUploader";
 import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
-import ImageUploader from "../../components/group/ImageUploader";
-import { DayPicker } from "../../components/group/DayPicker";
-import { useNavigate } from "react-router";
-import { useState } from "react";
-import { useRef, useEffect } from "react";
+import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
-const group = {
-  groupId: 1,
-  groupName: "아이스크림 조아 모임",
-  groupImage:
-    "https://i.pinimg.com/736x/a4/d2/b9/a4d2b9a45a2083eb4118f4ef7421cc14.jpg",
-  groupUsers: [
-    {
-      userId: 1,
-      userName: "민태홍",
-      userImage: profile1,
-    },
-    {
-      userId: 2,
-      userName: "김근휘",
-      userImage: profile2,
-    },
-    {
-      userId: 3,
-      userName: "이지은",
-      userImage: profile3,
-    },
-  ],
-  routineTime: "12:00",
-  routineDays: ["월", "수", "금"],
-  isAlertEnabled: false,
+// 초대 링크
+const inviteLink = "www.voice_print/group/1/invite/1234";
+
+interface GroupUser {
+  id: number;
+  profileImageUrl: string;
+  nickname: string;
+}
+
+interface GroupData {
+  groupId: number;
+  name: string;
+  description?: string;
+  enableAlarm: boolean;
+  alarmDays?: string[];
+  alarmTime?: string;
+  createdAt: string;
+  joinedAt: string;
+  groupUserList: GroupUser[];
+}
+
+// 영어 -> 한글 매핑
+const engToKor: Record<string, string> = {
+  MONDAY: "월요일",
+  TUESDAY: "화요일",
+  WEDNESDAY: "수요일",
+  THURSDAY: "목요일",
+  FRIDAY: "금요일",
+  SATURDAY: "토요일",
+  SUNDAY: "일요일",
 };
+const korToEng = Object.fromEntries(
+  Object.entries(engToKor).map(([e, k]) => [k, e])
+) as Record<string, string>;
 
 export default function GroupEditPage() {
   const navigate = useNavigate();
-  const [isOn, setIsOn] = useState(group.isAlertEnabled);
-  const [selectedTime, setSelectedTime] = useState(group.routineTime);
+  const { groupId } = useParams<{ groupId: string }>();
+
+  const [loading, setLoading] = useState(true);
+  const [original, setOriginal] = useState<GroupData | null>(null);
+
+  const [name, setName] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isOn, setIsOn] = useState(false);
+  const [selectedTime, setSelectedTime] = useState("12:00");
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [selectedDays, setSelectedDays] = useState<string[]>(
-    group.routineDays.map((day) => day + "요일")
-  );
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
-  const [groupImageUrl, setGroupImageUrl] = useState<string>(group.groupImage);
 
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -75,48 +87,87 @@ export default function GroupEditPage() {
   };
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (
+        showDayPicker &&
         dayPickerRef.current &&
         !dayPickerRef.current.contains(e.target as Node)
       ) {
         setShowDayPicker(false);
       }
     };
-
-    if (showDayPicker) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, [showDayPicker]);
 
-  const handleImageChange = (imageDataUrl: string) => {
-    setGroupImageUrl(imageDataUrl);
+  // 기존 그룹 정보 불러오기
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
+        const d = res.data.data;
+        setOriginal(d);
+
+        // state 초기화
+        setName(d.name);
+        setImageUrl(d.groupImage);
+        setIsOn(d.enableAlarm);
+        setSelectedTime(d.alarmTime?.slice(0, 5) ?? "12:00");
+        setSelectedDays((d.alarmDays || []).map((e: string) => engToKor[e]));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [groupId]);
+
+  const handleEdit = async () => {
+    if (!original) return;
+
+    const formData = new FormData();
+    if (name !== original.name) formData.append("name", name);
+    if (imageFile) formData.append("groupImage", imageFile);
+    if (isOn !== original.enableAlarm)
+      formData.append("enableAlarm", String(isOn));
+    if (isOn) {
+      formData.append("alarmTime", `${selectedTime}:00`);
+      selectedDays.forEach((k) => formData.append("alarmDays", korToEng[k]));
+    }
+
+    try {
+      await axiosInstance.patch(`/api/v1/group/${groupId}`, formData);
+      navigate(`/group/${groupId}`);
+    } catch (err) {
+      console.error(err);
+      alert("수정 실패");
+    }
   };
+
+  const onImageChange = (file: File) => {
+    setImageFile(file);
+    setImageUrl(URL.createObjectURL(file));
+  };
+
+  if (loading || !original) {
+    return <p className="p-4 text-center">불러오는 중...</p>;
+  }
 
   return (
     <div className="p-4">
       {/* 페이지 안내 및 그룹 이미지 업로드 */}
       <div className="flex items-center place-content-between mt-5">
         <p className="font-bold text-2xl">그룹 수정</p>
-        <ImageUploader
-          defaultImage={group.groupImage}
-          onImageChange={handleImageChange}
-        />
+        <ImageUploader defaultImage={imageUrl} onImageChange={onImageChange} />
       </div>
 
       {/* 그룹명 입력 */}
       <div className="mt-2 ">
         <p className="text-darkmint text-lg font-semibold mb-2">그룹명</p>
         <input
-          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="border border-gray-300 rounded-lg h-12 w-full p-2 font-normal placeholder:text-gray-400 placeholder:font-normal"
-          placeholder={group.groupName}
         />
       </div>
 
@@ -126,71 +177,28 @@ export default function GroupEditPage() {
       <div className="mt-2">
         <p className="text-darkmint text-lg font-semibold mb-2">멤버</p>
         <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
-          {group.groupUsers.map((user) => (
+          {original.groupUserList.map((user) => (
             <div
-              key={user.userId}
+              key={user.id}
               className="flex flex-col items-center gap-2 shrink-0"
             >
               <img
-                src={user.userImage}
+                src={user.profileImageUrl}
                 alt="유저 프로필"
                 className="w-20 h-20 rounded-full"
               />
               <p className="font-semibold text-gray-500 whitespace-nowrap">
-                {user.userName}
+                {user.nickname}
               </p>
             </div>
           ))}
-          <img src={Add} alt="초대하기" className="w-12 h-12 shrink-0" />
-        </div>
-      </div>
-
-      <hr className="my-4 border-t border-gray-300" />
-
-      {/* 일기 공유 루틴  */}
-      <div className="mt-2 ">
-        <p className="text-darkmint text-lg font-semibold mb-2">
-          일기 공유 루틴
-        </p>
-        {/* 일기 공유 시간 */}
-        <div className="flex items-center justify-between">
-          <p className="text-gray-500">지정 기록 시간</p>
-          <div className="relative">
-            <button
-              onClick={() => setShowTimePicker((prev) => !prev)}
-              className="w-32 text-right text-darkmint font-semibold"
-            >
-              {selectedTime}
-            </button>
-            {showTimePicker && (
-              <TimePicker
-                selectedTime={selectedTime}
-                onChange={(time) => {
-                  setSelectedTime(time);
-                  setShowTimePicker(false);
-                }}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* 일기 공유 요일 */}
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-gray-500">지정 기록 요일</p>
-          <div className="relative" ref={dayPickerRef}>
-            <button
-              onClick={() => setShowDayPicker((prev) => !prev)}
-              className="w-32 text-right text-darkmint font-semibold"
-            >
-              {getDayLabel(selectedDays) || "요일 선택"}
-            </button>
-            {showDayPicker && (
-              <DayPicker
-                selectedDays={selectedDays}
-                onChange={setSelectedDays}
-              />
-            )}
-          </div>
+          {/* 초대하기 버튼 */}
+          <img
+            src={Add}
+            alt="초대하기"
+            className="w-12 h-12 shrink-0"
+            onClick={() => setModalOpen(true)}
+          />
         </div>
       </div>
 
@@ -205,18 +213,78 @@ export default function GroupEditPage() {
         </div>
       </div>
 
+      {/* 알림 설정 여부에 따른 공유 루틴 설정*/}
+      {isOn && (
+        <>
+          <hr className="my-4 border-t border-gray-300" />
+
+          {/* 일기 공유 루틴  */}
+          <div className="mt-2 ">
+            <p className="text-darkmint text-lg font-semibold mb-2">
+              일기 공유 루틴
+            </p>
+            {/* 일기 공유 시간 */}
+            <div className="flex items-center justify-between">
+              <p className="text-gray-500">지정 기록 시간</p>
+              <div className="relative">
+                <button
+                  onClick={() => setShowTimePicker((prev) => !prev)}
+                  className="w-32 text-right text-darkmint font-semibold"
+                >
+                  {selectedTime}
+                </button>
+                {showTimePicker && (
+                  <TimePicker
+                    selectedTime={selectedTime}
+                    onChange={(time) => {
+                      setSelectedTime(time);
+                      setShowTimePicker(false);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 일기 공유 요일 */}
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-gray-500">지정 기록 요일</p>
+              <div className="relative" ref={dayPickerRef}>
+                <button
+                  onClick={() => setShowDayPicker((prev) => !prev)}
+                  className="w-32 text-right text-darkmint font-semibold"
+                >
+                  {getDayLabel(selectedDays) || "요일 선택"}
+                </button>
+                {showDayPicker && (
+                  <DayPicker
+                    selectedDays={selectedDays}
+                    onChange={setSelectedDays}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* 저장 버튼 */}
       <div className="flex justify-center mt-10 short-screen-padding">
         <Button
-          text="그룹 만들기 완료"
+          text="그룹 수정 완료"
           type="fill"
           size="L"
           color="mint"
-          onClick={() => {
-            navigate("/group/1");
-          }}
+          onClick={handleEdit}
         />
       </div>
+
+      {/* 그룹 초대 모달 */}
+      {modalOpen && (
+        <GroupInviteModal
+          link={inviteLink}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

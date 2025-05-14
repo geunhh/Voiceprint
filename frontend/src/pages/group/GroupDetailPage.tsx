@@ -1,43 +1,18 @@
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import axiosInstance from "../../api/axiosInstance";
 
-import settingIcon from "../../assets/icons/setting.png";
-import clockIcon from "../../assets/icons/clock.png";
 import calendarIcon from "../../assets/icons/calendar.png";
+import clockIcon from "../../assets/icons/clock.png";
+import QuestionCharacter from "../../assets/icons/lovelyCharacter.png";
+import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
 
+// 임시데이터
+// 그룹에 공유된 일기 정보는 수정 예정
 import profile1 from "../../assets/temp/profile1.png";
 import profile2 from "../../assets/temp/profile2.png";
 import profile3 from "../../assets/temp/profile3.png";
-
-// 임시 데이터
-const group = {
-  groupId: 1,
-  groupName: "아이스크림 조아 모임",
-  groupImage:
-    "https://i.pinimg.com/736x/a4/d2/b9/a4d2b9a45a2083eb4118f4ef7421cc14.jpg",
-  groupUsers: [
-    {
-      userId: 1,
-      userName: "민태홍",
-      userImage: profile1,
-    },
-    {
-      userId: 2,
-      userName: "김근휘",
-      userImage: profile2,
-    },
-    {
-      userId: 3,
-      userName: "이지은",
-      userImage: profile3,
-    },
-  ],
-  routineTime: "12:00",
-  routineDays: ["토", "일"],
-  isAlertEnabled: false,
-  createdAt: "2025-04-23T14:22:30",
-  joinedAt: "2025-05-01T12:00:00",
-};
 
 const groupDiaries = [
   {
@@ -82,19 +57,60 @@ const groupDiaries = [
 ];
 
 export default function GroupDetailPage() {
+  const navigate = useNavigate();
+
+  const { groupId } = useParams();
+  const [group, setGroup] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      try {
+        const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
+        setGroup(res.data.data);
+        console.log(res.data.data);
+      } catch (err) {
+        console.error("그룹 데이터 불러오기 실패", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroupData();
+  }, [groupId]);
+
+  if (loading || !group) {
+    return (
+      <p className="p-4 flex justify-center items-center">
+        그룹 정보를 불러오는 중입니다...
+      </p>
+    );
+  }
+
   const date = new Date(group.createdAt);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  const navigate = useNavigate();
-
-  const routineHour = Number(group.routineTime.slice(0, 2));
+  const routineHour = group.alarmTime ? Number(group.alarmTime.slice(0, 2)) : 0;
 
   const joinedDate = new Date(group.joinedAt);
   const todayDate = new Date();
   const diffTime = todayDate.getTime() - joinedDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // 디데이 계산
+
+  // 요일 영어 -> 한글 변환
+  const dayMap: Record<string, string> = {
+    MONDAY: "월",
+    TUESDAY: "화",
+    WEDNESDAY: "수",
+    THURSDAY: "목",
+    FRIDAY: "금",
+    SATURDAY: "토",
+    SUNDAY: "일",
+  };
+
+  const routineDays = (group.alarmDays ?? []).map((day: string) => dayMap[day]);
 
   // 일기 공유 요일 출력을 위한 로직
   const fullWeek = ["월", "화", "수", "목", "금", "토", "일"];
@@ -103,7 +119,7 @@ export default function GroupDetailPage() {
 
   let routineText = "";
 
-  const sortedDays = [...group.routineDays].sort(
+  const sortedDays = [...routineDays].sort(
     (a, b) => fullWeek.indexOf(a) - fullWeek.indexOf(b)
   );
 
@@ -126,10 +142,10 @@ export default function GroupDetailPage() {
   return (
     <div className="mt-5 p-4">
       {/* 그룹 생성 관련 정보 */}
-      <div className="mb-5">
+      <div className="mb-3">
         {/* 생성일 및 수정 페이지 이동 아이콘 */}
         <div className="flex justify-between items-center">
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-500 text-lg font-semibold">
             {year}.{month}.{day} ~
           </p>
           <img
@@ -141,67 +157,76 @@ export default function GroupDetailPage() {
         </div>
         {/* 그룹명 */}
         <div>
-          <p className="font-semibold text-2xl">{group.groupName}</p>
+          <p className="font-semibold text-2xl">{group.name}</p>
         </div>
       </div>
 
       {/* 공유 루틴 및 디데이 정보 */}
-      <div className="mb-5 w-full flex items-center">
-        {/* 공유 루틴 */}
-        <div className="w-3/5 mb-2">
-          <p className="font-semibold text-gray-500 mb-2">일기 공유 루틴</p>
+      <div className="mb-3 w-full">
+        {/* <p className="text-darkmint font-semibold mb-2">일기 공유 루틴</p> */}
+
+        <div className="flex items-center gap-4">
           {/* 시간 */}
-          <div className="flex items-center mb-2">
-            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-3" />
+          <div className="flex items-center">
+            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
             <p className="font-bold text-gray-700">
               {routineHour < 12
-                ? `오전 ${group.routineTime}`
-                : `오후 ${group.routineTime}`}
+                ? `오전 ${group.alarmTime.slice(0, 5)}`
+                : `오후 ${group.alarmTime.slice(0, 5)}`}
             </p>
           </div>
 
           {/* 요일 */}
-          <div className="flex items-center mb-2">
-            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-3" />
+          <div className="flex items-center">
+            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
             <p className="font-medium text-gray-500">
               <span className="font-semibold text-gray-700">{routineText}</span>{" "}
               기록해요
             </p>
           </div>
         </div>
+      </div>
 
-        {/* 디데이 정보 */}
-        <div className="border border-gray-200 rounded-xl w-2/5 h-full py-4 flex flex-col justify-center">
-          <p className="text-center text-gray-500">내가 함께한 날짜</p>
-          <p className="text-center font-semibold text-xl text-gray-700">
-            D+{diffDays}
+      {/* 디데이 */}
+      <div className="mb-3 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
+        {/* 텍스트 */}
+        <div className="flex flex-col">
+          <p className="text-gray-500 text-base font-semibold mb-1">
+            일기 메이트들과 함께 기록한 시간
           </p>
+          <p className="text-2xl font-semibold text-darkmint">D+{diffDays}</p>
         </div>
+
+        <img
+          src={QuestionCharacter}
+          alt="캐릭터"
+          className="w-20 h-20 object-contain"
+        />
       </div>
 
       {/* 그룹 메이트 */}
-      <div className="mb-5">
+      <div className="mb-3">
         {/* 메이트 인원수 정보 */}
         <div className="flex mb-2">
           <p className="text-darkmint font-semibold">
-            {group.groupUsers.length}명
+            {group.groupUserList.length}명
           </p>
           <p className="font-semibold text-gray-700">의 일기 메이트</p>
         </div>
         {/* 메이트 프로필 이미지 */}
         <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
-          {group.groupUsers.map((user) => (
+          {group.groupUserList.map((user) => (
             <div
               key={user.userId}
               className="flex flex-col items-center gap-2 shrink-0"
             >
               <img
-                src={user.userImage}
+                src={user.profileImageUrl}
                 alt="유저 프로필"
                 className="w-20 h-20 rounded-full"
               />
-              <p className="font-semibold text-gray-700 whitespace-nowrap">
-                {user.userName}
+              <p className="font-semibold text-gray-500 whitespace-nowrap">
+                {user.nickname}
               </p>
             </div>
           ))}
@@ -211,9 +236,9 @@ export default function GroupDetailPage() {
       {/* 우리들의 발자국 */}
       <div>
         <p className="text-darkmint font-semibold mb-2">우리들의 발자국</p>
-        <div className="mb-16">
+        <div className="pb-20">
           {groupDiaries.map((diary) => (
-            <div className="mb-2">
+            <div className="mb-3">
               <GroupDiaryPreview {...diary} />
             </div>
           ))}

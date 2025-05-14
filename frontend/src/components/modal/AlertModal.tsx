@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import happyIcon from "../../assets/icons/happyCharacter.png";
 import questionIcon from "../../assets/icons/questionCharacter.png";
 import Button from "../common/Button";
@@ -6,16 +7,18 @@ interface AlertModalProps {
   message: string;
   type: "success" | "fail";
   onClose: () => void;
+  callback?: () => void;
 }
 
 export default function AlertModal({
   message,
   type,
   onClose,
+  callback,
 }: AlertModalProps) {
   const icon = type === "success" ? happyIcon : questionIcon;
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="relative bg-white rounded-2xl p-6 w-4/5 max-w-[320px]">
         {/* 닫기 버튼 */}
@@ -46,10 +49,22 @@ export default function AlertModal({
             {message}
           </h2>
           <div className="w-full">
-            <Button text="확인" type="fill" size="L" onClick={onClose} />
+            <Button
+              text="확인"
+              type="fill"
+              size="L"
+              onClick={() => {
+                onClose();
+                callback?.();
+              }}
+            />
           </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof window !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : null;
 }

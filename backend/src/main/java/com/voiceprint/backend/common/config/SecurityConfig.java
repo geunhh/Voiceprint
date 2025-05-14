@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 
 @Configuration
@@ -38,8 +39,9 @@ public class SecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
                         CorsConfiguration configuration = new CorsConfiguration();
-                        configuration.setAllowedOrigins(Collections.singletonList("https://k12b106.p.ssafy.io"));
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+                        configuration.setAllowedOrigins(List.of(
+                                "https://k12b106.p.ssafy.io",
+                                "http://localhost:5173"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -76,9 +78,9 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/").permitAll()
-//                        .anyRequest().authenticated()); // 일단 막기.
-                        .anyRequest().permitAll());
+                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao").permitAll()
+                        .anyRequest().authenticated()); // 일단 막기.
+//                        .anyRequest().permitAll());
 
         //세션 설정 : STATELESS
         http
