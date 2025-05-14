@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.auth;
+package com.voiceprint.backend.domain.Repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.chat;
+package com.voiceprint.backend.domain.Entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
