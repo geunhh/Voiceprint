@@ -1,10 +1,28 @@
+import axiosInstance from "../../api/axiosInstance";
 import Button from "../common/Button";
 
 interface NotificationModalProps {
-  onClose: () => void;
+  onUpdate: (value: true | false) => void;
 }
 
-function NotificationModal({ onClose }: NotificationModalProps) {
+function NotificationModal({ onUpdate }: NotificationModalProps) {
+  const handleReminderSetting = async (enable: boolean) => {
+    const requestBody = {
+      enableAlarms: enable,
+    };
+
+    try {
+      // console.log("알림 설정 값:", requestBody);
+      await axiosInstance.patch("/api/v1/user/reminder-setting", requestBody);
+
+      const updatedValue: true | false = enable;
+      onUpdate(updatedValue);
+      // console.log("알림 설정 완료:", res.data);
+    } catch (err) {
+      console.error("알림 설정 요청 실패:", err);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center text-center">
       <div className="w-4/5 max-w-[320px] rounded-xl bg-white flex flex-col py-6 h-64 relative overflow-y-auto">
@@ -19,8 +37,18 @@ function NotificationModal({ onClose }: NotificationModalProps) {
 
         {/* 버튼 */}
         <div className="flex px-8 justify-between">
-          <Button text="거부" type="line" size="M" onClick={onClose} />
-          <Button text="허용" type="fill" size="M" onClick={onClose} />
+          <Button
+            text="거부"
+            type="line"
+            size="M"
+            onClick={() => handleReminderSetting(false)}
+          />
+          <Button
+            text="허용"
+            type="fill"
+            size="M"
+            onClick={() => handleReminderSetting(true)}
+          />
         </div>
       </div>
     </div>

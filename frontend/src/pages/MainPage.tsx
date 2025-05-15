@@ -101,11 +101,14 @@ export default function MainPage() {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user); // Redux에서 유저 정보 가져오기
   const [weekEmotions, setWeekEmotions] = useState<(EmotionType | null)[]>([]);
-  const [monthEmotions, serMonthEmotions] = useState<EmotionCount[]>([]);
+  const [monthEmotions, setMonthEmotions] = useState<EmotionCount[]>([]);
+  const [reminderSetting, setReminderSetting] = useState<true | false | null>(
+    null
+  );
 
   const navigate = useNavigate();
 
-  const [showModal, setShowModal] = useState(false); // 보이지 않도록 설정(임시) -> 유저 정보를 받아 처리 예정
+  const [showModal, setShowModal] = useState(false);
 
   // 유저 정보 불러오기
   useEffect(() => {
@@ -123,7 +126,7 @@ export default function MainPage() {
           })
         );
 
-        console.log("유저 정보 불러오기 성공", res.data.data);
+        // console.log("유저 정보 불러오기 성공", res.data.data);
       } catch (err) {
         console.error("유저 정보 불러오기 실패:", err);
       }
@@ -131,6 +134,24 @@ export default function MainPage() {
 
     fetchUser();
   }, [dispatch]);
+
+  // 알림 설정 여부 불러오기
+  useEffect(() => {
+    {
+      (async () => {
+        try {
+          const res = await axiosInstance.get("/api/v1/user/reminder-setting");
+
+          setReminderSetting(res.data.data);
+          if (res.data.data === null) {
+            setShowModal(true);
+          }
+        } catch (err) {
+          console.error("알림 설정 여부 불러오기 오류: ", err);
+        }
+      })();
+    }
+  }, []);
 
   // 주간 감정 불러오기
   useEffect(() => {
@@ -149,8 +170,8 @@ export default function MainPage() {
     (async () => {
       try {
         const res = await axiosInstance.get("/api/emotions/monthly");
-        serMonthEmotions(res.data.data.emotions);
-        console.log("월별 감정 결과: ", res.data.data.emotions);
+        setMonthEmotions(res.data.data.emotions);
+        // console.log("월별 감정 결과: ", res.data.data.emotions);
       } catch (err) {
         console.error("월별 감정 불러오기 오류: ", err);
       }
@@ -225,7 +246,14 @@ export default function MainPage() {
         ))}
       </div>
 
-      {showModal && <NotificationModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <NotificationModal
+          onUpdate={(value) => {
+            setReminderSetting(value);
+            setShowModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
