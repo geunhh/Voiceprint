@@ -11,11 +11,6 @@ import NotificationModal from "../components/modal/NotificationModal";
 import { RootState } from "../store/store";
 import { setUser } from "../store/userSlice";
 
-// 오늘의 질문
-const todayQuestion = [
-  "최근 나를 가장 몰입하게 만든 소소한 취미나 관심사가 있나요?",
-];
-
 // 최근 말자국 모음
 const diaries = [
   {
@@ -105,6 +100,7 @@ export default function MainPage() {
   const [reminderSetting, setReminderSetting] = useState<true | false | null>(
     null
   );
+  const [todayQuestion, setTodayQuestion] = useState("");
 
   const navigate = useNavigate();
 
@@ -143,12 +139,28 @@ export default function MainPage() {
           const res = await axiosInstance.get("/api/v1/user/reminder-setting");
 
           setReminderSetting(res.data.data.enableAlarms);
-          console.log("확인하기", res.data.data);
+          // console.log("확인하기", res.data.data);
           if (res.data.data.enableAlarms === null) {
             setShowModal(true);
           }
         } catch (err) {
           console.error("알림 설정 여부 불러오기 오류: ", err);
+        }
+      })();
+    }
+  }, []);
+
+  // 오늘의 질문 불러오기
+  useEffect(() => {
+    {
+      (async () => {
+        try {
+          const res = await axiosInstance.get("/api/v1/today-question");
+
+          setTodayQuestion(res.data.data.question);
+          console.log("확인하기", res.data.data.question);
+        } catch (err) {
+          console.error("오늘의 질문 불러오기 오류: ", err);
         }
       })();
     }
@@ -184,7 +196,7 @@ export default function MainPage() {
   return (
     <div className="p-4">
       {/* 유저 정보 */}
-      <div className="flex items-center justify-between my-3 p-2">
+      <div className="flex items-center justify-between my-3">
         {/* 유저 정보 */}
         <div className="flex items-center gap-3">
           <img
