@@ -1,6 +1,4 @@
-package com.voiceprint.backend.domain.diary;
-
-import com.voiceprint.backend.domain.auth.User;
+package com.voiceprint.backend.domain.Entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -6,7 +6,6 @@ import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.api.diary.dto.SharedDiaryRequest;
 import com.voiceprint.backend.common.dto.CommonResponse;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.diary.DiaryService;
 import com.voiceprint.backend.service.diary.GroupDiaryService;
@@ -14,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

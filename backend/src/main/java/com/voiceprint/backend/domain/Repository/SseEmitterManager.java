@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.alarm;
+package com.voiceprint.backend.domain.Repository;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

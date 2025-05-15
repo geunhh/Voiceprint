@@ -1,5 +1,6 @@
-package com.voiceprint.backend.domain.diary;
+package com.voiceprint.backend.domain.Repository;
 
+import com.voiceprint.backend.domain.Entity.Diary;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

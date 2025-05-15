@@ -5,7 +5,7 @@ import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateResponse;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
 import com.voiceprint.backend.api.thema.dto.UsingDiaryThemaResponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
-import com.voiceprint.backend.domain.thema.DiaryThemaRepository;
+import com.voiceprint.backend.domain.Repository.DiaryThemaRepository;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.thema.DiaryThemaService;
 import jakarta.servlet.http.HttpServletRequest;
