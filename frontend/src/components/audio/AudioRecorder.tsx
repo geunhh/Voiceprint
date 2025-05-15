@@ -145,13 +145,21 @@ const AudioRecorder: React.FC = () => {
   // WebSocket 연결 설정
   useEffect(() => {
     // 웹소켓 서버 URL - 실제 서버 URL로 변경 필요
-    const wsUrl = "wss://mdia4kmn4s6kmw-8000.proxy.runpod.net/ws";
+    // const wsUrl = "wss://mdia4kmn4s6kmw-8000.proxy.runpod.net/ws";
+    let ws: WebSocket | null = null;
+    let wsUrl: string;
 
+    // 1) 실제 WebSocket 연결 함수
     const connectWebSocket = () => {
+      if (!wsUrl) {
+        console.warn("wsUrl 이 아직 세팅되지 않았습니다.");
+        return;
+      }
       const ws = new WebSocket(wsUrl);
+      websocketRef.current = ws;
 
       ws.onopen = () => {
-        console.log("WebSocket 연결 성공");
+        console.log("WebSocket 연결 성공", wsUrl);
         setIsConnected(true);
       };
 
@@ -185,7 +193,21 @@ const AudioRecorder: React.FC = () => {
       websocketRef.current = ws;
     };
 
-    connectWebSocket();
+    // 2) 백엔드에서 wsUrl 을 받아오고, 그 다음에만 connect 호출
+    const initWebSocket = async () => {
+      try {
+        const response = await axiosInstance.get("/api/v1/voice/session", {
+          params: { chatbotId: 1 },
+        });
+        wsUrl = response.data.wsUrl; // 여기서만 세팅
+        console.log("Fetched WebSocket URL:", wsUrl);
+        connectWebSocket(); // 그리고야 연결 시도
+      } catch (err) {
+        console.error("WebSocket URL fetch 실패", err);
+      }
+    };
+
+    initWebSocket(); // useEffect 마운트 직후 한 번만 호출
 
     // 컴포넌트 언마운트 시 웹소켓 연결 종료
     return () => {
