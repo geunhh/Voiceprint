@@ -6,15 +6,16 @@ import questionCharacter from "../../assets/icons/questionCharacter.png";
 import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 interface NotificationItemProps {
-  type: "reminder" | "commentCreated" | "type1" | "type2" | "type3"; // 타입 추가 예정
+  type: "reminder" | "newComment" | "type1" | "type2" | "type3"; // 타입 추가 예정
   message: string;
   groupId?: number;
   diaryId?: number;
+  authorName?: string;
 }
 
 const notificationImageMap: Record<NotificationItemProps["type"], string> = {
   reminder: lovelyCharacter,
-  commentCreated: happyCharacter,
+  newComment: happyCharacter,
   type1: questionCharacter,
   type2: robotCharacter,
   type3: angryCharacter,
@@ -22,7 +23,7 @@ const notificationImageMap: Record<NotificationItemProps["type"], string> = {
 
 const notificationTitleMap: Record<NotificationItemProps["type"], string> = {
   reminder: "잊지 마세용 알림",
-  commentCreated: "댓글 작성 알림",
+  newComment: "댓글 작성 알림",
   type1: "알림 제목 1",
   type2: "알림 제목 2",
   type3: "알림 제목 3",
@@ -37,7 +38,7 @@ function NotificationItem(props: NotificationItemProps) {
   const title = notificationTitleMap[type];
 
   const handleClick = () => {
-    if (type === "commentCreated" && groupId && diaryId) {
+    if (type === "newComment" && groupId && diaryId) {
       navigate(`/group/${groupId}/diary/${diaryId}`);
     }
   };
