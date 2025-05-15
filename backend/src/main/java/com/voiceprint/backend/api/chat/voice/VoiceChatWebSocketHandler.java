@@ -160,6 +160,10 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
             String json = (String) response;
             Map<String, Object> map = objectMapper.readValue(json, Map.class);
 
+            int totalToken = 2000;  // ✅ 하드코딩한 토큰 최대값 (필요시 상수로 빼도 됨)
+            int token = 0;
+            String assistantContent = null;
+
             if (map.containsKey("chatting")) {
                 List<Map<String, String>> messages = (List<Map<String, String>>) map.get("chatting");
 
@@ -168,29 +172,46 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
                     String content = msg.get("content");
                     if (role != null && content != null) {
                         voiceChatService.saveMessage(userId, role, content);
+                        if ("assistant".equals(role)) {
+                            assistantContent = content;
+                        }
                     }
                 }
 
-                // 토큰 누적
                 Object tokenObj = map.get("token");
-                int token = tokenObj instanceof Number ? ((Number) tokenObj).intValue() : 0;
-                voiceChatService.accumulateToken(userId, token);
+                if (tokenObj instanceof Number) {
+                    token = ((Number) tokenObj).intValue();
+                    voiceChatService.accumulateToken(userId, token);
+                }
 
             } else if (map.containsKey("role") && map.containsKey("content")) {
-                // 기존 단일 메시지 처리
                 String role = (String) map.get("role");
                 String content = (String) map.get("content");
-
                 voiceChatService.saveMessage(userId, role, content);
-                voiceChatService.accumulateToken(userId, content.length());
+                if ("assistant".equals(role)) {
+                    assistantContent = content;
+                }
+                token = content.length();
+                voiceChatService.accumulateToken(userId, token);
             }
 
-            session.sendMessage(new TextMessage(json));
+            // ✅ 프론트로 보낼 형식 구성
+            int usageRate = Math.min((int) Math.round(((double) token / totalToken) * 100), 100);
+            Map<String, Object> frontendResponse = Map.of(
+                    "transcription", assistantContent,
+                    "limit", usageRate,
+                    "totalToken", totalToken
+            );
 
+            String resultJson = objectMapper.writeValueAsString(frontendResponse);
+            session.sendMessage(new TextMessage(resultJson));
+            log.info("📤 프론트로 전송한 응답: {}", resultJson);
         } else if (response instanceof byte[]) {
             session.sendMessage(new BinaryMessage(ByteBuffer.wrap((byte[]) response)));
+            log.info("📤 프론트로 바이너리(byte[]) 메시지 전송 - 세션 ID: {}, 크기: {}바이트", sessionId, ((byte[]) response).length);
         } else if (response instanceof ByteBuffer) {
             session.sendMessage(new BinaryMessage((ByteBuffer) response));
+            log.info("📤 프론트로 바이너리(ByteBuffer) 메시지 전송 - 세션 ID: {}, 크기: {}바이트", sessionId, ((ByteBuffer) response).remaining());
         }
     }
 
