@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -22,4 +23,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findMyNotifications(
             @Param("userId") Long userId,
             @Param("cursor") Long cursor, Pageable pageable);
+
+    Optional<Notification> findByIdAndUserId(Long notificationId, Long userId);
 }
