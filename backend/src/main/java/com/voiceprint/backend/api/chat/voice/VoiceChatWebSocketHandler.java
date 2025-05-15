@@ -7,10 +7,7 @@ import com.voiceprint.backend.service.chat.voice.VoiceChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import java.io.IOException;
@@ -58,7 +55,16 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         log.info("✅ WebSocket 연결 성공 - 사용자 ID: {}, 세션 ID: {}", userId, sessionId);
     }
 
-
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+        if (message instanceof TextMessage) {
+            handleTextMessage(session, (TextMessage) message);
+        } else if (message instanceof BinaryMessage) {
+            handleBinaryMessage(session, (BinaryMessage) message);
+        } else {
+            log.warn("❓ 지원되지 않는 WebSocket 메시지 타입 수신: {}", message.getClass().getSimpleName());
+        }
+    }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {

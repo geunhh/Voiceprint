@@ -248,6 +248,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                                 print("여기까지됨 2222")
                                 await websocket.send_bytes(return_voice)
+                                print("###############return voice :", return_voice)
                             else : 
                                 await websocket.send_json({"error" : "LLM response fail"})
                         else : 
