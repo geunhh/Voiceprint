@@ -58,7 +58,7 @@ export default function GroupDetailPage() {
       });
 
       setNextCursor(nextCursor);
-      console.log("확인", res.data.data);
+      // console.log("그룹 다이어리 확인", res.data.data);
     } catch (err) {
       console.error("그룹 다이어리 불러오기 실패", err);
     } finally {
@@ -93,7 +93,6 @@ export default function GroupDetailPage() {
       try {
         const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
         setGroup(res.data.data);
-        console.log(res.data.data);
       } catch (err) {
         console.error("그룹 데이터 불러오기 실패", err);
       } finally {
