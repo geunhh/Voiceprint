@@ -9,13 +9,13 @@ interface DiaryCardProps {
   diaryId: number;
   title: string;
   createdAt: string;
-  emotion: "행복" | "설렘" | "피곤" | "짜증" | "우울";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
 }
 
 const emotionIcons = {
   행복: { img: emotion1, bg: "bg-[#FFA9A9]" },
   설렘: { img: emotion2, bg: "bg-[#FFBA66]" },
-  피곤: { img: emotion3, bg: "bg-[#FFE792]" },
+  피로: { img: emotion3, bg: "bg-[#FFE792]" },
   짜증: { img: emotion4, bg: "bg-[#91DD4B]" },
   우울: { img: emotion5, bg: "bg-[#7DBEFF]" },
 };

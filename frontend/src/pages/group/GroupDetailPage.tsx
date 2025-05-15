@@ -1,4 +1,6 @@
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import axiosInstance from "../../api/axiosInstance";
 
 import calendarIcon from "../../assets/icons/calendar.png";
 import clockIcon from "../../assets/icons/clock.png";
@@ -6,96 +8,134 @@ import QuestionCharacter from "../../assets/icons/lovelyCharacter.png";
 import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
 
-import profile1 from "../../assets/temp/profile1.png";
-import profile2 from "../../assets/temp/profile2.png";
-import profile3 from "../../assets/temp/profile3.png";
+interface GroupUser {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string;
+}
 
-// 임시 데이터
-const group = {
-  groupId: 1,
-  groupName: "아이스크림 조아 모임",
-  groupImage:
-    "https://i.pinimg.com/736x/a4/d2/b9/a4d2b9a45a2083eb4118f4ef7421cc14.jpg",
-  groupUsers: [
-    {
-      userId: 1,
-      userName: "민태홍",
-      userImage: profile1,
-    },
-    {
-      userId: 2,
-      userName: "김근휘",
-      userImage: profile2,
-    },
-    {
-      userId: 3,
-      userName: "이지은",
-      userImage: profile3,
-    },
-  ],
-  routineTime: "12:00",
-  routineDays: ["토", "일"],
-  isAlertEnabled: false,
-  createdAt: "2025-04-23T14:22:30",
-  joinedAt: "2025-05-01T12:00:00",
-};
-
-const groupDiaries = [
-  {
-    groupId: 1,
-    diaryId: 101,
-    title: "오늘의 개발 회고",
-    createdAt: "2025-05-05T15:00:00",
-    userName: "민태홍",
-    userImage: profile1,
-    content:
-      "둔산동 할리스에서 공부를 하고고 매운 음식이 먹고 싶어서 마라탕을 먹었다. 유부를 5번 추가하고 꿔바로우랑 같이 맛있게 먹었다! ",
-  },
-  {
-    groupId: 1,
-    diaryId: 102,
-    title: "대청호 드라이브",
-    createdAt: "2025-05-01T15:00:00",
-    userName: "김근휘",
-    userImage: profile2,
-    content:
-      "날씨 좋은 날 대청호에 가서 신나게 놀았다. 드라이브도 하고 너무 재미있었따.",
-  },
-  {
-    groupId: 1,
-    diaryId: 103,
-    title: "오늘 회의 기록",
-    createdAt: "2025-04-26T15:00:00",
-    userName: "민태홍",
-    userImage: profile1,
-    content:
-      "오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다.",
-  },
-  {
-    groupId: 1,
-    diaryId: 104,
-    title: "오늘 회의 기록",
-    createdAt: "2025-04-20T15:00:00",
-    userName: "이지은",
-    userImage: profile3,
-    content: "드디어 기획 회의가 끝났어요. 야~~~호! 너무너무 신난다.",
-  },
-];
+interface Group {
+  groupId: number;
+  name: string;
+  description: string | null;
+  groupImage: string;
+  createdAt: string;
+  joinedAt: string;
+  enableAlarm: boolean;
+  alarmTime: string | null;
+  alarmDays: string[];
+  groupUserList: GroupUser[];
+}
 
 export default function GroupDetailPage() {
+  const navigate = useNavigate();
+
+  const { groupId } = useParams();
+  const [group, setGroup] = useState<Group | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [groupDiaries, setGroupDiaries] = useState<any[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const fetchGroupDiaries = async (cursor?: string) => {
+    if (isFetching) return;
+    if (!cursor && groupDiaries.length > 0) return;
+    if (cursor === null) return;
+
+    setIsFetching(true);
+    try {
+      const res = await axiosInstance.get(`/api/v1/group/${groupId}/diaries`, {
+        params: cursor ? { cursor } : {},
+      });
+
+      const { diaries, nextCursor } = res.data.data;
+
+      setGroupDiaries((prev) => {
+        const newIds = new Set(prev.map((d) => d.diaryId));
+        const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
+        return [...prev, ...filtered];
+      });
+
+      setNextCursor(nextCursor);
+      console.log("확인", res.data.data);
+    } catch (err) {
+      console.error("그룹 다이어리 불러오기 실패", err);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGroupDiaries();
+  }, [groupId]);
+
+  useEffect(() => {
+    let isFirst = true;
+
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 300 &&
+        nextCursor &&
+        !isFirst
+      ) {
+        fetchGroupDiaries(nextCursor);
+      }
+      isFirst = false;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [nextCursor, groupId]);
+
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      try {
+        const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
+        setGroup(res.data.data);
+        console.log(res.data.data);
+      } catch (err) {
+        console.error("그룹 데이터 불러오기 실패", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroupData();
+  }, [groupId]);
+
+  if (loading || !group) {
+    return (
+      <p className="p-4 flex justify-center items-center">
+        그룹 정보를 불러오는 중입니다...
+      </p>
+    );
+  }
+
   const date = new Date(group.createdAt);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  const navigate = useNavigate();
-
-  const routineHour = Number(group.routineTime.slice(0, 2));
+  const routineHour = group.alarmTime ? Number(group.alarmTime.slice(0, 2)) : 0;
 
   const joinedDate = new Date(group.joinedAt);
   const todayDate = new Date();
   const diffTime = todayDate.getTime() - joinedDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // 디데이 계산
+
+  // 요일 영어 -> 한글 변환
+  const dayMap: Record<string, string> = {
+    MONDAY: "월",
+    TUESDAY: "화",
+    WEDNESDAY: "수",
+    THURSDAY: "목",
+    FRIDAY: "금",
+    SATURDAY: "토",
+    SUNDAY: "일",
+  };
+
+  const routineDays = (group.alarmDays ?? []).map((day: string) => dayMap[day]);
 
   // 일기 공유 요일 출력을 위한 로직
   const fullWeek = ["월", "화", "수", "목", "금", "토", "일"];
@@ -104,7 +144,7 @@ export default function GroupDetailPage() {
 
   let routineText = "";
 
-  const sortedDays = [...group.routineDays].sort(
+  const sortedDays = [...routineDays].sort(
     (a, b) => fullWeek.indexOf(a) - fullWeek.indexOf(b)
   );
 
@@ -142,35 +182,37 @@ export default function GroupDetailPage() {
         </div>
         {/* 그룹명 */}
         <div>
-          <p className="font-semibold text-2xl">{group.groupName}</p>
+          <p className="font-semibold text-2xl">{group.name}</p>
         </div>
       </div>
 
       {/* 공유 루틴 및 디데이 정보 */}
-      <div className="mb-3 w-full">
-        {/* <p className="text-darkmint font-semibold mb-2">일기 공유 루틴</p> */}
+      {group.enableAlarm && (
+        <div className="mb-3 w-full">
+          <div className="flex items-center gap-4">
+            {/* 시간 */}
+            <div className="flex items-center">
+              <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
+              <p className="font-bold text-gray-700">
+                {routineHour < 12
+                  ? `오전 ${group.alarmTime.slice(0, 5)}`
+                  : `오후 ${group.alarmTime.slice(0, 5)}`}
+              </p>
+            </div>
 
-        <div className="flex items-center gap-4">
-          {/* 시간 */}
-          <div className="flex items-center">
-            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
-            <p className="font-bold text-gray-700">
-              {routineHour < 12
-                ? `오전 ${group.routineTime}`
-                : `오후 ${group.routineTime}`}
-            </p>
-          </div>
-
-          {/* 요일 */}
-          <div className="flex items-center">
-            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
-            <p className="font-medium text-gray-500">
-              <span className="font-semibold text-gray-700">{routineText}</span>{" "}
-              기록해요
-            </p>
+            {/* 요일 */}
+            <div className="flex items-center">
+              <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
+              <p className="font-medium text-gray-500">
+                <span className="font-semibold text-gray-700">
+                  {routineText}
+                </span>{" "}
+                기록해요
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 디데이 */}
       <div className="mb-3 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
@@ -194,24 +236,24 @@ export default function GroupDetailPage() {
         {/* 메이트 인원수 정보 */}
         <div className="flex mb-2">
           <p className="text-darkmint font-semibold">
-            {group.groupUsers.length}명
+            {group.groupUserList.length}명
           </p>
           <p className="font-semibold text-gray-700">의 일기 메이트</p>
         </div>
         {/* 메이트 프로필 이미지 */}
         <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
-          {group.groupUsers.map((user) => (
+          {group.groupUserList.map((user) => (
             <div
               key={user.userId}
               className="flex flex-col items-center gap-2 shrink-0"
             >
               <img
-                src={user.userImage}
+                src={user.profileImageUrl}
                 alt="유저 프로필"
                 className="w-20 h-20 rounded-full"
               />
               <p className="font-semibold text-gray-500 whitespace-nowrap">
-                {user.userName}
+                {user.nickname}
               </p>
             </div>
           ))}
@@ -223,10 +265,13 @@ export default function GroupDetailPage() {
         <p className="text-darkmint font-semibold mb-2">우리들의 발자국</p>
         <div className="pb-20">
           {groupDiaries.map((diary) => (
-            <div className="mb-3">
+            <div key={diary.diaryId} className="mb-3">
               <GroupDiaryPreview {...diary} />
             </div>
           ))}
+          {isFetching && (
+            <p className="text-center text-gray-500 mt-4">불러오는 중...</p>
+          )}
         </div>
       </div>
     </div>

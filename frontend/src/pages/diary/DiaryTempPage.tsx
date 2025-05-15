@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import arrowButton from "../../assets/icons/button/arrowButton.png";
+import happyIcon from "../../assets/icons/happyCharacter.png";
+import questionIcon from "../../assets/icons/questionCharacter.png";
 import Button from "../../components/common/Button";
 import PageTitle from "../../components/common/PageTitle";
 import DiaryEntryCard from "../../components/diaryCreate/DiaryEntryCard";
 import AlertModal from "../../components/modal/AlertModal";
-import happyIcon from "../../assets/icons/happyCharacter.png";
-import questionIcon from "../../assets/icons/questionCharacter.png";
+import ShareGroupModal from "../../components/modal/ShareGroupModal";
 
 interface Diary {
   title: string;
   dateText: string;
-  emotion: "행복" | "기쁨" | "슬픔" | "화남" | "그냥그래";
+  emotion: "행복" | "설렘" | "피로" | "짜증" | "우울";
   content: string;
 }
 
@@ -36,6 +37,8 @@ export default function DiaryTempPage() {
     if (hovered) return hovered === btn ? "fill" : "line";
     return btn === "save" ? "fill" : "line";
   };
+
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // 세션 상태 확인 후 상황에 따라 알림 설정
   const checkSessionStatus = async () => {
@@ -117,20 +120,20 @@ export default function DiaryTempPage() {
     }
   };
 
-  // 일기 저장 요청
-  const handleSave = async () => {
-    try {
-      const res = await axiosInstance.post("/api/chat/diary/temp/confirm", {});
-      const { diaryId } = res.data.data;
-      navigate(`/diary/${diaryId}`);
-    } catch (err) {
-      console.error("일기 저장 실패:", err);
-      setAlert({
-        message: "일기 저장에 실패했습니다.",
-        type: "fail",
-      });
-    }
-  };
+  // // 일기 저장 요청
+  // const handleSave = async () => {
+  //   try {
+  //     const res = await axiosInstance.post("/api/chat/diary/temp/confirm", {});
+  //     const { diaryId } = res.data.data;
+  //     navigate(`/diary/${diaryId}`);
+  //   } catch (err) {
+  //     console.error("일기 저장 실패:", err);
+  //     setAlert({
+  //       message: "일기 저장에 실패했습니다.",
+  //       type: "fail",
+  //     });
+  //   }
+  // };
 
   // 안내 화면 (AlertModal 닫힌 후 보일 전체 안내 UI)
   const renderEmptyState = () => {
@@ -185,7 +188,12 @@ export default function DiaryTempPage() {
               size="M"
               onClick={() => navigate("edit", { state: diary })}
             />
-            <Button text="저장" type="fill" size="M" onClick={handleSave} />
+            <Button
+              text="저장"
+              type="fill"
+              size="M"
+              onClick={() => setShowShareModal(true)}
+            />
           </div>
         </>
       )}
@@ -202,6 +210,10 @@ export default function DiaryTempPage() {
             alert.callback?.();
           }}
         />
+      )}
+
+      {showShareModal && (
+        <ShareGroupModal onClose={() => setShowShareModal(false)} />
       )}
     </div>
   );

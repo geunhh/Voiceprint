@@ -35,7 +35,7 @@ interface CalendarProps {
 const emotionIcons: Record<string, string> = {
   행복: emotion1,
   설렘: emotion2,
-  피곤: emotion3,
+  피로: emotion3,
   짜증: emotion4,
   우울: emotion5,
 };

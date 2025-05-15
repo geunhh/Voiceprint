@@ -18,7 +18,7 @@ import emotionTag5 from "../../assets/temp/emotionTag5.png";
 const emotionTagMap: Record<string, string> = {
   행복: emotionTag1,
   설렘: emotionTag2,
-  피곤: emotionTag3,
+  피로: emotionTag3,
   짜증: emotionTag4,
   우울: emotionTag5,
 };

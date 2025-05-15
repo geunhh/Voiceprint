@@ -1,9 +1,7 @@
-// src/components/chat/ChatBubble.tsx
-// 한 줄 한 줄의 채팅을 그려주는 컴포넌트
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
-import React from "react";
-import aiAvatar from "../../assets/icons/chatYellow.png"; // ai 챗봇 선택값
-import userAvatar from "../../assets/icons/chatBlue.png"; // user 프로필
+import defaultAI from "../../assets/icons/chatYellow.png"; // fallback
 
 export interface ChatBubbleProps {
   from: "ai" | "user";
@@ -11,6 +9,10 @@ export interface ChatBubbleProps {
 }
 
 export default function ChatBubble({ from, text }: ChatBubbleProps) {
+  // Redux에 저장된 캐릭터 이미지 사용
+  const aiAvatar =
+    useSelector((state: RootState) => state.character.img) || defaultAI;
+
   return (
     <div
       className={`flex items-end ${from === "ai" ? "justify-start" : "justify-end"}`}
@@ -27,13 +29,13 @@ export default function ChatBubble({ from, text }: ChatBubbleProps) {
       >
         {text}
       </div>
-      {from === "user" && (
+      {/* {from === "user" && (
         <img
           src={userAvatar}
           alt="User"
           className="w-8 h-8 rounded-full ml-2"
         />
-      )}
+      )} */}
     </div>
   );
 }
