@@ -64,6 +64,8 @@ const AudioRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [status, setStatus] = useState<RecorderStatus>("idle");
   const [transcription, setTranscription] = useState<string>("");
+  const [limit, setLimit] = useState<number>(0);
+  const [totalToken, setTotalToken] = useState<number>(0);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [processingStats, setProcessingStats] = useState<ProcessingStats>({
@@ -77,7 +79,6 @@ const AudioRecorder: React.FC = () => {
   const volumeThreshold = 15; // 볼륨 임계값(dB)
 
   const mediaRecorderRef = useRef<ExtendedMediaRecorder | null>(null);
-  const websocketRef = useRef<WebSocket | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioElementRef = useRef<HTMLAudioElement | null>(null); // 숨겨진 오디오 요소 참조
   const isRecordingRef = useRef<boolean>(false);
@@ -91,6 +92,8 @@ const AudioRecorder: React.FC = () => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const microphoneStreamRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
+
+  const websocketRef = useRef<WebSocket | null>(null);
 
   // ────────────────────────────────────────────────────────────────
   // 1. 최근 챗봇 정보 로드 (+fallback)
@@ -166,9 +169,20 @@ const AudioRecorder: React.FC = () => {
       ws.onmessage = (event: MessageEvent) => {
         if (typeof event.data === "string") {
           try {
-            const data = JSON.parse(event.data);
-            if (data.transcription) {
-              setTranscription(data.transcription as string);
+            interface WsPayload {
+              transcription?: string;
+              limit?: number;
+              totalToken?: number;
+            }
+            const data: WsPayload = JSON.parse(event.data);
+            if (data.transcription !== undefined) {
+              setTranscription(data.transcription);
+            }
+            if (typeof data.limit === "number") {
+              setLimit(data.limit);
+            }
+            if (typeof data.totalToken === "number") {
+              setTotalToken(data.totalToken);
             }
           } catch (error) {
             console.error("메시지 파싱 에러:", error);
@@ -792,6 +806,10 @@ const AudioRecorder: React.FC = () => {
         <div className="w-full max-w-xl p-4 border rounded bg-white shadow">
           <h2 className="font-semibold mb-2">음성 인식 결과:</h2>
           <p>{transcription}</p>
+          <div>진행률: {limit}%</div>
+          <div>
+            토큰 사용량: {limit} / {totalToken}
+          </div>
         </div>
       )}
 
