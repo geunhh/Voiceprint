@@ -64,6 +64,9 @@ CHANNELS = 1
 RATE = 16000
 SAMPLE_WIDTH = 2  # 16비트 = 2바이트
 
+# 채팅 길이
+MAX_CHAT_LENGTH = 2000
+
 async def verify_API(token : Annotated) : 
     if token != os.getenv("BACKEND_API") : 
         raise HTTPException(status_code=400, detail="TOKEN INVALID. USE CORRECT TOKEN TO ACCESS")
@@ -174,7 +177,7 @@ async def websocket_endpoint(websocket: WebSocket):
         print("❌ user id not correct or 세션 없음")
         return
 
-    if int(chatbot_info["total_token"]) > 700 : 
+    if int(chatbot_info["total_token"]) > MAX_CHAT_LENGTH : 
         return {"chatting_response": "챗봇 토큰 수를 초과하였습니다.", "token" : chatbot_info["total_token"]}
 
     
@@ -237,8 +240,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                                 })
                                 # openai TTS 
-                                # return_voice = await tts(response)
-                                return_voice = g_tts(response)
+                                return_voice = await tts(response)
+                                # return_voice = g_tts(response)
                                 # response를 redis에 저장하는 기능을 여기 넣자. 
 
                                 print("여기까지됨 2222")
@@ -340,7 +343,7 @@ async def chat_text(chat_response : ChatResponse) :
     chat_history  =r.lrange(f"chat_session_messages:{chat_response.user_id}", 0, -1)
     print(chatbot_info)
 
-    if int(chatbot_info["total_token"]) > 700 : 
+    if int(chatbot_info["total_token"]) > MAX_CHAT_LENGTH : 
         return {"chatting_response": "챗봇 토큰 수를 초과하였습니다.", "token" : chatbot_info["total_token"]}
     
     #기존 채팅 히스토리 가져오기
