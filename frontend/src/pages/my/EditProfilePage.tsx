@@ -27,6 +27,11 @@ export default function EditProfilePage() {
           res.data.data.enableAlarms === true ||
             res.data.data.enableAlarms === "true"
         );
+
+        if (res.data.data.alarmTime) {
+          const alarmtime = res.data.data.alarmTime.slice(0, 5);
+          setSelectedTime(alarmtime);
+        }
       } catch (err) {
         console.error("알림 설정 여부 불러오기 오류: ", err);
       }
@@ -89,9 +94,18 @@ export default function EditProfilePage() {
             {showTimePicker && (
               <TimePicker
                 selectedTime={selectedTime}
-                onChange={(time) => {
+                onChange={async (time) => {
                   setSelectedTime(time);
                   setShowTimePicker(false);
+
+                  try {
+                    await axiosInstance.patch("/api/v1/user/reminder-time", {
+                      alarmTime: time,
+                    });
+                    // console.log("알림 시간 저장 완료:", time);
+                  } catch (err) {
+                    console.error("알림 시간 저장 실패:", err);
+                  }
                 }}
               />
             )}
