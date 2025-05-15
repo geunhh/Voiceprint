@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-r = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379, db=0, decode_responses=True, password=os.getenv("REDIS_PASSWORD"), ssl=True)
+r = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379,  password=os.getenv("REDIS_PASSWORD"), decode_responses=True)
 
 # 백엔드 origin 으로 변경 필요 
 origins = [
@@ -95,6 +95,7 @@ def g_tts(text) :
         voice=voice,
         audio_config=audio_config
     )
+    print("google response 완료.")
     return response.audio_content
 
 
@@ -171,6 +172,8 @@ async def websocket_endpoint(websocket: WebSocket):
     chatbot_info = r.hgetall(f"chat_session:{user_id}")
     chat_history  =r.lrange(f"chat_session_messages:{user_id}", 0, -1)
 
+    print(chatbot_info, chat_history)
+
     if not chatbot_info:
         await websocket.close(code=1003)
         print("❌ user id not correct or 세션 없음")
@@ -211,7 +214,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         # STT 처리
                         transcription = stt(audio_buffer)
                         print(transcription)
-                        if not transcription : 
+                        if not transcription.strip() : 
                             await websocket.send_json({
                                 "error": "음성 인식 실패"
                             }) 
@@ -239,8 +242,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                                 })
                                 # openai TTS 
-                                return_voice = await tts(response)
-                                # return_voice = g_tts(response)
+                                # return_voice = await tts(response)
+                                return_voice = g_tts(response)
                                 # response를 redis에 저장하는 기능을 여기 넣자.
 
                                 print("여기까지됨 2222")
@@ -261,12 +264,13 @@ async def websocket_endpoint(websocket: WebSocket):
     
     except WebSocketDisconnect:
         print("클라이언트 연결 종료")
-        if websocket.application_state != WebSocketState.DISCONNECTED:
-            await websocket.close()
+        pass
+        # if websocket.application_state != WebSocketState.DISCONNECTED:
+        #     await websocket.close()
     except Exception as e:
         print(f"오류 발생: {e}")
 
-
+          
 
 
 
