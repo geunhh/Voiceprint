@@ -40,6 +40,8 @@ export default function GroupDetailPage() {
 
   const fetchGroupDiaries = async (cursor?: string) => {
     if (isFetching) return;
+    if (!cursor && groupDiaries.length > 0) return;
+    if (cursor === null) return;
 
     setIsFetching(true);
     try {
@@ -49,9 +51,14 @@ export default function GroupDetailPage() {
 
       const { diaries, nextCursor } = res.data.data;
 
-      setGroupDiaries((prev) => [...prev, ...diaries]);
+      setGroupDiaries((prev) => {
+        const newIds = new Set(prev.map((d) => d.diaryId));
+        const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
+        return [...prev, ...filtered];
+      });
+
       setNextCursor(nextCursor);
-      console.log("확인용", res.data.data);
+      console.log("확인", res.data.data);
     } catch (err) {
       console.error("그룹 다이어리 불러오기 실패", err);
     } finally {
@@ -64,15 +71,19 @@ export default function GroupDetailPage() {
   }, [groupId]);
 
   useEffect(() => {
+    let isFirst = true;
+
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
-        document.body.offsetHeight - 300
+          document.body.offsetHeight - 300 &&
+        nextCursor &&
+        !isFirst
       ) {
-        if (nextCursor) fetchGroupDiaries(nextCursor);
+        fetchGroupDiaries(nextCursor);
       }
+      isFirst = false;
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [nextCursor, groupId]);
