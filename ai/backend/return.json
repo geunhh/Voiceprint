@@ -1,2 +1,0 @@
-{'type': 'websocket.receive', 'bytes': b''}
-{'type': 'websocket.receive', 'text': '{"action":"audio_complete","duration":8799,"has_speech":true}'}

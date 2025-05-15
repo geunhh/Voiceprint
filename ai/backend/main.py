@@ -6,8 +6,8 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import wave
-import io
-import subprocess
+# import io
+# import subprocess
 import json
 import openai
 from starlette.websockets import WebSocketState
@@ -16,9 +16,22 @@ import asyncio
 from schema import Chat, MyChat, PromtTest, ChatResponse, ChatSaveTest
 from typing import Annotated
 import datetime
-import base64
+# import base64
+import wave
+import tempfile
+import os
+import io
+from google.cloud import texttospeech
+
+import logging
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# r = redis.Redis(host="3.36.63.81", password="AYQdAAIjcDEzMzEyYTRjNTRjNDY0YzA1YWQ0Njg4NmRjMTNjM2Y4MXAxMA", db=0, decode_responses=True)
 
 # 백엔드 origin 으로 변경 필요 
 origins = [
@@ -41,6 +54,11 @@ load_dotenv()
 # openai 키 설정
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+#google tts
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "rd-pjt-459808-184401881707.json"
+client_gtts = texttospeech.TextToSpeechClient()
+
+
 # 오디오 설정
 CHANNELS = 1
 RATE = 16000
@@ -52,10 +70,31 @@ async def verify_API(token : Annotated) :
 
 
 
-import wave
-import tempfile
-import os
-import io
+
+
+def g_tts(text) :
+    # 요청할 텍스트 설정
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+
+    # 음성 설정
+    voice = texttospeech.VoiceSelectionParams(
+        language_code="ko-KR", 
+        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL  # 남/여 중 선택 가능
+    )
+
+    # 오디오 설정
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3
+    )
+
+    # 요청 보내기
+    response = client_gtts.synthesize_speech(
+        input=synthesis_input,
+        voice=voice,
+        audio_config=audio_config
+    )
+    return response.audio_content
+
 
 def stt(audio_data):
     if not audio_data:
@@ -119,6 +158,7 @@ async def tts(message):
     
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    print("웹소켓 연결 대기중")
     await websocket.accept()
     print("WebSocket 연결 수락됨")
     user_id = websocket.query_params.get("userId")
@@ -197,7 +237,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                                 })
                                 # openai TTS 
-                                return_voice = await tts(response)
+                                # return_voice = await tts(response)
+                                return_voice = g_tts(response)
                                 # response를 redis에 저장하는 기능을 여기 넣자. 
 
                                 print("여기까지됨 2222")
