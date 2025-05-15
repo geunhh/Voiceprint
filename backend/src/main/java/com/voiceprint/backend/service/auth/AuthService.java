@@ -269,11 +269,15 @@ public class AuthService {
     }
 
     // 유저 알림 여부 확인 메서드
-    public Boolean isReminderEnabled(Long userId) {
+    public AlarmSettingsResponseDTO isReminderEnabled(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
+        if (user.getEnableAlarm()!=null) {
+            return new AlarmSettingsResponseDTO(user.getEnableAlarm().toString(), user.getAlarmTime());
+        } else {
+            return new AlarmSettingsResponseDTO(null, user.getAlarmTime());
+        }
 
-        return user.getEnableAlarm();
     }
 
     /**
