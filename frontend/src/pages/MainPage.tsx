@@ -142,8 +142,9 @@ export default function MainPage() {
         try {
           const res = await axiosInstance.get("/api/v1/user/reminder-setting");
 
-          setReminderSetting(res.data.data);
-          if (res.data.data === null) {
+          setReminderSetting(res.data.data.enableAlarms);
+          console.log("확인하기", res.data.data);
+          if (res.data.data.enableAlarms === null) {
             setShowModal(true);
           }
         } catch (err) {

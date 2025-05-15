@@ -12,12 +12,15 @@ function NotificationModal({ onUpdate }: NotificationModalProps) {
     };
 
     try {
-      // console.log("알림 설정 값:", requestBody);
-      await axiosInstance.patch("/api/v1/user/reminder-setting", requestBody);
+      console.log("알림 설정 값:", requestBody.enableAlarms);
+      const res = await axiosInstance.patch(
+        "/api/v1/user/reminder-setting",
+        requestBody
+      );
 
       const updatedValue: true | false = enable;
       onUpdate(updatedValue);
-      // console.log("알림 설정 완료:", res.data);
+      console.log("알림 설정 완료:", res.data);
     } catch (err) {
       console.error("알림 설정 요청 실패:", err);
     }

@@ -15,36 +15,36 @@ export default function EditProfilePage() {
   const [selectedTime, setSelectedTime] = useState("08:00"); // 사용자 지정 알림 시간으로 수정 예정
   const [showTimePicker, setShowTimePicker] = useState(false); // 알림 시간 선택을 위한 타임피커 표시 여부
 
-  const [isOn, setIsOn] = useState(false);
+  const [isOn, setIsOn] = useState<boolean>(false);
 
   // 알림 설정 여부 불러오기
   useEffect(() => {
-    {
-      (async () => {
-        try {
-          const res = await axiosInstance.get("/api/v1/user/reminder-setting");
-          console.log("알림 설정 여부", res.data.data);
-          setIsOn(res.data.data); // 사용자의 알림 설정 여부에 따라 알림 설정 토글 기본 값 변경
-        } catch (err) {
-          console.error("알림 설정 여부 불러오기 오류: ", err);
-        }
-      })();
-    }
+    (async () => {
+      try {
+        const res = await axiosInstance.get("/api/v1/user/reminder-setting");
+        console.log("알림 설정 응답:", res.data.data);
+        setIsOn(
+          res.data.data.enableAlarms === true ||
+            res.data.data.enableAlarms === "true"
+        );
+      } catch (err) {
+        console.error("알림 설정 여부 불러오기 오류: ", err);
+      }
+    })();
   }, []);
 
   // 알림 여부 설정 토글 버튼
   const handleToggle = async () => {
     const updatedValue = !isOn;
+    setIsOn(updatedValue);
 
     try {
       await axiosInstance.patch("/api/v1/user/reminder-setting", {
         enableAlarms: updatedValue,
       });
-
-      setIsOn(updatedValue);
-      console.log("알림 설정 업데이트:", updatedValue);
     } catch (err) {
-      console.error("알림 설정 업데이트 실패:", err);
+      console.error("서버 저장 실패:", err);
+      setIsOn(!updatedValue);
     }
   };
 
