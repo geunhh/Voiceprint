@@ -18,7 +18,7 @@ from typing import Annotated
 import datetime
 import base64
 app = FastAPI()
-r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+r = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379, db=0, decode_responses=True, password=os.getenv("REDIS_PASSWORD"), ssl=True)
 
 # 백엔드 origin 으로 변경 필요 
 origins = [

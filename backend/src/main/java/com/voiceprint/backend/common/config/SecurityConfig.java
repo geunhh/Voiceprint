@@ -78,7 +78,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao").permitAll()
+                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao","/ws/**").permitAll()
                         .anyRequest().authenticated()); // 일단 막기.
 //                        .anyRequest().permitAll());
 

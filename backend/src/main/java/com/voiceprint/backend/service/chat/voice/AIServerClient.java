@@ -33,8 +33,10 @@ public class AIServerClient {
      */
     public void connect(Long userId, String clientSessionId) {
         try {
-            URI uri = URI.create(aiServerUrl + "?userId=" + userId);
+            String fullUrl = aiServerUrl + "?userId=" + userId;
+            log.info("🚀 AI 서버 WebSocket 연결 시도: {}", fullUrl);
 
+            URI uri = URI.create(fullUrl);
             AIServerEndpoint endpoint = new AIServerEndpoint(uri, new AIServerEndpoint.MessageHandler() {
                 @Override
                 public void handleText(String message) {
