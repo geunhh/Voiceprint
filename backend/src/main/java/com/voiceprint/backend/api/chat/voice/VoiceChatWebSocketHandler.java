@@ -16,6 +16,7 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -151,21 +152,33 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
 
         if (response instanceof String) {
             String json = (String) response;
-
-            // 응답 JSON 파싱
             Map<String, Object> map = objectMapper.readValue(json, Map.class);
-            String role = (String) map.get("role");
-            String content = (String) map.get("content");
 
-            if (role != null && content != null) {
-                // 1. Redis에 메시지 저장
+            if (map.containsKey("chatting")) {
+                List<Map<String, String>> messages = (List<Map<String, String>>) map.get("chatting");
+
+                for (Map<String, String> msg : messages) {
+                    String role = msg.get("role");
+                    String content = msg.get("content");
+                    if (role != null && content != null) {
+                        voiceChatService.saveMessage(userId, role, content);
+                    }
+                }
+
+                // 토큰 누적
+                Object tokenObj = map.get("token");
+                int token = tokenObj instanceof Number ? ((Number) tokenObj).intValue() : 0;
+                voiceChatService.accumulateToken(userId, token);
+
+            } else if (map.containsKey("role") && map.containsKey("content")) {
+                // 기존 단일 메시지 처리
+                String role = (String) map.get("role");
+                String content = (String) map.get("content");
+
                 voiceChatService.saveMessage(userId, role, content);
-
-                // 2. Redis에 토큰 누적 저장
                 voiceChatService.accumulateToken(userId, content.length());
             }
 
-            // 3. 프론트엔드로 메시지 전송
             session.sendMessage(new TextMessage(json));
 
         } else if (response instanceof byte[]) {

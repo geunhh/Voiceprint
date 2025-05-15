@@ -1,6 +1,8 @@
 package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.api.chat.voice.VoiceChatWebSocketHandler;
+import com.voiceprint.backend.service.chat.voice.AIServerClient;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final VoiceChatWebSocketHandler voiceChatHandler;
     // backend 병합 후 주석 해제
     private final WebSocketAuthInterceptor authInterceptor;
+    private final AIServerClient aiServerClient;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -29,10 +32,16 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public ServletServerContainerFactoryBean createWebSocketContainer() {
         ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
         // 더 큰 메시지 크기 허용 (오디오 데이터를 위해)
-        container.setMaxTextMessageBufferSize(8192);
-        container.setMaxBinaryMessageBufferSize(1024 * 1024); // 1MB
+        container.setMaxTextMessageBufferSize(2 * 1024 * 1024);
+        container.setMaxBinaryMessageBufferSize(2 * 1024 * 1024); // 2MB
         // 타임아웃 설정
         container.setMaxSessionIdleTimeout(60000L); // 60초
         return container;
+    }
+
+    // 순환참조 끊기 위한 수동 setter 주입
+    @PostConstruct
+    public void initHandlerDependency() {
+        aiServerClient.setVoiceChatHandler(voiceChatHandler);
     }
 }

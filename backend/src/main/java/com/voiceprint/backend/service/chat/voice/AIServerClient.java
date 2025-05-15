@@ -19,15 +19,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class AIServerClient {
 
-    @Lazy
     private VoiceChatWebSocketHandler voiceChatHandler;
-
     @Value("${ai-server.url}")
     private String aiServerUrl;
 
     // clientSessionId -> Endpoint
     private final Map<String, AIServerEndpoint> aiEndpoints = new ConcurrentHashMap<>();
-
+    public void setVoiceChatHandler(VoiceChatWebSocketHandler handler) {
+        this.voiceChatHandler = handler;
+    }
     /**
      * AI 서버와 WebSocket 연결
      */
@@ -41,16 +41,25 @@ public class AIServerClient {
                 @Override
                 public void handleText(String message) {
                     try {
-                        voiceChatHandler.handleAIServerResponse(clientSessionId, message);
+                        if (voiceChatHandler != null) {
+                            voiceChatHandler.handleAIServerResponse(clientSessionId, message);
+                        } else {
+                            log.warn("⚠️ voiceChatHandler가 null입니다. 텍스트 메시지를 처리할 수 없습니다.");
+                        }
                     } catch (IOException e) {
                         log.error("텍스트 메시지 처리 중 IOException 발생: {}", e.getMessage());
                     }
+
                 }
 
                 @Override
                 public void handleBinary(ByteBuffer buffer) {
                     try {
-                        voiceChatHandler.handleAIServerResponse(clientSessionId, buffer);
+                        if (voiceChatHandler != null) {
+                            voiceChatHandler.handleAIServerResponse(clientSessionId, buffer);
+                        } else {
+                            log.warn("⚠️ voiceChatHandler가 null입니다. 바이너리 메시지를 처리할 수 없습니다.");
+                        }
                     } catch (IOException e) {
                         log.error("바이너리 메시지 처리 중 IOException 발생: {}", e.getMessage());
                     }
