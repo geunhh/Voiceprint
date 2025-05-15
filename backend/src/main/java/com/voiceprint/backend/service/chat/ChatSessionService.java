@@ -5,16 +5,16 @@ import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.chat.ChatSessionStatus;
-import com.voiceprint.backend.domain.chat.Chatbot;
-import com.voiceprint.backend.domain.chat.ChatbotRepository;
-import com.voiceprint.backend.domain.diary.Diary;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
-import com.voiceprint.backend.domain.diary.Emotion;
-import com.voiceprint.backend.domain.diary.EmotionRepository;
-import com.voiceprint.backend.domain.thema.DiaryThema;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
+import com.voiceprint.backend.domain.Entity.Chatbot;
+import com.voiceprint.backend.domain.Repository.ChatbotRepository;
+import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Repository.DiaryRepository;
+import com.voiceprint.backend.domain.Entity.Emotion;
+import com.voiceprint.backend.domain.Repository.EmotionRepository;
+import com.voiceprint.backend.domain.Entity.DiaryThema;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static com.voiceprint.backend.domain.chat.ChatSessionStatus.DIARY_SAVED;
+import static com.voiceprint.backend.domain.Entity.ChatSessionStatus.DIARY_SAVED;
 
 @Service
 @RequiredArgsConstructor

@@ -24,28 +24,18 @@ public class SseController {
             HttpServletRequest request
     ) {
         Long userId = authService.getUserIdFromRequest(request);
+
         return sseService.subscribe(userId);
     }
 
     /**
-     * 연결 테스트용 API
+     * 알림 테스트용 API
      */
-    @CrossOrigin(origins = "http://localhost:5173") // 또는 "*"
     @GetMapping(value = "/subscribe/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribeT(HttpServletRequest request) {
-        Long testuserId = 999L;
-        // ✅ 연결되면 즉시 알림 한 번 보내기
-        SseEmitter emitter = sseService.subscribe(testuserId);
-        NotificationDTO testPayload = new NotificationDTO(
-                "reminder",
-                "✅ 연결 성공! 테스트 알림입니다.",
-                "diary",
-                null
-        );
-        sseService.sendNotification(testuserId, "reminder", testPayload);
-
-        return emitter;
-
-
+    public SseEmitter testSubscribe() {
+        Long testUserId = 1L; // 임시 유저
+        return sseService.subscribe(testUserId);
     }
+
+
 }

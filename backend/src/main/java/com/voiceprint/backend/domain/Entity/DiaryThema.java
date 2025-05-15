@@ -1,12 +1,10 @@
-package com.voiceprint.backend.domain.thema;
+package com.voiceprint.backend.domain.Entity;
 
-import com.voiceprint.backend.domain.auth.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 

@@ -1,17 +1,18 @@
 package com.voiceprint.backend.service.diary;
 
-import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
+import com.voiceprint.backend.api.diary.dto.GroupDiaryResponseDTO;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
+
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.domain.Entity.Diary;
 import com.voiceprint.backend.domain.Entity.GroupDiary;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.diary.Diary;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -69,16 +70,17 @@ public class GroupDiaryService {
         LocalDateTime nextCursor = hasNext ? groupDiaries.getLast().getSharedAt() : null;
 
         // 7. Diary 정보를 DTO로 매핑하여 응답 리스트 구성
-        List<DiarySummaryResponseDTO> response = groupDiaries.stream()
+        List<GroupDiaryResponseDTO> response = groupDiaries.stream()
                 .map(gd -> {
                     Diary d = gd.getDiary();
-                    return new DiarySummaryResponseDTO(
+                    return new GroupDiaryResponseDTO(
+                            groupId,
                             d.getId(),
                             d.getTitle(),
                             d.getContent(),
-                            d.getEmotion() != null ? d.getEmotion().getName() : null,
                             gd.getSharedAt().toString(),
-                            d.getThumbnail()
+                            user.getProfileImage().getImageUrl(),
+                            user.getNickname()
                     );
                 }).toList();
 

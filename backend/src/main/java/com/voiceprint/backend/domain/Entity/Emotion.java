@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.diary;
+package com.voiceprint.backend.domain.Entity;
 
 
 import jakarta.persistence.Entity;
