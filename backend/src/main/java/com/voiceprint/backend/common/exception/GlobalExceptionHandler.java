@@ -9,10 +9,7 @@ import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
-import com.voiceprint.backend.common.exception.user.ExpiredJwtTokenException;
-import com.voiceprint.backend.common.exception.user.NicknameConflictException;
-import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.common.exception.user.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -123,6 +120,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedDiaryException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public String handleUnauthorizedDiary(UnauthorizedDiaryException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNotificationNotFound(NotificationNotFoundException e) {
+        return e.getMessage();
+    }
+
+
+    @ExceptionHandler(UnauthorizedNotificationException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedNotification(UnauthorizedNotificationException e) {
         return e.getMessage();
     }
 
