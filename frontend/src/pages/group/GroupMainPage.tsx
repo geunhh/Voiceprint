@@ -72,8 +72,7 @@ export default function GroupMainPage() {
       <div className="relative mt-4 flex items-center justify-center">
         <button
           onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
-          className="absolute left-4 text-3xl text-gray-400 disabled:opacity-20"
-          disabled={currentIndex === 0}
+          className="absolute left-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
         >
           &lt;
         </button>
@@ -93,8 +92,7 @@ export default function GroupMainPage() {
           onClick={() =>
             setCurrentIndex((prev) => Math.min(prev + 1, groups.length - 1))
           }
-          className="absolute right-4 text-3xl text-gray-400 disabled:opacity-20"
-          disabled={currentIndex === groups.length - 1}
+          className="absolute right-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
         >
           &gt;
         </button>
