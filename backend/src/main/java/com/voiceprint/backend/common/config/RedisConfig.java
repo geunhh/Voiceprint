@@ -26,8 +26,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
-    @Value("${spring.data.redis.password}")
-    private String redisPassword;
+//    @Value("${spring.data.redis.password}")
+//    private String redisPassword;
 
 //    @Value("${spring.data.redis.ssl.enabled}")
 //    private boolean sslEnabled;
@@ -46,10 +46,10 @@ public class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(redisHost);
         config.setPort(redisPort);
-        config.setPassword(redisPassword);
+//        config.setPassword(redisPassword);
 
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                .useSsl() // Upstash Redis는 SSL 사용
+//                .useSsl() // Upstash Redis는 SSL 사용
                 .build();
         return new LettuceConnectionFactory(config, clientConfig);
     }
