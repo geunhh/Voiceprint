@@ -1,0 +1,44 @@
+package com.voiceprint.backend.service.question;
+
+import com.voiceprint.backend.api.question.dto.QuestionGetResponseDTO;
+import com.voiceprint.backend.domain.Entity.PromptQuestion;
+import com.voiceprint.backend.domain.Entity.TodayQuestion;
+import com.voiceprint.backend.domain.Repository.QuestionRepository;
+import com.voiceprint.backend.domain.Repository.TodayQuestionRepository;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.NoSuchElementException;
+
+
+@Service
+public class QuestionService {
+
+    private final QuestionRepository questionRepository;
+    private final TodayQuestionRepository todayQuestionRepository;
+
+    public QuestionService(QuestionRepository questionRepository,
+                           TodayQuestionRepository todayQuestionRepository) {
+        this.questionRepository = questionRepository;
+        this.todayQuestionRepository = todayQuestionRepository;
+    }
+    public QuestionGetResponseDTO getTodayQuestion() {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        // 오늘의 questionID 조회
+        Byte todayQuestionId = todayQuestionRepository.findByDate(today)
+                .orElseThrow(() -> new NoSuchElementException("오늘의 질문이 설정되지 않았습니다."))
+                .getQuestionId();
+
+        // 질문 리스트 조회
+        PromptQuestion promptQuestion = questionRepository.getById(todayQuestionId);
+
+        // entity -> dto
+        QuestionGetResponseDTO questionGetResponseDTO = new QuestionGetResponseDTO();
+        questionGetResponseDTO.setId(promptQuestion.getId());
+        questionGetResponseDTO.setQuestion(promptQuestion.getQuestion());
+
+        return questionGetResponseDTO;
+    }
+}
