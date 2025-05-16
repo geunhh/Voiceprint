@@ -10,7 +10,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import Tabbar from "../components/common/Tabbar";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../api/axiosInstance";
 import { RootState } from "../store/store";
@@ -72,9 +72,11 @@ const Layout = () => {
   const dispatch = useDispatch();
   const userId = useSelector((state: RootState) => state.user.userId);
 
+  const isFetchedRef = useRef(false);
+
   useEffect(() => {
     const token = localStorage.getItem("Authorization");
-    if (!token || userId) return;
+    if (!token || userId || isFetchedRef.current) return;
 
     const fetchUser = async () => {
       if (location.pathname === "/") return; // 로그인 화면에서는 진행 X
@@ -83,13 +85,15 @@ const Layout = () => {
 
         const { userId, nickname, imageUrl } = res.data.data;
         dispatch(setUser({ userId, nickname, imageUrl }));
+        isFetchedRef.current = true;
       } catch (err) {
         console.error("유저 정보 불러오기 실패:", err);
       }
     };
 
     fetchUser();
-  }, [dispatch, userId, location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -188,7 +192,8 @@ const Layout = () => {
     connectSSE();
 
     return () => controller.abort(); // 컴포넌트가 언마운트될 때 서버와 SSE 연결 해제
-  }, [location.pathname, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full min-h-dvh flex justify-center bg-neutral-50 overflow-x-hidden">
