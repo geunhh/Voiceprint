@@ -4,6 +4,7 @@ package com.voiceprint.backend.api.chat.voice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.service.chat.voice.AIServerClient;
 import com.voiceprint.backend.service.chat.voice.VoiceChatService;
+import jakarta.websocket.OnMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,14 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         userSessions.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(sessionId);
 
         // 3. AI 서버와 WebSocket 연결
-        aiServerClient.connect(userId, sessionId);
+        // connect 할 때, “이 세션”에 응답이 오면 handleAIServerResponse로 넘겨 달라고 콜백 전달
+        aiServerClient.connect(userId, sessionId, response -> {
+            try {
+                handleAIServerResponse(sessionId, response);
+            } catch (IOException e) {
+                log.error("콜백 중 에러", e);
+            }
+        });
 
         // 4. AI 서버에 유저 정보 전달 (user_id: Long)
         Map<String, Object> initPayload = new HashMap<>();
@@ -149,6 +157,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     }
 
     // AI 서버로부터 받은 응답을 클라이언트에게 전달
+    @OnMessage
     public void handleAIServerResponse(String sessionId, Object response) throws IOException {
         WebSocketSession session = sessions.get(sessionId);
         if (session == null || !session.isOpen()) return;

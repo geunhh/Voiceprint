@@ -1,118 +1,65 @@
 package com.voiceprint.backend.service.chat.voice;
 
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnError;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
-import jakarta.websocket.*;
-
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.util.Base64;
-
+import org.springframework.stereotype.Component;
+/**
+ * @Componen 사용이유
+ * @ServerEndpoint가 스프링 컨텍스트에 빈으로 등록되지 않아서 해당 어노테이션으로
+ * AIServerEndpoint클래스를 빈으로 만들어 톰캣의 JSR-356 컨테이너에 등록
+ */
 @Slf4j
+@Component
 @ServerEndpoint("/ws/ai")
 public class AIServerEndpoint {
-
-    private Session session;
-    private MessageHandler messageHandler;
-
-    public interface MessageHandler {
-        void handleText(String message);
-        void handleBinary(ByteBuffer buffer);
-    }
-
-    public AIServerEndpoint(URI uri, MessageHandler handler) {
-        try {
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            container.connectToServer(this, uri);
-            this.messageHandler = handler;
-            log.info("✅ WebSocket 연결 성공: {}", uri);
-        } catch (Exception e) {
-            log.error("🚨 WebSocket 연결 실패", e);
-        }
-    }
-
     @OnOpen
-    public void onOpen(Session session, EndpointConfig config) {
-        // 각 세션마다 텍스트·바이너리 버퍼를 2MB로 설정
+    public void onOpen(Session session) {
         session.setMaxTextMessageBufferSize(2 * 1024 * 1024);
         session.setMaxBinaryMessageBufferSize(2 * 1024 * 1024);
-        log.info("✅ WebSocket 연결 수립 - 세션 ID: {}", session.getId());
-    }
-//    public void onOpen(Session session) {
-//        log.info("✅ WebSocket 연결 수립 - 세션 ID: {}", session.getId());
-//        this.session = session;
-//    }
-
-    @OnMessage
-    public void onMessage(String message) {
-        log.info("📥 수신된 텍스트 메시지: {}", message);
-        if (messageHandler != null) {
-            messageHandler.handleText(message);
-        }
+        log.info("🛠 JSR-356 WebSocket 버퍼 설정 적용: text={} / binary={}",
+                session.getMaxTextMessageBufferSize(),
+                session.getMaxBinaryMessageBufferSize());
+        log.info("✅ AI 서버 WebSocket 열림, 세션ID={}", session.getId());
     }
 
     @OnMessage
-    public void onBinaryMessage(ByteBuffer message) {
-        log.info("📥 수신된 바이너리 메시지 크기: {}", message.remaining());
-        if (messageHandler != null) {
-            messageHandler.handleBinary(message);
-        }
+    public void onTextMessage(Session session, String message) {
+        log.info("📩 AI 서버가 받은 텍스트: {}", message);
+        // TODO: STT, LLM 처리 → JSON 응답
+        String responseJson = processChat(message);
+        session.getAsyncRemote().sendText(responseJson);
+    }
+
+    @OnMessage
+    public void onBinaryMessage(Session session, byte[] data) {
+        log.info("📩 AI 서버가 받은 바이너리 데이터 크기: {} 바이트", data.length);
+        // TODO: TTS 처리 → 바이너리 응답
+        byte[] audioBytes = processTTS(data);
+        session.getAsyncRemote().sendBinary(java.nio.ByteBuffer.wrap(audioBytes));
     }
 
     @OnError
     public void onError(Session session, Throwable throwable) {
-        if (throwable != null) {
-            log.error("[{}] WebSocket 에러 발생: {}",
-                    session.getId(),
-                    throwable.getMessage(), throwable);
-        } else {
-            log.error("[{}] WebSocket 에러 발생: throwable==null",
-                    session.getId());
-        }
+        log.error("🚨 AI 서버 WebSocket 에러 - 세션ID={}", session.getId(), throwable);
     }
 
     @OnClose
-    public void onClose(Session session, CloseReason reason) {
-        log.info("[{}] 연결 종료: code={}, reason={}",
-                session.getId(),
-                reason.getCloseCode().getCode(),
-                reason.getReasonPhrase());
+    public void onClose(Session session) {
+        log.info("🔌 AI 서버 WebSocket 연결 종료, 세션ID={}", session.getId());
     }
 
-    public void sendText(String message) {
-        try {
-            if (session != null && session.isOpen()) {
-                session.getAsyncRemote().sendText(message);
-                log.info("✅ 텍스트 메시지 전송: {}", message);
-            }
-        } catch (Exception e) {
-            log.error("🚨 텍스트 메시지 전송 오류", e);
-        }
+    private String processChat(String input) {
+        // LLM 호출 로직
+        return "{ \"chatting\": [...] }";
     }
 
-    public void sendBinary(ByteBuffer buffer) {
-        try {
-            if (session != null && session.isOpen()) {
-                session.getAsyncRemote().sendBinary(buffer);
-                log.info("✅ 바이너리 메시지 전송: {} 바이트", buffer.remaining());
-            }
-        } catch (Exception e) {
-            log.error("🚨 바이너리 메시지 전송 오류", e);
-        }
-    }
-
-    public Session getSession() {
-        return session;
-    }
-
-    public void close() {
-        try {
-            if (session != null && session.isOpen()) {
-                session.close();
-                log.info("🔒 WebSocket 세션 종료");
-            }
-        } catch (Exception e) {
-            log.error("🚨 WebSocket 세션 종료 오류", e);
-        }
+    private byte[] processTTS(byte[] wav) {
+        // TTS 로직
+        return new byte[0];
     }
 }

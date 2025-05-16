@@ -175,6 +175,8 @@ const AudioRecorder: React.FC = () => {
               totalToken?: number;
             }
             const data: WsPayload = JSON.parse(event.data);
+            console.log("WebSocket 메시지 수신:", data);
+            // 음성 인식 결과 처리
             if (data.transcription !== undefined) {
               setTranscription(data.transcription);
             }
@@ -493,25 +495,36 @@ const AudioRecorder: React.FC = () => {
             }));
 
             // 오디오 전송 완료 신호 보내기
-            setTimeout(() => {
-              if (
-                websocketRef.current &&
-                websocketRef.current.readyState === WebSocket.OPEN
-              ) {
-                websocketRef.current.send(
-                  JSON.stringify({
-                    action: "audio_complete",
-                    duration: recordDuration,
-                    has_speech: hasMeaningfulAudio,
-                  })
-                );
-                console.log("audio_complete 메시지 전송 완료");
-                setStatus("idle");
-              } else {
-                console.error("완료 메시지 전송 실패: 웹소켓 연결 상태 변경됨");
-                setStatus("error");
-              }
-            }, 100);
+            // setTimeout 지연 중에 서버가 닫혀 전송이 안됨
+            websocketRef.current.send(
+              JSON.stringify({
+                action: "audio_complete",
+                duration: recordDuration,
+                has_speech: hasMeaningfulAudio,
+              })
+            );
+            console.log("audio_complete 메시지 전송 완료");
+            setStatus("idle");
+
+            // setTimeout(() => {
+            //   if (
+            //     websocketRef.current &&
+            //     websocketRef.current.readyState === WebSocket.OPEN
+            //   ) {
+            //     websocketRef.current.send(
+            //       JSON.stringify({
+            //         action: "audio_complete",
+            //         duration: recordDuration,
+            //         has_speech: hasMeaningfulAudio,
+            //       })
+            //     );
+            //     console.log("audio_complete 메시지 전송 완료");
+            //     setStatus("idle");
+            //   } else {
+            //     console.error("완료 메시지 전송 실패: 웹소켓 연결 상태 변경됨");
+            //     setStatus("error");
+            //   }
+            // }, 100);
           } catch (err) {
             console.error("오디오 데이터 전송 중 오류:", err);
             setStatus("error");

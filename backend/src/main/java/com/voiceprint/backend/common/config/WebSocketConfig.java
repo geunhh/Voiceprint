@@ -23,9 +23,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final VoiceChatWebSocketHandler voiceChatHandler;
     // backend 병합 후 주석 해제
     private final WebSocketAuthInterceptor authInterceptor;
-    private final AIServerClient aiServerClient;
+//    private final AIServerClient aiServerClient;
 
-    private final ApplicationContext context; // ✅ ApplicationContext 주입
+//    private final ApplicationContext context; // ✅ ApplicationContext 주입
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -43,8 +43,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
         // 타임아웃 설정
         container.setMaxSessionIdleTimeout(60000L); // 60초
 
-        log.info("🛠 WebSocket 버퍼 크기 설정: text={}, binary={}",
-                container.getMaxTextMessageBufferSize(), container.getMaxBinaryMessageBufferSize());
+//        log.info("🛠 WebSocket 버퍼 크기 설정: text={}, binary={}",
+//                container.getMaxTextMessageBufferSize(), container.getMaxBinaryMessageBufferSize());
 
         return container;
     }
@@ -58,8 +58,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
 //    }
 
     // 순환참조 끊기 위한 수동 setter 주입
-    @PostConstruct
-    public void initHandlerDependency() {
-        aiServerClient.setVoiceChatHandler(voiceChatHandler);
-    }
+//    @PostConstruct
+//    public void initHandlerDependency() {
+//        aiServerClient.setVoiceChatHandler(voiceChatHandler);
+//    }
 }

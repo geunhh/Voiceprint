@@ -1,5 +1,6 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+import logging
+from uvicorn.protocols.websockets.websockets_impl import WebSocketProtocol
+
 import webrtcvad
 import tempfile
 from openai import OpenAI
@@ -23,16 +24,18 @@ import os
 import io
 from google.cloud import texttospeech
 
-import logging
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
+# 2) FastAPI 앱 정의 
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 r = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379,  password=os.getenv("REDIS_PASSWORD"), decode_responses=True)
 
 # 백엔드 origin 으로 변경 필요 
+# 내부 Java 클라이언트는 Origin 헤더가 없거나 null 이어서 CORS 미들웨어에 막힐 수 있습니다.=> 그래서 전부 허용 일단단
 origins = [
     "http://localhost",
     "http://localhost:8080",
@@ -41,7 +44,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],    # 모든 도메인 허용
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -159,7 +162,7 @@ async def tts(message):
         
         return audio_bytes
     
-@app.websocket("/ws")
+@app.websocket("/ws/ai")
 async def websocket_endpoint(websocket: WebSocket):
     print("웹소켓 연결 대기중")
     await websocket.accept()
@@ -195,6 +198,11 @@ async def websocket_endpoint(websocket: WebSocket):
             # 메시지 수신 (바이너리 또는 텍스트)
             message = await websocket.receive()
             
+            # 1) 클라이언트가 끊어졌다면 루프 종료
+            # if message["type"] == "websocket.disconnect":
+            #     print("클라이언트 연결 종료")
+            #     break
+
             # 바이너리 데이터 (오디오) 처리
             if "bytes" in message:
                 audio_data = message["bytes"]
@@ -213,6 +221,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         # STT 처리
                         transcription = stt(audio_buffer)
+                        transcription = "시청 감사요"
                         print(transcription)
                         if not transcription.strip() : 
                             await websocket.send_json({
@@ -247,8 +256,13 @@ async def websocket_endpoint(websocket: WebSocket):
                                 # response를 redis에 저장하는 기능을 여기 넣자.
 
                                 print("여기까지됨 2222")
-                                await websocket.send_bytes(return_voice)
-                                print("###############return voice :", return_voice)
+                                # 바이너리 데이터 전송 디버깅
+                                try:
+                                    await websocket.send_bytes(return_voice)
+                                    print(f"✅ 바이너리 전송 완료, 크기: {len(return_voice)} bytes")
+                                    await websocket.send_json({ "audioDone": True })  # ✅ 오디오 끝 신호
+                                except Exception as e:
+                                    print("❌ 바이너리 전송 중 예외 발생:", e)
                             else : 
                                 await websocket.send_json({"error" : "LLM response fail"})
                         else : 
@@ -270,8 +284,7 @@ async def websocket_endpoint(websocket: WebSocket):
         #     await websocket.close()
     except Exception as e:
         print(f"오류 발생: {e}")
-
-          
+     
 
 
 
