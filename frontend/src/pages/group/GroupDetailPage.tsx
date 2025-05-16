@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
 
@@ -9,7 +9,7 @@ import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
 
 interface GroupUser {
-  userId: number;
+  id: number;
   nickname: string;
   profileImageUrl: string;
 }
@@ -27,6 +27,16 @@ interface Group {
   groupUserList: GroupUser[];
 }
 
+interface GroupDiary {
+  diaryId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  groupId: number;
+  nickname: string;
+  profileUrl: string;
+}
+
 export default function GroupDetailPage() {
   const navigate = useNavigate();
 
@@ -34,41 +44,51 @@ export default function GroupDetailPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [groupDiaries, setGroupDiaries] = useState<any[]>([]);
+  const [groupDiaries, setGroupDiaries] = useState<GroupDiary[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
 
-  const fetchGroupDiaries = async (cursor?: string) => {
-    if (isFetching) return;
-    if (!cursor && groupDiaries.length > 0) return;
-    if (cursor === null) return;
+  // 그룹 다이어리 목록 불러오기기
+  const fetchGroupDiaries = useCallback(
+    async (cursor?: string) => {
+      if (isFetching) return;
+      if (!cursor && groupDiaries.length > 0) return;
+      if (cursor === null) return;
 
-    setIsFetching(true);
-    try {
-      const res = await axiosInstance.get(`/api/v1/group/${groupId}/diaries`, {
-        params: cursor ? { cursor } : {},
-      });
+      setIsFetching(true);
+      try {
+        const res = await axiosInstance.get(
+          `/api/v1/group/${groupId}/diaries`,
+          {
+            params: cursor ? { cursor } : {},
+          }
+        );
 
-      const { diaries, nextCursor } = res.data.data;
+        const { diaries, nextCursor } = res.data.data as {
+          diaries: GroupDiary[];
+          nextCursor: string | null;
+        };
 
-      setGroupDiaries((prev) => {
-        const newIds = new Set(prev.map((d) => d.diaryId));
-        const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
-        return [...prev, ...filtered];
-      });
+        setGroupDiaries((prev) => {
+          const newIds = new Set(prev.map((d) => d.diaryId));
+          const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
+          return [...prev, ...filtered];
+        });
 
-      setNextCursor(nextCursor);
-      // console.log("그룹 다이어리 확인", res.data.data);
-    } catch (err) {
-      console.error("그룹 다이어리 불러오기 실패", err);
-    } finally {
-      setIsFetching(false);
-    }
-  };
+        setNextCursor(nextCursor);
+        // console.log("그룹 다이어리 목록 확인", diaries);
+      } catch (err) {
+        console.error("그룹 다이어리 불러오기 실패", err);
+      } finally {
+        setIsFetching(false);
+      }
+    },
+    [groupId, isFetching, groupDiaries]
+  );
 
   useEffect(() => {
     fetchGroupDiaries();
-  }, [groupId]);
+  }, [fetchGroupDiaries]);
 
   useEffect(() => {
     let isFirst = true;
@@ -86,8 +106,9 @@ export default function GroupDetailPage() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [nextCursor, groupId]);
+  }, [nextCursor, groupId, fetchGroupDiaries]);
 
+  // 그룹 정보 불러오기
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
@@ -186,7 +207,7 @@ export default function GroupDetailPage() {
       </div>
 
       {/* 공유 루틴 및 디데이 정보 */}
-      {group.enableAlarm && (
+      {group.enableAlarm && group.alarmTime && (
         <div className="mb-3 w-full">
           <div className="flex items-center gap-4">
             {/* 시간 */}
@@ -243,7 +264,7 @@ export default function GroupDetailPage() {
         <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
           {group.groupUserList.map((user) => (
             <div
-              key={user.userId}
+              key={user.id}
               className="flex flex-col items-center gap-2 shrink-0"
             >
               <img
@@ -264,7 +285,9 @@ export default function GroupDetailPage() {
         <p className="text-darkmint font-semibold mb-2">우리들의 발자국</p>
         <div className="pb-20">
           {groupDiaries.map((diary) => (
-            <div key={diary.diaryId} className="mb-3">
+            // <div key={diary.diaryId} className="mb-3">
+            // 개발용.... 중복된 다이어리가 있어서... key 임시 설정...
+            <div key={`${diary.diaryId}-${diary.createdAt}`} className="mb-3">
               <GroupDiaryPreview {...diary} />
             </div>
           ))}

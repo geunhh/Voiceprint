@@ -10,7 +10,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import Tabbar from "../components/common/Tabbar";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../api/axiosInstance";
 import { RootState } from "../store/store";
@@ -72,33 +72,40 @@ const Layout = () => {
   const dispatch = useDispatch();
   const userId = useSelector((state: RootState) => state.user.userId);
 
+  const isFetchedRef = useRef(false);
+
   useEffect(() => {
     const token = localStorage.getItem("Authorization");
-    if (!token || userId) return;
+    if (!token || userId || isFetchedRef.current) return;
 
     const fetchUser = async () => {
+      if (location.pathname === "/") return; // 로그인 화면에서는 진행 X
       try {
         const res = await axiosInstance.get("/api/v1/user/profile");
 
         const { userId, nickname, imageUrl } = res.data.data;
         dispatch(setUser({ userId, nickname, imageUrl }));
+        isFetchedRef.current = true;
       } catch (err) {
         console.error("유저 정보 불러오기 실패:", err);
       }
     };
 
     fetchUser();
-  }, [dispatch, userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
 
     const connectSSE = async () => {
+      if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
+
       try {
         const token = localStorage.getItem("Authorization");
 
         const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe/test`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe`,
           {
             method: "GET",
             headers: {
@@ -143,8 +150,6 @@ const Layout = () => {
                 const parsed = JSON.parse(jsonStr);
                 console.log("알림 수신:", parsed);
 
-                if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
-
                 toast.custom((t) => (
                   <div
                     className={`w-[85vw] max-w-[370px] min-w-[320px] transition-all duration-300 ${
@@ -157,7 +162,7 @@ const Layout = () => {
                       groupId={parsed.metadata?.groupId}
                       diaryId={parsed.metadata?.diaryId}
                       onClick={() => {
-                        toast.dismiss(t.id); // 닫고
+                        toast.dismiss(t.id);
                         if (
                           parsed.type === "newComment" &&
                           parsed.metadata?.groupId &&
@@ -171,21 +176,23 @@ const Layout = () => {
                     />
                   </div>
                 ));
-              } catch (e) {
-                console.error("JSON 파싱 실패:", e);
-                console.log("파싱 실패한 원본:", jsonStr);
+              } catch (err) {
+                console.error("JSON 파싱 실패:", err);
               }
             }
           }
         }
-      } catch (err) {
-        console.error("SSE 연결 오류:", err);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.error("SSE 연결 오류:", err);
+        }
       }
     };
 
     connectSSE();
 
     return () => controller.abort(); // 컴포넌트가 언마운트될 때 서버와 SSE 연결 해제
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

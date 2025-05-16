@@ -8,6 +8,7 @@ import AlertModal from "./AlertModal";
 
 interface DiaryShareGroupModalProps {
   onClose: () => void;
+  diaryId: number;
 }
 
 interface Group {
@@ -17,7 +18,7 @@ interface Group {
   memberCount: number;
 }
 
-function DiaryShareGroupModal({ onClose }: DiaryShareGroupModalProps) {
+function DiaryShareGroupModal({ onClose, diaryId }: DiaryShareGroupModalProps) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -60,7 +61,7 @@ function DiaryShareGroupModal({ onClose }: DiaryShareGroupModalProps) {
   const handleSave = async () => {
     try {
       if (selectedIds.size) {
-        await axiosInstance.post(`/api/diaries/shared`, {
+        await axiosInstance.post(`/api/diaries/shared/${diaryId}`, {
           groupIds: Array.from(selectedIds),
         });
       }

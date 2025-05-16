@@ -1,11 +1,29 @@
+import { useState } from "react";
+import axiosInstance from "../../api/axiosInstance";
 import closeIcon from "../../assets/icons/close.png";
 import Button from "../common/Button";
 
 interface CustomThemaModalProps {
   onClose: () => void;
+  diaryId: number;
 }
 
-function CustomThemaModal({ onClose }: CustomThemaModalProps) {
+function CustomThemaModal({ onClose, diaryId }: CustomThemaModalProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleCreateThema = async () => {
+    try {
+      setLoading(true);
+      await axiosInstance.patch(`/api/thema/extract/${diaryId}`);
+      console.log("커스텀 테마 생성 성공");
+      onClose();
+    } catch (error) {
+      console.error("커스텀 테마 생성 실패", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center text-center">
       <div className="w-4/5 max-w-[320px] rounded-xl bg-white flex flex-col py-6 h-64 relative overflow-y-auto">
@@ -31,7 +49,13 @@ function CustomThemaModal({ onClose }: CustomThemaModalProps) {
         {/* 버튼 */}
         <div className="flex px-8 justify-between">
           <Button text="취소" type="line" size="M" onClick={onClose} />
-          <Button text="생성" type="fill" size="M" onClick={() => {}} />
+          <Button
+            text={loading ? "생성 중..." : "생성"}
+            type="fill"
+            size="M"
+            onClick={handleCreateThema}
+            disabled={loading}
+          />
         </div>
       </div>
     </div>

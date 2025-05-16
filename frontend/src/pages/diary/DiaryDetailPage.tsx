@@ -37,6 +37,7 @@ interface DiaryData {
 
 export default function DiaryDetailPage() {
   const { diaryId } = useParams<{ diaryId: string }>();
+  const diaryIdNum = diaryId ? Number(diaryId) : null;
   const [diary, setDiary] = useState<DiaryData | null>(null);
 
   const [showChatModal, setShowChatModal] = useState(false);
@@ -58,6 +59,7 @@ export default function DiaryDetailPage() {
   }, [diaryId]);
 
   if (!diary || !diary.emotion) return null;
+  if (!diaryIdNum) return null;
 
   const date = new Date(diary.createdAt);
   const year = date.getFullYear();
@@ -122,7 +124,7 @@ export default function DiaryDetailPage() {
       >
         <div className="flex-col start ml-4">
           <p className="text-darkmint font-bold text-lg mb-1">
-            커스텀 테마 생성
+            커스텀 테마 적용
           </p>
           <p className="text-gray-500 text-base">
             생성된 일기가 마음에 든다면
@@ -138,11 +140,17 @@ export default function DiaryDetailPage() {
       )}
 
       {showThemaModal && (
-        <CustomThemaModal onClose={() => setShowThemaModal(false)} />
+        <CustomThemaModal
+          diaryId={diaryIdNum}
+          onClose={() => setShowThemaModal(false)}
+        />
       )}
 
       {showShareModal && (
-        <DiaryShareGroupModal onClose={() => setShowShareModal(false)} />
+        <DiaryShareGroupModal
+          diaryId={diaryIdNum}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </div>
   );
