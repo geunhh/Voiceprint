@@ -260,6 +260,7 @@ async def websocket_endpoint(websocket: WebSocket):
                                 try:
                                     await websocket.send_bytes(return_voice)
                                     print(f"✅ 바이너리 전송 완료, 크기: {len(return_voice)} bytes")
+                                    await asyncio.sleep(0.1)  # 💡 약간의 지연 추가 (네트워크 순서 보장)
                                     await websocket.send_json({ "audioDone": True })  # ✅ 오디오 끝 신호
                                 except Exception as e:
                                     print("❌ 바이너리 전송 중 예외 발생:", e)

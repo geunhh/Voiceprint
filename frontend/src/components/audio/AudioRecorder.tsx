@@ -94,6 +94,7 @@ const AudioRecorder: React.FC = () => {
   const dataArrayRef = useRef<Uint8Array | null>(null);
 
   const websocketRef = useRef<WebSocket | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
 
   // ────────────────────────────────────────────────────────────────
   // 1. 최근 챗봇 정보 로드 (+fallback)
@@ -159,6 +160,7 @@ const AudioRecorder: React.FC = () => {
         return;
       }
       const ws = new WebSocket(wsUrl);
+      ws.binaryType = "arraybuffer";
       websocketRef.current = ws;
 
       ws.onopen = () => {
@@ -166,31 +168,59 @@ const AudioRecorder: React.FC = () => {
         setIsConnected(true);
       };
 
-      ws.onmessage = (event: MessageEvent) => {
+      ws.onmessage = async (event: MessageEvent) => {
         if (typeof event.data === "string") {
           try {
-            interface WsPayload {
-              transcription?: string;
-              limit?: number;
-              totalToken?: number;
-            }
-            const data: WsPayload = JSON.parse(event.data);
-            console.log("WebSocket 메시지 수신:", data);
-            // 음성 인식 결과 처리
+            const data = JSON.parse(event.data);
+            console.log("🧾 전체 수신된 JSON 데이터:", data);
+
             if (data.transcription !== undefined) {
               setTranscription(data.transcription);
+              // console.log("transcription=", data.transcription);
             }
             if (typeof data.limit === "number") {
               setLimit(data.limit);
+              // console.log("limit=", data.limit);
             }
-            if (typeof data.totalToken === "number") {
+            if (typeof data.totalToken === "number")
               setTotalToken(data.totalToken);
+
+            // ✅ 오디오 전송 완료 시점 → 재생
+            if (data.audioDone === true || data.audioDone === "true") {
+              console.log("🎯 audioDone 수신됨, 조립 대기 시작");
+
+              // 💡 100ms 기다렸다가 조립 (최소한의 보장 시간)
+              setTimeout(() => {
+                if (audioChunks.current.length === 0) {
+                  console.warn("⚠️ 지연 후에도 바이너리 없음, 재생 생략");
+                  return;
+                }
+
+                console.log("🔧 조립 시작...");
+                const completeBlob = new Blob(audioChunks.current, {
+                  type: "audio/mpeg",
+                });
+                console.log("📦 조립된 Blob 크기:", completeBlob.size);
+
+                const audioUrl = URL.createObjectURL(completeBlob);
+                if (audioElementRef.current) {
+                  audioElementRef.current.src = audioUrl;
+                  audioElementRef.current
+                    .play()
+                    .catch((e) => console.warn("🎧 오디오 재생 실패:", e));
+                }
+
+                audioChunks.current = [];
+              }, 150); // 조정 가능
             }
-          } catch (error) {
-            console.error("메시지 파싱 에러:", error);
+          } catch (e) {
+            console.error("❌ JSON 파싱 실패:", e);
           }
         } else {
-          handleAudioResponse(event.data as Blob);
+          const arrayBuffer = event.data as ArrayBuffer;
+          const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
+          console.log("📦 수신된 바이너리 청크 (변환 후 Blob):", blob);
+          audioChunks.current.push(blob);
         }
       };
 
@@ -496,6 +526,7 @@ const AudioRecorder: React.FC = () => {
 
             // 오디오 전송 완료 신호 보내기
             // setTimeout 지연 중에 서버가 닫혀 전송이 안됨
+            websocketRef.current.send(audioBlob);
             websocketRef.current.send(
               JSON.stringify({
                 action: "audio_complete",
@@ -503,7 +534,6 @@ const AudioRecorder: React.FC = () => {
                 has_speech: hasMeaningfulAudio,
               })
             );
-            console.log("audio_complete 메시지 전송 완료");
             setStatus("idle");
 
             // setTimeout(() => {
