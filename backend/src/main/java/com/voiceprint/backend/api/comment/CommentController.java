@@ -2,6 +2,7 @@ package com.voiceprint.backend.api.comment;
 
 import com.voiceprint.backend.api.comment.dto.CommentCreatRequestDTO;
 import com.voiceprint.backend.api.comment.dto.CommentCreateResponseDTO;
+import com.voiceprint.backend.api.comment.dto.CommentListWithCursorDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.comment.CommentService;
@@ -34,6 +35,15 @@ public class CommentController {
         CommentCreateResponseDTO responseDTO = commentService.saveComment(userId, groupDiaryId, commentCreatRequestDTO);
 
         return ResponseEntity.ok(new CommonResponse<>(201, "댓글 작성 성공", responseDTO));
+    }
+
+    @GetMapping("/{groupDiaryId}")
+    public ResponseEntity<CommentListWithCursorDTO> getComment (@PathVariable("groupDiaryId") long groupDiaryId,
+                                                                @RequestParam(required = false) Integer cursor,
+                                                                @RequestParam(defaultValue = "7") int size) {
+
+        CommentListWithCursorDTO result = commentService.getComments(groupDiaryId, cursor, size);
+        return ResponseEntity.ok(result);
     }
 
 
