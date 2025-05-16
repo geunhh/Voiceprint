@@ -231,6 +231,8 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
             String resultJson = objectMapper.writeValueAsString(frontendResponse);
             session.sendMessage(new TextMessage(resultJson));
             log.info("📤 프론트로 전송한 응답: {}", resultJson);
+        } else {
+            log.warn("❗ 알 수 없는 WebSocket 응답 타입: {}", response.getClass().getName());
         }
     }
 

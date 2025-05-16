@@ -36,11 +36,9 @@ public class AIServerClientEndpoint {
         log.info("🔊 바이너리 데이터 수신: " + message.remaining() + " bytes, last: " + last);
         try {
             // 바로 프론트엔드로 중계
-            session.getBasicRemote().sendBinary(message, last);
-            byte[] data = new byte[message.remaining()];
+//            byte[] data = new byte[message.remaining()];
+            client.handleServerBinary(frontSessionId, message);
 
-            // 실제 처리 또는 저장 로직 추가 가능
-            log.info("🧩 전체 바이너리 데이터 크기: " + data.length);
         } catch (Exception e) {
             log.error("❌ 바이너리 처리 중 오류: " + e.getMessage());
         }

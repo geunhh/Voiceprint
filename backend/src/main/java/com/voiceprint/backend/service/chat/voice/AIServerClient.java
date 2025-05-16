@@ -66,7 +66,7 @@
         }
 
         // 바이너리 응답
-        void handleServerBinary(String sessionId, byte[] data) {
+        void handleServerBinary(String sessionId, ByteBuffer data) {
             Consumer<Object> cb = callbacks.get(sessionId);
             if (cb != null) cb.accept(data);
         }

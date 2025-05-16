@@ -219,7 +219,7 @@ const AudioRecorder: React.FC = () => {
         } else {
           const arrayBuffer = event.data as ArrayBuffer;
           const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
-          console.log("📦 수신된 바이너리 청크 (변환 후 Blob):", blob);
+          // console.log("📦 수신된 바이너리 청크 (변환 후 Blob):", blob);
           audioChunks.current.push(blob);
         }
       };
