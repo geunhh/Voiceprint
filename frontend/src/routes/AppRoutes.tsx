@@ -1,6 +1,13 @@
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import {
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 // import Appbar from "../components/common/Appbar";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import Tabbar from "../components/common/Tabbar";
 
 import { useEffect } from "react";
@@ -8,6 +15,8 @@ import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../api/axiosInstance";
 import { RootState } from "../store/store";
 import { setUser } from "../store/userSlice";
+
+import NotificationItem from "../components/notification/notificationItem";
 
 /* ---------- 더미 페이지 임포트 ---------- */
 import HomePage from "../pages/HomePage";
@@ -45,6 +54,8 @@ const Layout = () => {
   const location = useLocation();
   const path = location.pathname;
 
+  const navigate = useNavigate();
+
   // 홈("/") 경로인지 검사해서 탭바를 보여줄지 결정
   const showTabbar = path !== "/";
 
@@ -78,6 +89,104 @@ const Layout = () => {
 
     fetchUser();
   }, [dispatch, userId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const connectSSE = async () => {
+      try {
+        const token = localStorage.getItem("Authorization");
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe/test`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "text/event-stream", // 실시간 알림
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal, // 이후 연결을 중단할 수 있도록 설정
+          }
+        );
+
+        if (!res.body) {
+          console.error("SSE 연결 실패");
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        while (true) {
+          // 서버에서 실시간으로 알림이 올 경우 읽기
+          const { done, value } = await reader.read();
+          // done일 경우 연결이 끊어진 것
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true }); // 서버에서 받은 데이터를 텍스트로 바꾸고 buffer에 누적
+
+          let eventEndIndex;
+          while ((eventEndIndex = buffer.indexOf("\n\n")) !== -1) {
+            // SSE 메시지는 \n\n 으로 구분
+            // data: -> 줄 하나 이상이 모이면 하나의 메시지로 판단
+            const rawEvent = buffer.slice(0, eventEndIndex).trim();
+            buffer = buffer.slice(eventEndIndex + 2); // 다음 메시지를 위해 buffer 자르기
+
+            const lines = rawEvent.split("\n");
+            const dataLine = lines.find((line) => line.startsWith("data:")); // data:로 시작하는 줄을 찾아 파싱 대상으로 설정
+
+            if (dataLine) {
+              const jsonStr = dataLine.replace("data:", "").trim();
+              try {
+                // data: 부분만 잘라  JSON 파싱 후 콘솔 출력
+                const parsed = JSON.parse(jsonStr);
+                console.log("알림 수신:", parsed);
+
+                if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
+
+                toast.custom((t) => (
+                  <div
+                    className={`w-[85vw] max-w-[370px] min-w-[320px] transition-all duration-300 ${
+                      t.visible ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <NotificationItem
+                      type={parsed.type}
+                      message={parsed.message}
+                      groupId={parsed.metadata?.groupId}
+                      diaryId={parsed.metadata?.diaryId}
+                      onClick={() => {
+                        toast.dismiss(t.id); // 닫고
+                        if (
+                          parsed.type === "newComment" &&
+                          parsed.metadata?.groupId &&
+                          parsed.metadata?.diaryId
+                        ) {
+                          navigate(
+                            `/group/${parsed.metadata.groupId}/diary/${parsed.metadata.diaryId}`
+                          );
+                        }
+                      }}
+                    />
+                  </div>
+                ));
+              } catch (e) {
+                console.error("JSON 파싱 실패:", e);
+                console.log("파싱 실패한 원본:", jsonStr);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("SSE 연결 오류:", err);
+      }
+    };
+
+    connectSSE();
+
+    return () => controller.abort(); // 컴포넌트가 언마운트될 때 서버와 SSE 연결 해제
+  }, []);
 
   return (
     <div className="w-full min-h-dvh flex justify-center bg-neutral-50 overflow-x-hidden">
