@@ -106,7 +106,10 @@ public class GroupDiaryService {
     }
 
 
-
+    /**
+     * 공유 일기 목록 조회 메서드
+     * 사용자가 속한 특정 그룹에 공유 일기 목록 조회
+     */
     public GroupDiaryListWithCursorDTO getGroupDiaries(HttpServletRequest request, Long groupId, LocalDateTime cursor, Integer size) {
         // 1. 로그인한 사용자 ID 추출
         Long userId = authService.getUserIdFromRequest(request);
@@ -140,8 +143,8 @@ public class GroupDiaryService {
                             d.getTitle(),
                             d.getContent(),
                             gd.getSharedAt().toString(),
-                            user.getProfileImage().getImageUrl(),
-                            user.getNickname()
+                            d.getUser().getProfileImage().getImageUrl(),
+                            d.getUser().getNickname()
                     );
                 }).toList();
 
