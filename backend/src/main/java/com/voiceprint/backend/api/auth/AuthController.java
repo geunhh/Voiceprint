@@ -170,8 +170,8 @@ public class AuthController {
     public ResponseEntity<CommonResponse<AlarmSettingsResponseDTO>> isReminderEnabled(
             HttpServletRequest request
     ) {
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
+//        Long userId = 1L;
         AlarmSettingsResponseDTO response = authService.isReminderEnabled(userId);
 
         return ResponseEntity.ok(
