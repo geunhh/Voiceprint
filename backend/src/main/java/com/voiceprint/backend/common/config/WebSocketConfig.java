@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -32,13 +33,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .addInterceptors(authInterceptor)
                 .setAllowedOrigins("*"); // 개발환경에서는 모든 오리진 허용, 운영환경에서는 특정 도메인으로 제한
     }
-    @PostConstruct
-    public void logWebSocketConfig() {
-        log.info("✅ WebSocketContainer 설정이 등록되었습니다.");
-        // ✅ Bean 등록 여부 확인
-        boolean exists = context.containsBean("createWebSocketContainer");
-        System.out.println("✅ createWebSocketContainer Bean 등록 여부: " + exists);
-    }
+
     @Bean
     public ServletServerContainerFactoryBean createWebSocketContainer() {
         ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
@@ -53,6 +48,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
         return container;
     }
+
+//    @PostConstruct
+//    public void logWebSocketConfig() {
+//        log.info("✅ WebSocketContainer 설정이 등록되었습니다.");
+//        // ✅ Bean 등록 여부 확인
+//        boolean exists = context.containsBean("createWebSocketContainer");
+//        System.out.println("✅ createWebSocketContainer Bean 등록 여부: " + exists);
+//    }
 
     // 순환참조 끊기 위한 수동 setter 주입
     @PostConstruct

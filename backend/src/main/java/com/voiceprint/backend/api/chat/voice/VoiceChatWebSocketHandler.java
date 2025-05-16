@@ -74,9 +74,8 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         log.debug("📩 텍스트 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 내용: {}", userId, sessionId, payload);
 
         try {
-            Map<String, Map<String,String>> messageMap = objectMapper.readValue(payload, Map.class);
-            Map<String, String> content = messageMap.get("content");
-            String action = content.get("action");
+            Map<String, String> messageMap = objectMapper.readValue(payload, Map.class);
+            String action = messageMap.get("action");
             switch (action) {
                 case "audio_complete":
                     handleAudioComplete(session);
@@ -193,6 +192,9 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
                 }
                 token = content.length();
                 voiceChatService.accumulateToken(userId, token);
+            } else {
+                log.warn("❗ 알 수 없는 메시지 구조 수신: {}", json);
+                return;
             }
 
             // ✅ 프론트로 보낼 형식 구성

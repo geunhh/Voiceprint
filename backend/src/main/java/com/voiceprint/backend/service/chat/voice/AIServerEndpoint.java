@@ -1,5 +1,6 @@
 package com.voiceprint.backend.service.chat.voice;
 
+import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.websocket.*;
 
@@ -8,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 
 @Slf4j
-@ClientEndpoint
+@ServerEndpoint("/ws/ai")
 public class AIServerEndpoint {
 
     private Session session;
@@ -31,10 +32,16 @@ public class AIServerEndpoint {
     }
 
     @OnOpen
-    public void onOpen(Session session) {
+    public void onOpen(Session session, EndpointConfig config) {
+        // 각 세션마다 텍스트·바이너리 버퍼를 2MB로 설정
+        session.setMaxTextMessageBufferSize(2 * 1024 * 1024);
+        session.setMaxBinaryMessageBufferSize(2 * 1024 * 1024);
         log.info("✅ WebSocket 연결 수립 - 세션 ID: {}", session.getId());
-        this.session = session;
     }
+//    public void onOpen(Session session) {
+//        log.info("✅ WebSocket 연결 수립 - 세션 ID: {}", session.getId());
+//        this.session = session;
+//    }
 
     @OnMessage
     public void onMessage(String message) {
@@ -52,14 +59,24 @@ public class AIServerEndpoint {
         }
     }
 
-    @OnClose
-    public void onClose(Session session, CloseReason reason) {
-        log.info("🔌 WebSocket 연결 종료 - 세션 ID: {}, 이유: {}", session.getId(), reason);
-    }
-
     @OnError
     public void onError(Session session, Throwable throwable) {
-        log.error("🚨 WebSocket 오류 - 세션 ID: {}, 오류: {}", session.getId(), throwable.getMessage());
+        if (throwable != null) {
+            log.error("[{}] WebSocket 에러 발생: {}",
+                    session.getId(),
+                    throwable.getMessage(), throwable);
+        } else {
+            log.error("[{}] WebSocket 에러 발생: throwable==null",
+                    session.getId());
+        }
+    }
+
+    @OnClose
+    public void onClose(Session session, CloseReason reason) {
+        log.info("[{}] 연결 종료: code={}, reason={}",
+                session.getId(),
+                reason.getCloseCode().getCode(),
+                reason.getReasonPhrase());
     }
 
     public void sendText(String message) {
