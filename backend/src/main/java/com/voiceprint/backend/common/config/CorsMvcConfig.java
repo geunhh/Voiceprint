@@ -17,6 +17,6 @@ public class CorsMvcConfig implements WebMvcConfigurer {
         registry.addMapping("/**")  // 모든 경로에 대해 CORS 설정 적용
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
                 .exposedHeaders("Set-Cookie", "Authorization")
-                .allowedOrigins("http://localhost:5173","https://k12b106.p.ssafy.io");
+                .allowedOrigins("http://localhost:5173","https://k12b106.p.ssafy.io", "http://localhost:63342"); // TOdo: 개발 후에 수정하기
     }
 }
