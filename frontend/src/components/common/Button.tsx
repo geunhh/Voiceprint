@@ -50,6 +50,7 @@ const Button = ({
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={`${baseStyle} ${typeStyle} ${sizeStyle} ${disabledStyle}`}
     >
       {text}

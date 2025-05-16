@@ -5,7 +5,9 @@ import axiosInstance from "../../api/axiosInstance";
 import DiaryContent from "../../components/diary/DiaryContent";
 import ChatHistoryModal from "../../components/modal/ChatHistoryModal";
 import CustomThemaModal from "../../components/modal/CustumThemaModal";
+import DiaryShareGroupModal from "../../components/modal/diaryShareGroupModal";
 
+import folderIcon from "../../assets/icons/folderYellow.png";
 import happyCharacter from "../../assets/icons/happyCharacter.png";
 import lovelyCharacter from "../../assets/icons/lovelyCharacter.png";
 import emotionTag1 from "../../assets/temp/emotionTag1.png";
@@ -39,6 +41,7 @@ export default function DiaryDetailPage() {
 
   const [showChatModal, setShowChatModal] = useState(false);
   const [showThemaModal, setShowThemaModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const fetchDiary = async () => {
@@ -54,7 +57,7 @@ export default function DiaryDetailPage() {
     if (diaryId) fetchDiary();
   }, [diaryId]);
 
-  if (!diary) return null;
+  if (!diary || !diary.emotion) return null;
 
   const date = new Date(diary.createdAt);
   const year = date.getFullYear();
@@ -65,17 +68,30 @@ export default function DiaryDetailPage() {
 
   return (
     <div className="pb-28">
-      {/* 날짜 및 감정 태그 */}
-      <div className="flex gap-2 mt-10 ml-4 items-center">
-        <p className="font-semibold text-gray-500 text-lg">
-          {year}.{month}.{day}
-        </p>
-        <img src={emotionTagImage} alt="감정태그" className="w-12 h-5" />
-      </div>
+      <div className="flex items-center justify-between mt-10">
+        <div>
+          {/* 날짜 및 감정 태그 */}
+          <div className="flex gap-2 ml-4 items-center">
+            <p className="font-semibold text-gray-500 text-lg">
+              {year}.{month}.{day}
+            </p>
+            <img src={emotionTagImage} alt="감정태그" className="w-12 h-5" />
+          </div>
 
-      {/* 일기 제목 */}
-      <div className="ml-4 mb-4">
-        <p className="font-semibold text-xl"> {diary.title}</p>
+          {/* 일기 제목 */}
+          <div className="ml-4 mb-4">
+            <p className="font-semibold text-xl"> {diary.title}</p>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <img
+            src={folderIcon}
+            alt="공유하기"
+            className="w-10"
+            onClick={() => setShowShareModal(true)}
+          />
+        </div>
       </div>
 
       {/* 일기 내용 */}
@@ -123,6 +139,10 @@ export default function DiaryDetailPage() {
 
       {showThemaModal && (
         <CustomThemaModal onClose={() => setShowThemaModal(false)} />
+      )}
+
+      {showShareModal && (
+        <DiaryShareGroupModal onClose={() => setShowShareModal(false)} />
       )}
     </div>
   );
