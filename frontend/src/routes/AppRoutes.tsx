@@ -77,6 +77,7 @@ const Layout = () => {
     if (!token || userId) return;
 
     const fetchUser = async () => {
+      if (location.pathname === "/") return; // 로그인 화면에서는 진행 X
       try {
         const res = await axiosInstance.get("/api/v1/user/profile");
 
@@ -94,6 +95,8 @@ const Layout = () => {
     const controller = new AbortController();
 
     const connectSSE = async () => {
+      if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
+
       try {
         const token = localStorage.getItem("Authorization");
 
@@ -142,8 +145,6 @@ const Layout = () => {
                 // data: 부분만 잘라  JSON 파싱 후 콘솔 출력
                 const parsed = JSON.parse(jsonStr);
                 console.log("알림 수신:", parsed);
-
-                if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
 
                 toast.custom((t) => (
                   <div
