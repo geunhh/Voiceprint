@@ -7,9 +7,9 @@ import ChatHistoryModal from "../../components/modal/ChatHistoryModal";
 import CustomThemaModal from "../../components/modal/CustumThemaModal";
 import DiaryShareGroupModal from "../../components/modal/diaryShareGroupModal";
 
-import folderIcon from "../../assets/icons/folderYellow.png";
 import happyCharacter from "../../assets/icons/happyCharacter.png";
 import lovelyCharacter from "../../assets/icons/lovelyCharacter.png";
+import shareIcon from "../../assets/icons/share.png";
 import emotionTag1 from "../../assets/temp/emotionTag1.png";
 import emotionTag2 from "../../assets/temp/emotionTag2.png";
 import emotionTag3 from "../../assets/temp/emotionTag3.png";
@@ -86,9 +86,9 @@ export default function DiaryDetailPage() {
 
         <div className="p-4">
           <img
-            src={folderIcon}
+            src={shareIcon}
             alt="공유하기"
-            className="w-10"
+            className="w-8 mb-4"
             onClick={() => setShowShareModal(true)}
           />
         </div>

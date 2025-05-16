@@ -88,13 +88,13 @@ function DiaryShareGroupModal({ onClose }: DiaryShareGroupModalProps) {
           onClick={onClose}
         />
         <img src={folderIcon} alt="" className="w-20 mb-2" />
-        <p className="text-xl font-bold mb-1">저장하시겠습니까?</p>
+        <p className="text-xl font-bold mb-1">일기 공유하기</p>
 
         {loading ? (
           <p className="text-yellow-500 mt-8">그룹을 불러오는 중...</p>
         ) : groups.length ? (
           <>
-            <p className="text-yellow-500 mb-3">공유할 그룹이 있어요!</p>
+            <p className="text-yellow-500 mb-3">공유할 그룹을 선택해주세요!</p>
 
             <div className="w-full flex items-center gap-2 px-5 mb-4">
               <input
