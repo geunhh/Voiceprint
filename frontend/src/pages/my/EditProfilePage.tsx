@@ -22,7 +22,7 @@ export default function EditProfilePage() {
     (async () => {
       try {
         const res = await axiosInstance.get("/api/v1/user/reminder-setting");
-        console.log("알림 설정 응답:", res.data.data);
+        // console.log("알림 설정 응답:", res.data.data);
         setIsOn(
           res.data.data.enableAlarms === true ||
             res.data.data.enableAlarms === "true"

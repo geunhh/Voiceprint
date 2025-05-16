@@ -1,32 +1,26 @@
 import { useNavigate } from "react-router";
-import angryCharacter from "../../assets/icons/angryCharacter.png";
 import happyCharacter from "../../assets/icons/happyCharacter.png";
 import lovelyCharacter from "../../assets/icons/lovelyCharacter.png";
 import questionCharacter from "../../assets/icons/questionCharacter.png";
-import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 interface NotificationItemProps {
-  type: "reminder" | "newComment" | "type1" | "type2" | "type3"; // 타입 추가 예정
-  message: string;
+  type: "reminder" | "newComment" | "newDiary";
   groupId?: number;
   diaryId?: number;
-  authorName?: string;
+  message: string;
+  onClick: () => void;
 }
 
 const notificationImageMap: Record<NotificationItemProps["type"], string> = {
   reminder: lovelyCharacter,
   newComment: happyCharacter,
-  type1: questionCharacter,
-  type2: robotCharacter,
-  type3: angryCharacter,
+  newDiary: questionCharacter,
 };
 
 const notificationTitleMap: Record<NotificationItemProps["type"], string> = {
-  reminder: "잊지 마세용 알림",
-  newComment: "댓글 작성 알림",
-  type1: "알림 제목 1",
-  type2: "알림 제목 2",
-  type3: "알림 제목 3",
+  reminder: "오늘의 말자국",
+  newComment: "새로운 댓글",
+  newDiary: "새로운 일기",
 };
 
 function NotificationItem(props: NotificationItemProps) {
@@ -38,18 +32,22 @@ function NotificationItem(props: NotificationItemProps) {
   const title = notificationTitleMap[type];
 
   const handleClick = () => {
-    if (type === "newComment" && groupId && diaryId) {
+    if (groupId && diaryId) {
+      // 그룹 댓글 및 그룹 일기 알림의 경우 해당 일기 상세 페이지로 이동
       navigate(`/group/${groupId}/diary/${diaryId}`);
+    } else {
+      // 일기 작성 reminder 알림의 경우 일기 작성 페이지로 이동
+      navigate("diary/setting/friend");
     }
   };
 
   return (
     <button
-      className="bg-lightmint/50 flex items-center gap-4 p-4 rounded-xl w-full hover:bg-mint text-left"
+      className="w-full bg-lightmint flex items-center gap-4 p-4 rounded-xl hover:bg-mint text-left"
       onClick={handleClick}
     >
       <img src={image} alt="알림 캐릭터" className="h-14" />
-      <div>
+      <div className=" ">
         <p className="font-semibold text-gray-800 text-sm">{title}</p>
         <p className="text-gray-700 text-sm">{message}</p>
       </div>
