@@ -6,6 +6,8 @@ import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.api.diary.dto.SharedDiaryRequest;
 import com.voiceprint.backend.common.dto.CommonResponse;
+import com.voiceprint.backend.domain.Entity.Notification;
+import com.voiceprint.backend.service.alarm.NotificationService;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.diary.DiaryService;
 import com.voiceprint.backend.service.diary.GroupDiaryService;
@@ -25,6 +27,7 @@ public class DiaryController {
     private final DiaryService diaryService;
     private final AuthService authService;
     private final GroupDiaryService groupDiaryService;
+    private final NotificationService notificationService;
 
     /**
      * diaryId를 기반으로 일기 상세정보를 조회하는 API
@@ -86,6 +89,9 @@ public class DiaryController {
         ));
     }
 
+    /**
+     * 일기를 그룹에 공유하고 해당 그룹의 유저들에게 알림을 보내는 API
+     */
     @PostMapping("/shared/{diaryId}")
     public ResponseEntity<CommonResponse<String>> shareDiary(
             @PathVariable Long diaryId,
@@ -93,8 +99,11 @@ public class DiaryController {
             HttpServletRequest httpRequest) {
 
         Long userId = authService.getUserIdFromRequest(httpRequest);
+//        Long userId = 1L;
+        List<Notification> notifications = groupDiaryService.saveSharedDiary(diaryId, userId, request.getGroupIds());
 
-        groupDiaryService.saveSharedDiary(diaryId, userId, request.getGroupIds());
+        notificationService.publishAllNotifications(notifications);
+
         return ResponseEntity.ok(new CommonResponse<>(200,"다이어리 공유 성공",null));
     }
 }

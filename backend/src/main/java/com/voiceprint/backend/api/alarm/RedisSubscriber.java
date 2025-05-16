@@ -25,7 +25,10 @@ public class RedisSubscriber implements MessageListener {
     @Override
     @SneakyThrows // Todo : ???? 머임
     public void onMessage(Message message, byte[] pattern) {
+        log.debug("message:{}",message);
         String json = new String(message.getBody(), StandardCharsets.UTF_8);        // 메시지 본문 추출
+        log.debug("message.body:{}",message.getBody());
+
 
         // 파싱 : 앞 뒤 " " 로 인해 에러 발생. -> 제거
         if (json.startsWith("\"") && json.endsWith("\"")) {
@@ -34,9 +37,32 @@ public class RedisSubscriber implements MessageListener {
         }
 
         NotificationDTO dto = objectMapper.readValue(json, NotificationDTO.class);  // JSON -> DTO
+        log.debug("notification dto: {}",dto.getMetadata());
+        log.debug("notification dto: {}",dto.getMessage());
+
 
         Long notificationId = Long.valueOf(dto.getMetadata().get("notificationId").toString());
+
+        // 재시도 로직 - 없으면 인식을 못함
         Notification notification = notificationRepository.findById(notificationId).orElse(null);
+
+        if (notification == null) {
+            log.warn("[RedisSubscriber] 해당 알림 없음: {}", notificationId);
+
+            // 재시도 로직 (100ms * 3회)
+            for (int i = 0; i < 3; i++) {
+                Thread.sleep(100);
+                notification = notificationRepository.findById(notificationId).orElse(null);
+                log.warn("{}차 조회 : [RedisSubscriber] 해당 알림 없음: {}",i+1, notification);
+
+                if (notification != null) break;
+            }
+            if (notification == null) {
+                log.error("[RedisSubscriber] 재시도 후에도 알림 조회 실패: {}", notificationId);
+                return;
+            }
+        }
+
         log.info("notificiation : {}",notification);
         if (notification == null) {
             log.warn("[RedisSubscriber] 해당 알림 없음: {}", notificationId);
