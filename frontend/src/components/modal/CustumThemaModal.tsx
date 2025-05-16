@@ -5,7 +5,7 @@ import Button from "../common/Button";
 
 interface CustomThemaModalProps {
   onClose: () => void;
-  diaryId: string;
+  diaryId: number;
 }
 
 function CustomThemaModal({ onClose, diaryId }: CustomThemaModalProps) {

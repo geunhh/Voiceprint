@@ -89,7 +89,7 @@ const Layout = () => {
     };
 
     fetchUser();
-  }, [dispatch, userId]);
+  }, [dispatch, userId, location.pathname]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -101,7 +101,7 @@ const Layout = () => {
         const token = localStorage.getItem("Authorization");
 
         const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe/test`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe`,
           {
             method: "GET",
             headers: {
@@ -158,7 +158,7 @@ const Layout = () => {
                       groupId={parsed.metadata?.groupId}
                       diaryId={parsed.metadata?.diaryId}
                       onClick={() => {
-                        toast.dismiss(t.id); // 닫고
+                        toast.dismiss(t.id);
                         if (
                           parsed.type === "newComment" &&
                           parsed.metadata?.groupId &&
@@ -172,22 +172,23 @@ const Layout = () => {
                     />
                   </div>
                 ));
-              } catch (e) {
-                console.error("JSON 파싱 실패:", e);
-                console.log("파싱 실패한 원본:", jsonStr);
+              } catch (err) {
+                console.error("JSON 파싱 실패:", err);
               }
             }
           }
         }
-      } catch (err) {
-        console.error("SSE 연결 오류:", err);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.error("SSE 연결 오류:", err);
+        }
       }
     };
 
     connectSSE();
 
     return () => controller.abort(); // 컴포넌트가 언마운트될 때 서버와 SSE 연결 해제
-  }, []);
+  }, [location.pathname, navigate]);
 
   return (
     <div className="w-full min-h-dvh flex justify-center bg-neutral-50 overflow-x-hidden">

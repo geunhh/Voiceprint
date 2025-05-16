@@ -37,6 +37,7 @@ interface DiaryData {
 
 export default function DiaryDetailPage() {
   const { diaryId } = useParams<{ diaryId: string }>();
+  const diaryIdNum = diaryId ? Number(diaryId) : null;
   const [diary, setDiary] = useState<DiaryData | null>(null);
 
   const [showChatModal, setShowChatModal] = useState(false);
@@ -58,6 +59,7 @@ export default function DiaryDetailPage() {
   }, [diaryId]);
 
   if (!diary || !diary.emotion) return null;
+  if (!diaryIdNum) return null;
 
   const date = new Date(diary.createdAt);
   const year = date.getFullYear();
@@ -139,13 +141,16 @@ export default function DiaryDetailPage() {
 
       {showThemaModal && (
         <CustomThemaModal
-          diaryId={diaryId}
+          diaryId={diaryIdNum}
           onClose={() => setShowThemaModal(false)}
         />
       )}
 
       {showShareModal && (
-        <DiaryShareGroupModal onClose={() => setShowShareModal(false)} />
+        <DiaryShareGroupModal
+          diaryId={diaryIdNum}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </div>
   );
