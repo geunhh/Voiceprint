@@ -4,17 +4,21 @@ import com.voiceprint.backend.api.comment.dto.CommentCreatRequestDTO;
 import com.voiceprint.backend.api.comment.dto.CommentCreateResponseDTO;
 import com.voiceprint.backend.api.comment.dto.CommentGetResponseDTO;
 import com.voiceprint.backend.api.comment.dto.CommentListWithCursorDTO;
+import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
+import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.Comment;
 import com.voiceprint.backend.domain.Entity.GroupDiary;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.CommentRepository;
 import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,10 +36,11 @@ public class CommentService {
         this.groupDiaryRepository =groupDiaryRepository;
     }
 
+    @Transactional
     // 댓글 작성
     public CommentCreateResponseDTO saveComment (long userId, long groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("User를 찾을 수 없습니다."));
 
         GroupDiary groupDiary = groupDiaryRepository.getById(groupDiaryId);
 
@@ -53,6 +58,7 @@ public class CommentService {
         return responseDTO;
     }
 
+    @Transactional(readOnly = true)
     // 댓글 조회
     public CommentListWithCursorDTO getComments(long groupDiaryId, Integer cursorId, int limit) {
         // 1. PageRequest 생성
@@ -98,4 +104,17 @@ public class CommentService {
 
     }
 
+
+    // 댓글 삭제
+    @Transactional
+    public void deleteComment (int commentId, long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("댓글이 없습니다."));
+
+        // 댓글 삭제 요청자와 댓글 작성자가 같은지 확인
+        if (comment.getUser().getId() != userId) {
+            throw new UnauthorizedCommentAccessException("본인의 댓글이 아닙니다.");
+        }
+        comment.deleteComment();
+    }
 }

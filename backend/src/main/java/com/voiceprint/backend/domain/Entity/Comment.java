@@ -41,6 +41,13 @@ public class Comment {
     @Column(name = "updated_at", updatable = true)
     private LocalDateTime updatedAt;
 
+    public void deleteComment() {
+        if (this.isDeleted) {
+            return;
+        }
+        this.isDeleted = true;
+    }
+
     @Builder
     private Comment(User user,
                     GroupDiary groupDiary,

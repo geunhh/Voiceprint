@@ -11,5 +11,5 @@ public class CommentListWithCursorDTO {
     private int code;
     private String message;
     private List<CommentGetResponseDTO> comments;
-    private long nextCursor;
+    private Integer nextCursor;
 }
