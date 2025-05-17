@@ -43,18 +43,18 @@ export default function CommentBubble({
             {comment.userName}
           </span>
           <span className="ml-1">{timeAgo}</span>
-          {isAuthor ? (
-            <img
-              src={authorIcon}
-              alt="작성자 아이콘"
-              className="w-10 h-4 object-contain"
-            />
-          ) : isMyComment ? (
+          {isMyComment ? (
             <img
               src={deleteIcon}
               alt="삭제 아이콘"
               className="w-10 h-4 object-contain cursor-pointer"
               onClick={() => onDelete?.(comment.commentId)}
+            />
+          ) : isAuthor ? (
+            <img
+              src={authorIcon}
+              alt="작성자 아이콘"
+              className="w-10 h-4 object-contain"
             />
           ) : null}
         </div>

@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import CommentInput from "../../components/diary/CommentInput";
 import CommentList from "../../components/diary/CommentList";
-import CommentButton from "../../components/diary/CommetButton";
 import DiaryContent from "../../components/diary/DiaryContent";
 import { RootState } from "../../store/store";
 
@@ -40,7 +39,6 @@ export default function GroupDiaryDetailPage() {
   const [groupDiaryInfo, setGroupDiaryInfo] = useState<GroupDiaryInfo | null>(
     null
   );
-  const [showComments, setShowComments] = useState(false); // 댓글 표시 여부
   const [comments, setComments] = useState<Comments>({
     comments: [],
     nextCursor: null,
@@ -69,7 +67,7 @@ export default function GroupDiaryDetailPage() {
   // 댓글 목록 불러오기 - 초기
   useEffect(() => {
     const fetchInitialComments = async () => {
-      if (!showComments || !groupDiaryInfo) return;
+      if (!groupDiaryInfo) return;
       try {
         const res = await axiosInstance.get(
           `/api/v1/comment/${groupDiaryInfo.groupDiaryId}`
@@ -78,14 +76,14 @@ export default function GroupDiaryDetailPage() {
           comments: res.data.comments,
           nextCursor: res.data.nextCursor,
         });
-        console.log("댓글 불러오기 확인: ", res.data);
+        // console.log("댓글 불러오기 확인: ", res.data);
       } catch (error) {
         console.error("댓글 불러오기 실패", error);
       }
     };
 
     fetchInitialComments();
-  }, [showComments]);
+  }, [groupDiaryInfo]);
 
   // 댓글 목록 불러오기 - 무한스크롤
   const fetchMoreComments = async () => {
@@ -150,6 +148,7 @@ export default function GroupDiaryDetailPage() {
         ...prev,
         comments: prev.comments.filter((c) => c.commentId !== commentId),
       }));
+      // console.log("댓글 삭제 성공");
     } catch (error) {
       console.error("댓글 삭제 실패", error);
     }
@@ -170,7 +169,7 @@ export default function GroupDiaryDetailPage() {
         <p className="font-semibold text-2xl">{groupDiaryInfo.title}</p>
       </div>
 
-      {/* 작성자 정보 + 댓글 보기 버튼 */}
+      {/* 작성자 정보 */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <img
@@ -185,26 +184,22 @@ export default function GroupDiaryDetailPage() {
             </p>
           </div>
         </div>
-        <CommentButton onClick={() => setShowComments((prev) => !prev)} />
       </div>
 
       {/* 일기 내용 */}
       <DiaryContent content={groupDiaryInfo.content} />
 
       {/* 댓글 작성 & 목록 */}
-      {showComments && (
-        <>
-          <CommentInput onSubmit={handleAddComment} />
-          <CommentList
-            comments={comments.comments}
-            authorId={groupDiaryInfo.userId}
-            onReachBottom={fetchMoreComments}
-            hasNext={!!comments.nextCursor}
-            currentUserId={user.userId}
-            onDeleteComment={handleDeleteComment}
-          />
-        </>
-      )}
+
+      <CommentInput onSubmit={handleAddComment} />
+      <CommentList
+        comments={comments.comments}
+        authorId={groupDiaryInfo.userId}
+        onReachBottom={fetchMoreComments}
+        hasNext={!!comments.nextCursor}
+        currentUserId={user.userId}
+        onDeleteComment={handleDeleteComment}
+      />
     </div>
   );
 }
