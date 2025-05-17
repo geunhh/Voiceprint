@@ -17,7 +17,7 @@ public class QuestionController {
     public QuestionController(QuestionService questionService) {
         this.questionService = questionService;
     }
-    @GetMapping("today-question")
+    @GetMapping("/today-question")
     public ResponseEntity<CommonResponse<QuestionGetResponseDTO>> getTodayQustion() {
         QuestionGetResponseDTO questionGetResponseDTO = questionService.getTodayQuestion();
         return ResponseEntity.ok(new CommonResponse<>(200, "오늘의 질문 조회 성공", questionGetResponseDTO));
