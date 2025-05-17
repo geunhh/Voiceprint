@@ -59,7 +59,7 @@ public class DiaryReminderScheduler {
             NotificationDTO payload = switch (status) {
                 case "WAITING", "NOT_EXIST" -> new NotificationDTO(
                         "reminder",
-                        "오늘은 일기 쓰셨나요? 지금 시작해보세요!",
+                        "오늘은 일기 쓰셨나요? 말자국으로 오늘 하루를 기록해 보세요!!",
                         Map.of("status",status)
                 );
                 case "IN_PROGRESS" -> new NotificationDTO(
