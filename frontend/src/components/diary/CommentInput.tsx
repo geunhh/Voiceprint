@@ -15,7 +15,7 @@ function CommentInput({ onSubmit }: CommentInputProps) {
   };
 
   return (
-    <div className="flex items-center justify-between border border-gray-200 rounded-xl px-4 h-14 mt-4">
+    <div className="flex items-center justify-between border border-gray-200 rounded-xl px-2 h-14 mt-2">
       <input
         type="text"
         value={input}
@@ -27,13 +27,13 @@ function CommentInput({ onSubmit }: CommentInputProps) {
           }
         }}
         placeholder="댓글을 입력해주세요"
-        className="flex-1 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+        className="flex-1 text-sm text-gray-700 placeholder:text-gray-400 px-2 focus:outline-none"
       />
 
       <button
         type="button"
         onClick={handleSubmit}
-        className="ml-2 bg-yellow-400 text-white text-sm font-semibold px-3.5 py-1 rounded-xl h-10"
+        className="bg-yellow-400 text-white text-sm font-semibold px-4 py-1 rounded-xl h-10"
       >
         작성
       </button>

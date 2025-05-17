@@ -1,4 +1,5 @@
 import authorIcon from "../../assets/icons/diaryAuthor.png";
+import deleteIcon from "../../assets/icons/diaryCommentDelete.png";
 import useTimeAgo from "../../hooks/useTimeAgo";
 
 interface Comment {
@@ -7,14 +8,24 @@ interface Comment {
   userImage: string;
   content: string;
   createdAt: string;
+  commentId: number;
 }
 
 interface CommentProps {
   comment: Comment;
   isAuthor: boolean;
+  currentUserId: number | null;
+  onDelete?: (commentId: number) => void;
 }
-export default function CommentBubble({ comment, isAuthor }: CommentProps) {
+export default function CommentBubble({
+  comment,
+  isAuthor,
+  currentUserId,
+  onDelete,
+}: CommentProps) {
   const timeAgo = useTimeAgo(comment.createdAt);
+
+  const isMyComment = comment.userId === currentUserId;
 
   return (
     <div className="flex items-start gap-3 px-2">
@@ -31,15 +42,21 @@ export default function CommentBubble({ comment, isAuthor }: CommentProps) {
           <span className="font-semibold text-gray-700">
             {comment.userName}
           </span>
-          {isAuthor && (
-            // 일기 작성자의 경우 작성자 아이콘 함께 표시
+          <span className="ml-1">{timeAgo}</span>
+          {isAuthor ? (
             <img
               src={authorIcon}
               alt="작성자 아이콘"
               className="w-10 h-4 object-contain"
             />
-          )}
-          <span className="ml-1">{timeAgo}</span>
+          ) : isMyComment ? (
+            <img
+              src={deleteIcon}
+              alt="삭제 아이콘"
+              className="w-10 h-4 object-contain cursor-pointer"
+              onClick={() => onDelete?.(comment.commentId)}
+            />
+          ) : null}
         </div>
 
         {/* 말풍선 */}

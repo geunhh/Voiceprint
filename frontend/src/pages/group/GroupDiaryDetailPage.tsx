@@ -57,7 +57,7 @@ export default function GroupDiaryDetailPage() {
           `/api/v1/group/${groupId}/${diaryId}`
         );
         setGroupDiaryInfo(res.data.data);
-        console.log("다이어리 상세 정보 불러오기: ", res.data.data);
+        // console.log("다이어리 상세 정보 불러오기: ", res.data.data);
       } catch (error) {
         console.error("다이어리 상세 정보 불러오기 실패", error);
       }
@@ -78,7 +78,7 @@ export default function GroupDiaryDetailPage() {
           comments: res.data.comments,
           nextCursor: res.data.nextCursor,
         });
-        // console.log("댓글 불러오기 확인: ", res.data);
+        console.log("댓글 불러오기 확인: ", res.data);
       } catch (error) {
         console.error("댓글 불러오기 실패", error);
       }
@@ -141,6 +141,20 @@ export default function GroupDiaryDetailPage() {
     }
   };
 
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await axiosInstance.delete(`/api/v1/comment/${commentId}`);
+
+      setComments((prev) => ({
+        ...prev,
+        comments: prev.comments.filter((c) => c.commentId !== commentId),
+      }));
+    } catch (error) {
+      console.error("댓글 삭제 실패", error);
+    }
+  };
+
   if (!groupDiaryInfo) return;
 
   const date = new Date(groupDiaryInfo.createdAt);
@@ -149,7 +163,7 @@ export default function GroupDiaryDetailPage() {
   const day = date.getDate();
 
   return (
-    <div className="mt-5 p-4 space-y-6">
+    <div className="mt-5 p-4 space-y-4">
       {/* 그룹명 및 제목 */}
       <div>
         <p className="text-gray-500">{groupDiaryInfo.groupName}</p>
@@ -186,6 +200,8 @@ export default function GroupDiaryDetailPage() {
             authorId={groupDiaryInfo.userId}
             onReachBottom={fetchMoreComments}
             hasNext={!!comments.nextCursor}
+            currentUserId={user.userId}
+            onDeleteComment={handleDeleteComment}
           />
         </>
       )}

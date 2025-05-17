@@ -15,6 +15,8 @@ interface CommentProps {
   authorId: number;
   onReachBottom: () => void;
   hasNext: boolean;
+  currentUserId: number | null;
+  onDeleteComment: (commentId: number) => void;
 }
 
 export default function CommentList({
@@ -22,6 +24,8 @@ export default function CommentList({
   authorId,
   onReachBottom,
   hasNext,
+  currentUserId,
+  onDeleteComment,
 }: CommentProps) {
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -61,7 +65,12 @@ export default function CommentList({
         const isLast = i === comments.length - 1;
         return (
           <div key={c.commentId} ref={isLast ? lastCommentRef : null}>
-            <CommentBubble comment={c} isAuthor={c.userId === authorId} />
+            <CommentBubble
+              comment={c}
+              isAuthor={c.userId === authorId}
+              currentUserId={currentUserId}
+              onDelete={onDeleteComment}
+            />
           </div>
         );
       })}
