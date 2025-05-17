@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import CommentInput from "../../components/diary/CommentInput";
 import CommentList from "../../components/diary/CommentList";
@@ -7,22 +8,18 @@ import CommentButton from "../../components/diary/CommetButton";
 import DiaryContent from "../../components/diary/DiaryContent";
 import { RootState } from "../../store/store";
 
-import profileTmp from "../../assets/temp/profile3.png";
-
-// 다이어리 상세 정보
-const groupDiaryInfo = {
-  groupDiaryId: 15,
-  groupId: 19,
-  groupName: "아이스크림을 좋아하는 사람들",
-  diaryId: 19,
-  userId: 1,
-  userName: "임시 유저",
-  userImage: profileTmp,
-  createdAt: "2025-04-27T14:22:30",
-  title: "혜민의 서울나들이",
-  content:
-    "오늘은 친구들이랑 한강 공원에 놀러갔다.바람이 솔솔 불고 햇빛도 따뜻해서 걷기만 해도 기분이 좋아졌다. 엽떡에 유부 추가 3번, 허니콤보랑 시원한 맥주까지… 진짜 완벽한 조합! 잔디밭에 앉아 수다 떨고 먹는 그 시간이 참 좋았다. 해가 지고 나서는 따릉이를 타고 한강을 달렸다. 밤공기 맞으며 자전거 타는 기분, 요즘 같은 날씨에 최고다. 평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.그 시간이 참 좋았다. 해가 지고 나서는 따릉이를 타고 한강을 달렸다. 밤공기 맞으며 자전거 타는 기분, 요즘 같은 날씨에 최고다. 평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.",
-};
+interface GroupDiaryInfo {
+  groupDiaryId: number;
+  groupId: number;
+  groupName: string;
+  diaryId: number;
+  userId: number;
+  userName: string;
+  userImage: string;
+  createdAt: string;
+  title: string;
+  content: string;
+}
 
 interface Comment {
   commentId: number;
@@ -39,7 +36,11 @@ interface Comments {
 }
 
 export default function GroupDiaryDetailPage() {
-  const [showComments, setShowComments] = useState(false); // 댓글 표시 여부부
+  const { groupId, diaryId } = useParams();
+  const [groupDiaryInfo, setGroupDiaryInfo] = useState<GroupDiaryInfo | null>(
+    null
+  );
+  const [showComments, setShowComments] = useState(false); // 댓글 표시 여부
   const [comments, setComments] = useState<Comments>({
     comments: [],
     nextCursor: null,
@@ -47,15 +48,28 @@ export default function GroupDiaryDetailPage() {
 
   const user = useSelector((state: RootState) => state.user);
 
-  const date = new Date(groupDiaryInfo.createdAt);
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  // 그룹 일기 상세 불러오기
+  useEffect(() => {
+    const fetchDiaryDetail = async () => {
+      if (!groupId || !diaryId) return;
+      try {
+        const res = await axiosInstance.get(
+          `/api/v1/group/${groupId}/${diaryId}`
+        );
+        setGroupDiaryInfo(res.data.data);
+        console.log("다이어리 상세 정보 불러오기: ", res.data.data);
+      } catch (error) {
+        console.error("다이어리 상세 정보 불러오기 실패", error);
+      }
+    };
+
+    fetchDiaryDetail();
+  }, [groupId, diaryId]);
 
   // 댓글 목록 불러오기 - 초기
   useEffect(() => {
     const fetchInitialComments = async () => {
-      if (!showComments) return;
+      if (!showComments || !groupDiaryInfo) return;
       try {
         const res = await axiosInstance.get(
           `/api/v1/comment/${groupDiaryInfo.groupDiaryId}`
@@ -73,8 +87,9 @@ export default function GroupDiaryDetailPage() {
     fetchInitialComments();
   }, [showComments]);
 
+  // 댓글 목록 불러오기 - 무한스크롤
   const fetchMoreComments = async () => {
-    if (!comments.nextCursor) return;
+    if (!comments.nextCursor || !groupDiaryInfo) return;
 
     try {
       const res = await axiosInstance.get(
@@ -93,6 +108,8 @@ export default function GroupDiaryDetailPage() {
 
   // 댓글 작성
   const handleAddComment = async (newComment: string) => {
+    if (!groupDiaryInfo) return;
+
     try {
       await axiosInstance.post(
         `/api/v1/comment/${groupDiaryInfo.groupDiaryId}`,
@@ -123,6 +140,13 @@ export default function GroupDiaryDetailPage() {
       console.error("댓글 작성 실패", error);
     }
   };
+
+  if (!groupDiaryInfo) return;
+
+  const date = new Date(groupDiaryInfo.createdAt);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
 
   return (
     <div className="mt-5 p-4 space-y-6">
