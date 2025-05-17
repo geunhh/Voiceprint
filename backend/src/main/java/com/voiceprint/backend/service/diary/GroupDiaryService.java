@@ -3,6 +3,7 @@ package com.voiceprint.backend.service.diary;
 import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
 import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.api.diary.dto.GroupDiaryResponseDTO;
+import com.voiceprint.backend.api.groups.dto.GroupDiaryDetailResponse;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 
@@ -153,4 +154,25 @@ public class GroupDiaryService {
     }
 
 
+    public GroupDiaryDetailResponse getGroupDiaryDetail(Long userId, Long groupId, Long diaryId) {
+        GroupDiary groupDiary = groupDiaryRepository.findByGroupIdAndDiaryId(groupId, diaryId)
+                .orElseThrow(() -> new RuntimeException("해당 그룹 일기를 찾을 수 없습니다."));
+
+        Diary diary = groupDiary.getDiary();
+        User user = diary.getUser();
+        Group group = groupDiary.getGroup();
+
+        return new GroupDiaryDetailResponse(
+                groupDiary.getId(),
+                group.getId(),
+                group.getName(),
+                diary.getId(),
+                user.getId(),
+                user.getNickname(),
+                user.getProfileImage().getImageUrl(),
+                diary.getCreatedAt(),
+                diary.getTitle(),
+                diary.getContent()
+        );
+    }
 }
