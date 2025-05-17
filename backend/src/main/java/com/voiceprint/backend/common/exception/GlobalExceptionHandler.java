@@ -3,6 +3,8 @@ package com.voiceprint.backend.common.exception;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
+import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
+import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.common.exception.diary.*;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
@@ -136,6 +138,13 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(UnauthorizedCommentAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedComment(UnauthorizedCommentAccessException e) { return e.getMessage();}
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleCommentNotFoundException(CommentNotFoundException e) { return e.getMessage();}
     // 공통 응답 생성메서드
 
 }

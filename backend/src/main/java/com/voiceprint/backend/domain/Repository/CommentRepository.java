@@ -18,6 +18,7 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
         JOIN FETCH c.user u
         JOIN FETCH u.profileImage p
         WHERE c.groupDiary.id = :groupDiaryId
+        AND NOT c.isDeleted 
         ORDER BY c.id DESC
         """)
     List<Comment> findFirstComment(
@@ -32,6 +33,7 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
         JOIN FETCH u.profileImage p
         WHERE c.groupDiary.id = :groupDiaryId
         AND c.id < :cursor
+        AND NOT c.isDeleted
         ORDER BY c.id DESC
         """)
     List<Comment> findAfterFirstComment(
