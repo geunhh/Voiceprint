@@ -1,16 +1,10 @@
 import { useState } from "react";
-import sendIcon from "../../assets/icons/send.png";
 
 interface CommentInputProps {
-  user: {
-    userId: number;
-    userName: string;
-    userImage: string;
-  };
   onSubmit: (comment: string) => void;
 }
 
-function CommentInput({ user, onSubmit }: CommentInputProps) {
+function CommentInput({ onSubmit }: CommentInputProps) {
   const [input, setInput] = useState("");
 
   const handleSubmit = () => {
@@ -21,7 +15,7 @@ function CommentInput({ user, onSubmit }: CommentInputProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 p-2 mt-4">
+    <div className="flex items-center justify-between border border-gray-200 rounded-xl px-4 h-14 mt-4">
       <input
         type="text"
         value={input}
@@ -33,16 +27,15 @@ function CommentInput({ user, onSubmit }: CommentInputProps) {
           }
         }}
         placeholder="댓글을 입력해주세요"
-        className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-700 h-11
-             focus:outline-none focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400"
+        className="flex-1 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
       />
 
       <button
         type="button"
         onClick={handleSubmit}
-        className="rounded-lg bg-yellow-400 p-2 w-11 h-11"
+        className="ml-2 bg-yellow-400 text-white text-sm font-semibold px-3.5 py-1 rounded-xl h-10"
       >
-        <img src={sendIcon} alt="댓글 작성" />
+        작성
       </button>
     </div>
   );

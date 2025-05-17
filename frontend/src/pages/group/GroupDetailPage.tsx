@@ -48,43 +48,37 @@ export default function GroupDetailPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
 
-  // 그룹 다이어리 목록 불러오기기
-  const fetchGroupDiaries = useCallback(
-    async (cursor?: string) => {
-      if (isFetching) return;
-      if (!cursor && groupDiaries.length > 0) return;
-      if (cursor === null) return;
+  // 그룹 다이어리 목록 불러오기
+  const fetchGroupDiaries = useCallback(async (cursor?: string) => {
+    if (isFetching) return;
+    if (!cursor && groupDiaries.length > 0) return;
+    if (cursor === null) return;
 
-      setIsFetching(true);
-      try {
-        const res = await axiosInstance.get(
-          `/api/v1/group/${groupId}/diaries`,
-          {
-            params: cursor ? { cursor } : {},
-          }
-        );
+    setIsFetching(true);
+    try {
+      const res = await axiosInstance.get(`/api/v1/group/${groupId}/diaries`, {
+        params: cursor ? { cursor } : {},
+      });
 
-        const { diaries, nextCursor } = res.data.data as {
-          diaries: GroupDiary[];
-          nextCursor: string | null;
-        };
+      const { diaries, nextCursor } = res.data.data as {
+        diaries: GroupDiary[];
+        nextCursor: string | null;
+      };
 
-        setGroupDiaries((prev) => {
-          const newIds = new Set(prev.map((d) => d.diaryId));
-          const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
-          return [...prev, ...filtered];
-        });
+      setGroupDiaries((prev) => {
+        const newIds = new Set(prev.map((d) => d.diaryId));
+        const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
+        return [...prev, ...filtered];
+      });
 
-        setNextCursor(nextCursor);
-        // console.log("그룹 다이어리 목록 확인", diaries);
-      } catch (err) {
-        console.error("그룹 다이어리 불러오기 실패", err);
-      } finally {
-        setIsFetching(false);
-      }
-    },
-    [groupId, isFetching, groupDiaries]
-  );
+      setNextCursor(nextCursor);
+      // console.log("그룹 다이어리 목록 확인", diaries);
+    } catch (err) {
+      console.error("그룹 다이어리 불러오기 실패", err);
+    } finally {
+      setIsFetching(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchGroupDiaries();

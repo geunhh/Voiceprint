@@ -97,7 +97,7 @@ export default function DiaryDetailPage() {
       </div>
 
       {/* 일기 내용 */}
-      <div className="mb-4">
+      <div className="mb-4 p-4">
         <DiaryContent content={diary.content} />
       </div>
 

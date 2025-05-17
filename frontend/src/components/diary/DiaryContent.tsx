@@ -21,7 +21,7 @@ function DiaryContent({ content }: DiaryContentProps) {
   return (
     <div
       ref={containerRef}
-      className="w-11/12 mx-auto h-96 overflow-y-auto rounded-xl border border-yellow-400 bg-white 
+      className="w-full mx-auto h-96 overflow-y-auto rounded-xl border border-yellow-400 bg-white 
                  px-5 py-4 shadow-sm"
     >
       <div
