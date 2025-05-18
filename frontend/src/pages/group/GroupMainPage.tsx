@@ -4,6 +4,12 @@ import axiosInstance from "../../api/axiosInstance";
 import Button from "../../components/common/Button";
 import GroupCard from "../../components/group/GroupCard";
 
+import profile2 from "../../assets/icons/chatPink.png";
+import profile3 from "../../assets/icons/chatRed.png";
+import profile1 from "../../assets/icons/chatYellow.png";
+
+import bg from "../../assets/icons/groupDefault.png";
+
 interface MyGroup {
   groupId: number;
   groupName: string;
@@ -30,7 +36,26 @@ export default function GroupMainPage() {
   }, []);
 
   if (!groups.length) {
-    return <p className="p-4 text-center">내 그룹을 불러오는 중...</p>;
+    return (
+      <div>
+        <div className="flex-row text-center mt-10">
+          <p className="font-bold text-3xl">그룹 다이어리</p>
+          <p className="font-semibold">친구와 함께 공유하기</p>
+        </div>
+
+        <div className="relative mt-16 flex items-center justify-center">
+          <GroupCard
+            groupName="새로운 그룹 만들기"
+            groupImageUrl={bg}
+            memberCount={3}
+            memberProfileImages={[profile1, profile2, profile3]}
+            onClick={() => {
+              navigate("/group/create");
+            }}
+          />
+        </div>
+      </div>
+    );
   }
 
   const currentGroup = groups[currentIndex];
@@ -47,8 +72,7 @@ export default function GroupMainPage() {
       <div className="relative mt-4 flex items-center justify-center">
         <button
           onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
-          className="absolute left-4 text-3xl text-gray-400 disabled:opacity-20"
-          disabled={currentIndex === 0}
+          className="absolute left-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
         >
           &lt;
         </button>
@@ -68,8 +92,7 @@ export default function GroupMainPage() {
           onClick={() =>
             setCurrentIndex((prev) => Math.min(prev + 1, groups.length - 1))
           }
-          className="absolute right-4 text-3xl text-gray-400 disabled:opacity-20"
-          disabled={currentIndex === groups.length - 1}
+          className="absolute right-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
         >
           &gt;
         </button>

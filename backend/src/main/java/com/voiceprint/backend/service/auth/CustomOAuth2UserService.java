@@ -4,10 +4,10 @@ import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.api.auth.dto.GoogleResponse;
 import com.voiceprint.backend.api.auth.dto.OAuth2Response;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.domain.auth.ProfileImage;
-import com.voiceprint.backend.domain.auth.ProfileImageRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.Entity.ProfileImage;
+import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -15,8 +15,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

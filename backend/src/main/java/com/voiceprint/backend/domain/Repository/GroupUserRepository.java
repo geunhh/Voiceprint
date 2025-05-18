@@ -1,8 +1,10 @@
 package com.voiceprint.backend.domain.Repository;
 
 import com.voiceprint.backend.api.groups.dto.UserInfoDTO;
+import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
+import com.voiceprint.backend.domain.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +30,14 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             "JOIN u.profileImage p " +
             "WHERE gu.group.id = :groupId")
     List<UserInfoDTO> findUserInfoByGroupId(@Param("groupId") Long groupId);
+
+
+    @Query("""
+            select  gu.user from GroupUser gu 
+            where gu.group.id = :groupId
+            """)
+    List<User> findUsersByGroupId(@Param("groupId") Long groupId);
+
+    boolean existsByGroupAndUser(Group group, User user);
 }
 

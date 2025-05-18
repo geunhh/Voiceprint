@@ -2,7 +2,7 @@ package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.common.filter.JWTFilter;
 import com.voiceprint.backend.common.util.JWTUtil;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.service.auth.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +41,7 @@ public class SecurityConfig {
                         CorsConfiguration configuration = new CorsConfiguration();
                         configuration.setAllowedOrigins(List.of(
                                 "https://k12b106.p.ssafy.io",
+                                "http://localhost:63342", //Todo: 개발 후에 제거하기
                                 "http://localhost:5173"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
@@ -78,9 +79,9 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao","/ws/**").permitAll()
-                        .anyRequest().authenticated()); // 일단 막기.
-//                        .anyRequest().permitAll());
+                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao").permitAll()
+//                        .anyRequest().authenticated()); // 일단 막기.
+                        .anyRequest().permitAll());
 
         //세션 설정 : STATELESS
         http

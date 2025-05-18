@@ -163,17 +163,24 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 알림 수신 상태를 조회하는 API
+     */
     @GetMapping("/reminder-setting")
-    public ResponseEntity<CommonResponse<Boolean>> isReminderEnabled(
+    public ResponseEntity<CommonResponse<AlarmSettingsResponseDTO>> isReminderEnabled(
             HttpServletRequest request
     ) {
         Long userId = authService.getUserIdFromRequest(request);
-        Boolean isEnabled = authService.isReminderEnabled(userId);
+//        Long userId = 1L;
+        AlarmSettingsResponseDTO response = authService.isReminderEnabled(userId);
 
         return ResponseEntity.ok(
-                new CommonResponse<>(200, "유저 알람 여부 조회 성공", isEnabled));
+                new CommonResponse<>(200, "유저 알람 여부 조회 성공", response));
     }
 
+    /**
+     * 알림 조회 상태를 수정하는 API
+     */
     @PatchMapping("/reminder-setting")
     public ResponseEntity<CommonResponse<Boolean>> updateReminderSetting(
             HttpServletRequest httprequest,
@@ -188,6 +195,9 @@ public class AuthController {
        ));
     }
 
+    /**
+     * 알림 수신 시간을 설정하는 API
+     */
     @PatchMapping("/reminder-time")
     public ResponseEntity<CommonResponse<String>> updateReminderTime(
             HttpServletRequest httprequest,

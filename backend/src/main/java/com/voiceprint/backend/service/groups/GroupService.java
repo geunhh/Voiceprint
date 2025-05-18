@@ -1,32 +1,27 @@
 package com.voiceprint.backend.service.groups;
 
 
-import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
-import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.api.groups.dto.*;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
 import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
 import com.voiceprint.backend.domain.Repository.GroupUserRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.diary.Diary;
 import com.voiceprint.backend.service.S3Service;
 import com.voiceprint.backend.service.auth.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 @Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class GroupService {

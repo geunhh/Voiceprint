@@ -8,67 +8,91 @@ import QuestionCharacter from "../../assets/icons/lovelyCharacter.png";
 import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
 
-// 임시데이터
-// 그룹에 공유된 일기 정보는 수정 예정
-import profile1 from "../../assets/temp/profile1.png";
-import profile2 from "../../assets/temp/profile2.png";
-import profile3 from "../../assets/temp/profile3.png";
+interface GroupUser {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string;
+}
 
-const groupDiaries = [
-  {
-    groupId: 1,
-    diaryId: 101,
-    title: "오늘의 개발 회고",
-    createdAt: "2025-05-05T15:00:00",
-    userName: "민태홍",
-    userImage: profile1,
-    content:
-      "둔산동 할리스에서 공부를 하고고 매운 음식이 먹고 싶어서 마라탕을 먹었다. 유부를 5번 추가하고 꿔바로우랑 같이 맛있게 먹었다! ",
-  },
-  {
-    groupId: 1,
-    diaryId: 102,
-    title: "대청호 드라이브",
-    createdAt: "2025-05-01T15:00:00",
-    userName: "김근휘",
-    userImage: profile2,
-    content:
-      "날씨 좋은 날 대청호에 가서 신나게 놀았다. 드라이브도 하고 너무 재미있었따.",
-  },
-  {
-    groupId: 1,
-    diaryId: 103,
-    title: "오늘 회의 기록",
-    createdAt: "2025-04-26T15:00:00",
-    userName: "민태홍",
-    userImage: profile1,
-    content:
-      "오늘은 친구들이랑 프로젝트 회의를 끝내고 다같이 배스킨라빈스에 갔다. 내가 제일 좋아하는 슈팅스타, 엄마는 외계인, 레인보우 샤베트를 맛있게 먹었다.",
-  },
-  {
-    groupId: 1,
-    diaryId: 104,
-    title: "오늘 회의 기록",
-    createdAt: "2025-04-20T15:00:00",
-    userName: "이지은",
-    userImage: profile3,
-    content: "드디어 기획 회의가 끝났어요. 야~~~호! 너무너무 신난다.",
-  },
-];
+interface Group {
+  groupId: number;
+  name: string;
+  description: string | null;
+  groupImage: string;
+  createdAt: string;
+  joinedAt: string;
+  enableAlarm: boolean;
+  alarmTime: string | null;
+  alarmDays: string[];
+  groupUserList: GroupUser[];
+}
 
 export default function GroupDetailPage() {
   const navigate = useNavigate();
 
   const { groupId } = useParams();
-  const [group, setGroup] = useState<any>(null);
+  const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [groupDiaries, setGroupDiaries] = useState<any[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const fetchGroupDiaries = async (cursor?: string) => {
+    if (isFetching) return;
+    if (!cursor && groupDiaries.length > 0) return;
+    if (cursor === null) return;
+
+    setIsFetching(true);
+    try {
+      const res = await axiosInstance.get(`/api/v1/group/${groupId}/diaries`, {
+        params: cursor ? { cursor } : {},
+      });
+
+      const { diaries, nextCursor } = res.data.data;
+
+      setGroupDiaries((prev) => {
+        const newIds = new Set(prev.map((d) => d.diaryId));
+        const filtered = diaries.filter((d) => !newIds.has(d.diaryId));
+        return [...prev, ...filtered];
+      });
+
+      setNextCursor(nextCursor);
+      // console.log("그룹 다이어리 확인", res.data.data);
+    } catch (err) {
+      console.error("그룹 다이어리 불러오기 실패", err);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGroupDiaries();
+  }, [groupId]);
+
+  useEffect(() => {
+    let isFirst = true;
+
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 300 &&
+        nextCursor &&
+        !isFirst
+      ) {
+        fetchGroupDiaries(nextCursor);
+      }
+      isFirst = false;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [nextCursor, groupId]);
 
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
         const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
         setGroup(res.data.data);
-        console.log(res.data.data);
       } catch (err) {
         console.error("그룹 데이터 불러오기 실패", err);
       } finally {
@@ -162,30 +186,32 @@ export default function GroupDetailPage() {
       </div>
 
       {/* 공유 루틴 및 디데이 정보 */}
-      <div className="mb-3 w-full">
-        {/* <p className="text-darkmint font-semibold mb-2">일기 공유 루틴</p> */}
+      {group.enableAlarm && (
+        <div className="mb-3 w-full">
+          <div className="flex items-center gap-4">
+            {/* 시간 */}
+            <div className="flex items-center">
+              <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
+              <p className="font-bold text-gray-700">
+                {routineHour < 12
+                  ? `오전 ${group.alarmTime.slice(0, 5)}`
+                  : `오후 ${group.alarmTime.slice(0, 5)}`}
+              </p>
+            </div>
 
-        <div className="flex items-center gap-4">
-          {/* 시간 */}
-          <div className="flex items-center">
-            <img src={clockIcon} alt="시계" className="h-6 w-6 mr-2" />
-            <p className="font-bold text-gray-700">
-              {routineHour < 12
-                ? `오전 ${group.alarmTime.slice(0, 5)}`
-                : `오후 ${group.alarmTime.slice(0, 5)}`}
-            </p>
-          </div>
-
-          {/* 요일 */}
-          <div className="flex items-center">
-            <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
-            <p className="font-medium text-gray-500">
-              <span className="font-semibold text-gray-700">{routineText}</span>{" "}
-              기록해요
-            </p>
+            {/* 요일 */}
+            <div className="flex items-center">
+              <img src={calendarIcon} alt="달력" className="h-6 w-6 mr-2" />
+              <p className="font-medium text-gray-500">
+                <span className="font-semibold text-gray-700">
+                  {routineText}
+                </span>{" "}
+                기록해요
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 디데이 */}
       <div className="mb-3 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
@@ -238,10 +264,13 @@ export default function GroupDetailPage() {
         <p className="text-darkmint font-semibold mb-2">우리들의 발자국</p>
         <div className="pb-20">
           {groupDiaries.map((diary) => (
-            <div className="mb-3">
+            <div key={diary.diaryId} className="mb-3">
               <GroupDiaryPreview {...diary} />
             </div>
           ))}
+          {isFetching && (
+            <p className="text-center text-gray-500 mt-4">불러오는 중...</p>
+          )}
         </div>
       </div>
     </div>

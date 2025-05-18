@@ -2,8 +2,8 @@ import { useNavigate } from "react-router";
 import useTimeAgo from "../../hooks/useTimeAgo";
 
 interface GroupDiaryPreviewProps {
-  userImage: string;
-  userName: string;
+  profileUrl: string;
+  nickname: string;
   title: string;
   createdAt: string;
   content: string;
@@ -12,7 +12,7 @@ interface GroupDiaryPreviewProps {
 }
 
 function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
-  const { userImage, userName, title, createdAt, content, diaryId, groupId } =
+  const { profileUrl, nickname, title, createdAt, content, diaryId, groupId } =
     props;
   const timeAgo = useTimeAgo(createdAt);
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
       {/* 유저 정보 및 일기 제목, 일자 */}
       <div className="flex items-start gap-3">
         <img
-          src={userImage}
+          src={profileUrl}
           alt="User"
           className="h-12 w-12 rounded-full object-cover"
         />
@@ -40,7 +40,7 @@ function GroupDiaryPreview(props: GroupDiaryPreviewProps) {
               {timeAgo}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-0.5">{userName}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{nickname}</p>
         </div>
       </div>
 
