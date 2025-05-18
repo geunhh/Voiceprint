@@ -16,7 +16,6 @@ import emotionTag3 from "../../assets/temp/emotionTag3.png";
 import emotionTag4 from "../../assets/temp/emotionTag4.png";
 import emotionTag5 from "../../assets/temp/emotionTag5.png";
 
-// 감정 태그 매핑
 const emotionTagMap: Record<string, string> = {
   행복: emotionTag1,
   설렘: emotionTag2,
@@ -50,6 +49,7 @@ export default function DiaryDetailPage() {
         const res = await axiosInstance.get(`/api/diaries/diary/${diaryId}`);
 
         setDiary(res.data.data);
+        // console.log("다이어리 불러오기: ", res.data.data);
       } catch (err) {
         console.error("다이어리 불러오기 실패", err);
       }
@@ -81,7 +81,7 @@ export default function DiaryDetailPage() {
           </div>
 
           {/* 일기 제목 */}
-          <div className="ml-4 mb-4">
+          <div className="ml-4 mb-2">
             <p className="font-semibold text-xl"> {diary.title}</p>
           </div>
         </div>
@@ -97,8 +97,8 @@ export default function DiaryDetailPage() {
       </div>
 
       {/* 일기 내용 */}
-      <div className="mb-4">
-        <DiaryContent content={diary.content} />
+      <div className="mb-4 px-4">
+        <DiaryContent content={diary.content} emotion={diary.emotion} />
       </div>
 
       {/* 이전 채팅 기록 버튼 */}

@@ -8,9 +8,12 @@ module.exports = {
         onemobile: ["ONEMobilePOP", "sans-serif"],
       },
       colors: {
-        mint: "#B5E6E2", // 민트색 등록
-        darkmint: "#8DC4BF", // 어두운 민트색 등록
-        lightmint: "#DEF6F5", // 밝은 민트색 등록
+        mint: "#B5E6E2", // 민트색
+        darkmint: "#8DC4BF", // 어두운 민트색
+        lightmint: "#DEF6F5", // 밝은 민트색
+
+        customyellow: "#FFC700", // 기본 노란색(Figma_yellow500)
+        lightyellow: "#FFF6D4", // 밝은 노란색(Figma_yellow100)
       },
       keyframes: {
         /* 둥실둥실 이동 */

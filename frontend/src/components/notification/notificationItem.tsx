@@ -9,6 +9,7 @@ interface NotificationItemProps {
   diaryId?: number;
   message: string;
   onClick: () => void;
+  variant?: "default" | "list";
 }
 
 const notificationImageMap: Record<NotificationItemProps["type"], string> = {
@@ -23,15 +24,21 @@ const notificationTitleMap: Record<NotificationItemProps["type"], string> = {
   newDiary: "새로운 일기",
 };
 
-function NotificationItem(props: NotificationItemProps) {
+function NotificationItem({
+  type,
+  message,
+  groupId,
+  diaryId,
+  onClick,
+  variant = "default",
+}: NotificationItemProps) {
   const navigate = useNavigate();
-
-  const { type, message, groupId, diaryId } = props;
 
   const image = notificationImageMap[type];
   const title = notificationTitleMap[type];
 
   const handleClick = () => {
+    if (onClick) return onClick();
     if (groupId && diaryId) {
       // 그룹 댓글 및 그룹 일기 알림의 경우 해당 일기 상세 페이지로 이동
       navigate(`/group/${groupId}/diary/${diaryId}`);
@@ -41,13 +48,18 @@ function NotificationItem(props: NotificationItemProps) {
     }
   };
 
+  const baseStyle =
+    "w-full flex items-center gap-4 p-4 text-left transition-all";
+
+  const variantStyle =
+    variant === "list"
+      ? "bg-white border-b border-lightmint hover:bg-lightmint"
+      : "rounded-xl bg-lightmint hover:bg-mint";
+
   return (
-    <button
-      className="w-full bg-lightmint flex items-center gap-4 p-4 rounded-xl hover:bg-mint text-left"
-      onClick={handleClick}
-    >
+    <button className={`${baseStyle} ${variantStyle}`} onClick={handleClick}>
       <img src={image} alt="알림 캐릭터" className="h-14" />
-      <div className=" ">
+      <div>
         <p className="font-semibold text-gray-800 text-sm">{title}</p>
         <p className="text-gray-700 text-sm">{message}</p>
       </div>
