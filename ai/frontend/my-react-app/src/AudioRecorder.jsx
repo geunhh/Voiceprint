@@ -61,18 +61,29 @@ const AudioRecorder = () => {
   }, []);
 
   // WebSocket 연결 설정
-  useEffect(() => {
-    // 웹소켓 서버 URL - 실제 서버 URL로 변경 필요
-    const wsUrl = 'ws://localhost:8000/ws';
+  // useEffect 내부 WebSocket 연결 부분 수정
+useEffect(() => {
+  const connectWebSocket = async () => {
+    try {
+      const res = await fetch('/api/v1/voice/session', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
 
-    const connectWebSocket = () => {
+      if (!res.ok) {
+        throw new Error('세션 정보 조회 실패');
+      }
+
+      const { wsUrl } = await res.json();
+
       const ws = new WebSocket(wsUrl);
-
       ws.onopen = () => {
         console.log('WebSocket 연결 성공');
+        console.log('WebSocket URL:', wsUrl);
+        // 연결 성공 시 상태 업데이트
         setIsConnected(true);
       };
-
       ws.onmessage = (event) => {
         if (typeof event.data === 'string') {
           try {
@@ -87,31 +98,31 @@ const AudioRecorder = () => {
           handleAudioResponse(event.data);
         }
       };
-      
       ws.onclose = () => {
         console.log('WebSocket 연결 종료');
         setIsConnected(false);
-        // 재연결 시도
         setTimeout(connectWebSocket, 3000);
       };
-
       ws.onerror = (error) => {
         console.error('WebSocket 에러:', error);
         setIsConnected(false);
       };
 
       websocketRef.current = ws;
-    };
+    } catch (err) {
+      console.error('WebSocket 초기 연결 실패:', err);
+    }
+  };
 
-    connectWebSocket();
+  connectWebSocket();
 
-    // 컴포넌트 언마운트 시 웹소켓 연결 종료
-    return () => {
-      if (websocketRef.current) {
-        websocketRef.current.close();
-      }
-    };
-  }, []);
+  return () => {
+    if (websocketRef.current) {
+      websocketRef.current.close();
+    }
+  };
+}, []);
+
 
   // 오디오 응답 처리 - 즉시 재생
   const handleAudioResponse = async(audioBlob) => {
@@ -307,7 +318,7 @@ const AudioRecorder = () => {
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         // 녹음 시간 계산
         const recordDuration = recordStartTimeRef.current ? Date.now() - recordStartTimeRef.current : 0;
         
@@ -327,16 +338,20 @@ const AudioRecorder = () => {
         let audioContextToClose = audioContextRef.current;
 
         // 의미 있는 오디오가 있고, 자동 전송 모드일 때만 서버로 전송
+        // 전체 오디오 데이터를 서버로 전송합니다
         if (hasMeaningfulAudio && audioChunksRef.current.length > 0 && 
-            websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN &&
-            (!('autoSend' in mediaRecorder) || mediaRecorder.autoSend)) {
-          
-          console.log("전체 오디오 데이터를 서버로 전송합니다. 크기:", audioBlob.size, "녹음 시간:", recordDuration, "ms");
-          setStatus('전송 중...');
+          websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN &&
+          (!('autoSend' in mediaRecorder) || mediaRecorder.autoSend)) {
 
-          try {
-            websocketRef.current.send(audioBlob);
-            console.log("오디오 블롭 전송 완료");
+        console.log("전체 오디오 데이터를 서버로 전송합니다. 크기:", audioBlob.size, "녹음 시간:", recordDuration, "ms");
+        setStatus('전송 중...');
+
+        try {
+          // ✅ 수정: arrayBuffer로 변환해서 전송
+          const arrayBuffer = await audioBlob.arrayBuffer();
+          websocketRef.current.send(arrayBuffer);
+
+          console.log("오디오 전송 완료");
             
             // 통계 업데이트 - 전송 횟수 증가
             setProcessingStats(prev => ({

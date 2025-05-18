@@ -32,7 +32,7 @@ public class Group {
     @Column(length = 10)
     private String invitationCode;
 
-    @Column(length = 100)
+    @Column(nullable = false)
     private String groupImage;
 
     @Column(name = "alarm_day")

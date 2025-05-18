@@ -24,6 +24,8 @@ public class CommentController {
         this.commentService = commentService;
     }
 
+
+    // 댓글 작성
     @PostMapping("/{groupDiaryId}")
     public ResponseEntity<CommonResponse<CommentCreateResponseDTO>> creatComment (HttpServletRequest request,
                                                                                   @RequestBody CommentCreatRequestDTO commentCreatRequestDTO,
@@ -37,6 +39,7 @@ public class CommentController {
         return ResponseEntity.ok(new CommonResponse<>(201, "댓글 작성 성공", responseDTO));
     }
 
+    // 댓글 조회
     @GetMapping("/{groupDiaryId}")
     public ResponseEntity<CommentListWithCursorDTO> getComment (@PathVariable("groupDiaryId") long groupDiaryId,
                                                                 @RequestParam(required = false) Integer cursor,
@@ -44,6 +47,18 @@ public class CommentController {
 
         CommentListWithCursorDTO result = commentService.getComments(groupDiaryId, cursor, size);
         return ResponseEntity.ok(result);
+    }
+
+    // 댓글 삭제
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<CommonResponse<Void>> deleteComment (HttpServletRequest request,
+                                                            @PathVariable("commentId") int commentId) {
+
+        // 1. 로그인한 유저 아이디 조회
+        long userId = authService.getUserIdFromRequest(request);
+        commentService.deleteComment(commentId, userId);
+        CommonResponse<Void> commonResponse = new CommonResponse<>(204, "댓글 삭제 성공", null);
+        return ResponseEntity.ok(commonResponse);
     }
 
 
