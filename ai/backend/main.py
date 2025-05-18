@@ -101,11 +101,7 @@ def g_tts(text) :
     )
     print("google response 완료.")
     return response.audio_content
-import os
-from pydub import AudioSegment
-import io
-import tempfile
-import numpy as np
+
 
 def stt(audio_data):
     if not audio_data:
@@ -120,13 +116,6 @@ def stt(audio_data):
             temp_audio_path = temp_file.name
             print(f"임시 WAV 파일 저장 위치: {temp_audio_path}","움성파일 이름" ,temp_file.name)
         
-            # WAV 파일로 저장
-            # wf = wave.open(temp_wav_path, "wb")
-            # wf.setnchannels(1)
-            # wf.setsampwidth(2)
-            # wf.setframerate(16000)
-            # wf.writeframes(audio_data)
-            # wf.close()
             
 
         with open(temp_audio_path, 'rb') as audio_file:
