@@ -7,6 +7,7 @@ import com.voiceprint.backend.api.groups.dto.GroupDiaryDetailResponse;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
@@ -190,8 +191,9 @@ public class GroupDiaryService {
         PageRequest pageRequest = PageRequest.of(0, size * 2); // 중복 제거를 위해 넉넉히 조회
         List<GroupDiary> groupDiaries = groupDiaryRepository.findByGroupIdsWithCursorExcludeUser(
                                         groupIds, cursor, userId, pageRequest);
+
         if (groupDiaries.isEmpty()) {
-            return new GroupDiaryListWithCursorDTO(Collections.emptyList(), null);
+            throw new GroupUserNotFoundException("공유 일기가 없습니다.");
         }
 
         // 4. diaryId 기준으로 중복 제거 (가장 최근 공유일기만 유지)

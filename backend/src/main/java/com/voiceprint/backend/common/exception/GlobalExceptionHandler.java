@@ -6,6 +6,7 @@ import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsExceptio
 import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
 import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.common.exception.diary.*;
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
@@ -16,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice // Spring 전역 예외처리 어노테이션
 public class GlobalExceptionHandler {
@@ -145,6 +144,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CommentNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleCommentNotFoundException(CommentNotFoundException e) { return e.getMessage();}
+
+    @ExceptionHandler(GroupUserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleGroupUserNotFound(GroupUserNotFoundException e) {
+        return e.getMessage();
+    }
+
     // 공통 응답 생성메서드
 
 }
