@@ -1,18 +1,44 @@
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import axiosInstance from "../../api/axiosInstance";
 import HappyCharacter from "../../assets/icons/happyCharacter.png";
 import Button from "../../components/common/Button";
 
-// 임시 데이터
-const inviteInfo = {
-  groupId: 1,
-  groupName: "아이스크림 조아 모임",
-  groupImage:
-    "https://i.pinimg.com/736x/a7/ca/36/a7ca369a79ff17fb0ae1c13e72a7a8b4.jpg",
-  userName: "김혜민",
-};
+interface InviteInfo {
+  groupName: string;
+  groupImage: string;
+  inviterName: string;
+  alreadyJoined: boolean;
+}
 
 export default function GroupInvitePage() {
+  const { inviteId } = useParams();
   const navigate = useNavigate();
+  const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
+
+  useEffect(() => {
+    const fetchInviteInfo = async () => {
+      try {
+        const res = await axiosInstance.get("/api/v1/group/invite-info", {
+          params: { code: inviteId },
+        });
+        setInviteInfo(res.data.data);
+        console.log("초대 정보 조회: ", res.data.data);
+      } catch (err) {
+        console.error("초대 정보 조회 실패:", err);
+        alert("초대 정보를 불러오는 데 실패했어요.");
+      }
+    };
+
+    if (inviteId) fetchInviteInfo();
+  }, [inviteId]);
+
+  if (!inviteInfo) {
+    return (
+      <div className="text-center mt-20">초대 정보를 불러오는 중입니다.</div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center h-dvh bg-lightmint">
       <div className="bg-white w-4/5 h-2/5 max-h-64 rounded-xl border-2 border-mint p-2 flex flex-col justify-between">
@@ -24,7 +50,7 @@ export default function GroupInvitePage() {
           <div className="text-center">
             <div className="flex items-center  justify-center gap-1">
               <p className="text-gray-600 font-semibold text-lg">
-                {inviteInfo.userName}
+                {inviteInfo.inviterName}
               </p>
               <p className="text-gray-600">님이 초대한</p>
             </div>
@@ -40,10 +66,29 @@ export default function GroupInvitePage() {
           <Button
             type="fill"
             size="L"
-            text="초대 수락하기"
+            text={
+              inviteInfo.alreadyJoined
+                ? "이미 참여한 그룹이에요"
+                : "초대 수락하기"
+            }
             color="mint"
-            onClick={() => {
-              navigate(`/group/${inviteInfo.groupId}`);
+            disabled={inviteInfo.alreadyJoined}
+            onClick={async () => {
+              if (inviteInfo.alreadyJoined) return;
+
+              try {
+                const res = await axiosInstance.post(
+                  "/api/v1/group/invite/accept",
+                  {
+                    code: inviteId,
+                  }
+                );
+                const groupId = res.data.data.groupId;
+                navigate(`/group/${groupId}`);
+              } catch (err) {
+                console.error("초대 수락 실패:", err);
+                alert("초대 수락에 실패했어요.");
+              }
             }}
           />
         </div>
