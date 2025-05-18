@@ -43,8 +43,11 @@ function NotificationItem({
   const handleClick = () => {
     if (onClick) return onClick();
     if (groupId && diaryId) {
-      // newComment, newComment, newDiary 알림의 경우 해당 일기 상세 페이지로 이동
+      // newComment, newDiary 알림의 경우 해당 일기 상세 페이지로 이동
       navigate(`/group/${groupId}/diary/${diaryId}`);
+    } else if (type === "newMember" && groupId) {
+      // newMenber 알림의 경우 해당 그룹 상세 페이지로 이동
+      navigate(`/group/${groupId}`);
     } else {
       // 일기 작성 reminder 알림의 경우 일기 작성 페이지로 이동
       navigate("diary/setting/friend");
