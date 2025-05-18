@@ -76,7 +76,7 @@ const AudioRecorder: React.FC = () => {
 
   // 고정된 VAD 설정값
   const silenceTimeout = 1500; // 말소리가 없을 때 타임아웃(ms)
-  const volumeThreshold = 15; // 볼륨 임계값(dB)
+  const volumeThreshold = 25; // 볼륨 임계값(dB)
 
   const mediaRecorderRef = useRef<ExtendedMediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -361,9 +361,21 @@ const AudioRecorder: React.FC = () => {
     const microphone = audioContext.createMediaStreamSource(stream);
     microphoneStreamRef.current = microphone;
 
+    // 하이패스 필터 추가 - 낮은 주파수의 배경 소음 제거
+    const highpassFilter = audioContext.createBiquadFilter();
+    highpassFilter.type = 'highpass';
+    highpassFilter.frequency.value = 85; // 사람 목소리의 주요 주파수보다 약간 낮게 설정
+    // 로우패스 필터 추가 - 높은 주파수의 비명이나 고주파 소음 제거
+    const lowpassFilter = audioContext.createBiquadFilter();
+    lowpassFilter.type = 'lowpass';
+    lowpassFilter.frequency.value = 4000; // 사람 목소리의 주요 주파수 범위 내로 설정
+    // 필터 연결
+    microphone.connect(highpassFilter);
+    highpassFilter.connect(lowpassFilter);
+
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.5;
+    analyser.fftSize = 1024; // 256-> 1024로 변경해보자
+    analyser.smoothingTimeConstant = 0.5; //0.5-> 0.8로 변경해보자
     analyserRef.current = analyser;
 
     microphone.connect(analyser);
@@ -419,7 +431,6 @@ const AudioRecorder: React.FC = () => {
     requestAnimationFrame(checkAudioLevel);
   };
 
-  // 녹음 시작
   const startRecording = async () => {
     try {
       // 이미 녹음 중이면 중복 실행 방지
@@ -446,7 +457,17 @@ const AudioRecorder: React.FC = () => {
         vadTimeoutRef.current = null;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // 여기가 수정된 부분: 노이즈 억제 및 에코 취소 활성화
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+          sampleRate: 16000,
+        } 
+      });
+      
       const options: MediaRecorderOptions = {
         mimeType: "audio/webm",
         audioBitsPerSecond: 16000,
@@ -525,7 +546,6 @@ const AudioRecorder: React.FC = () => {
             }));
 
             // 오디오 전송 완료 신호 보내기
-            // setTimeout 지연 중에 서버가 닫혀 전송이 안됨
             websocketRef.current.send(audioBlob);
             websocketRef.current.send(
               JSON.stringify({
@@ -536,25 +556,13 @@ const AudioRecorder: React.FC = () => {
             );
             setStatus("idle");
 
-            // setTimeout(() => {
-            //   if (
-            //     websocketRef.current &&
-            //     websocketRef.current.readyState === WebSocket.OPEN
-            //   ) {
-            //     websocketRef.current.send(
-            //       JSON.stringify({
-            //         action: "audio_complete",
-            //         duration: recordDuration,
-            //         has_speech: hasMeaningfulAudio,
-            //       })
-            //     );
-            //     console.log("audio_complete 메시지 전송 완료");
-            //     setStatus("idle");
-            //   } else {
-            //     console.error("완료 메시지 전송 실패: 웹소켓 연결 상태 변경됨");
-            //     setStatus("error");
-            //   }
-            // }, 100);
+            // 여기서부터 테스트 코드
+            const url = URL.createObjectURL(audioBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `녹음-${new Date().getTime()}.webm`;
+            a.click();
+
           } catch (err) {
             console.error("오디오 데이터 전송 중 오류:", err);
             setStatus("error");

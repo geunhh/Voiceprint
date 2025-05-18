@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+
 r = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379,  password=os.getenv("REDIS_PASSWORD"), decode_responses=True)
 
 # 백엔드 origin 으로 변경 필요 
@@ -100,7 +101,11 @@ def g_tts(text) :
     )
     print("google response 완료.")
     return response.audio_content
-
+import os
+from pydub import AudioSegment
+import io
+import tempfile
+import numpy as np
 
 def stt(audio_data):
     if not audio_data:
@@ -108,18 +113,23 @@ def stt(audio_data):
         return None
 
     try:
-        # 직접 WAV 헤더 생성 (16kHz, 16비트, 모노)
-        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-            temp_wav_path = temp_file.name
+
+        with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as temp_file:
+            # temp_wav_path = temp_file.name
+            temp_file.write(audio_data)
+            temp_audio_path = temp_file.name
+            print(f"임시 WAV 파일 저장 위치: {temp_audio_path}","움성파일 이름" ,temp_file.name)
         
             # WAV 파일로 저장
-            wf = wave.open(temp_wav_path, "wb")
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(16000)
-            wf.writeframes(audio_data)
-            wf.close()
-        with open(temp_wav_path, 'rb') as audio_file:
+            # wf = wave.open(temp_wav_path, "wb")
+            # wf.setnchannels(1)
+            # wf.setsampwidth(2)
+            # wf.setframerate(16000)
+            # wf.writeframes(audio_data)
+            # wf.close()
+            
+
+        with open(temp_audio_path, 'rb') as audio_file:
             # OpenAI API로 전송
             # print(temp_wav_path)
             transcript = client.audio.transcriptions.create(
@@ -221,9 +231,9 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         # STT 처리
                         transcription = stt(audio_buffer)
-                        transcription = "시청 감사요"
+                        # transcription = "시청 감사요"
                         print(transcription)
-                        if not transcription.strip() : 
+                        if  not transcription or not transcription.strip() : 
                             await websocket.send_json({
                                 "error": "음성 인식 실패"
                             }) 
