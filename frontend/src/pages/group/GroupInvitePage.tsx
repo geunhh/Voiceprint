@@ -46,9 +46,7 @@ export default function GroupInvitePage() {
           {/* 안내 */}
           <div className="flex flex-col items-center justify-center gap-2 mt-5">
             <img
-              src={
-                "https://i.pinimg.com/736x/66/00/df/6600df5be8ae0882f0deeb2dab944486.jpg"
-              }
+              src={inviteInfo.groupImage}
               className="h-24 w-24 rounded-full"
             />
             <div className="text-center">
@@ -77,7 +75,7 @@ export default function GroupInvitePage() {
                   const res = await axiosInstance.post(
                     "/api/v1/group/invite/accept",
                     {
-                      code: inviteId,
+                      inviteCode: inviteId,
                     }
                   );
                   const groupId = res.data.data.groupId;
