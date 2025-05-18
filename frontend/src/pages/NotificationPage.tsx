@@ -32,8 +32,10 @@ export default function NotificationPage() {
   }, []);
 
   return (
-    <div className="p-10 space-y-3">
-      <p className="text-xl font-bold text-center text-gray-700">알림 목록</p>
+    <div className="p-10 space-y-3 bg-yellow-50">
+      <p className="text-xl font-bold text-center text-gray-700 font-muruk">
+        알림 목록
+      </p>
       {notifications.map((item) => (
         <NotificationItem
           key={item.metadata.notificationId}

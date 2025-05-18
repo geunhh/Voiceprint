@@ -92,7 +92,6 @@ const Layout = () => {
     };
 
     fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sseConnected = useRef(false);
@@ -107,7 +106,6 @@ const Layout = () => {
     const connectSSE = async () => {
       try {
         const token = localStorage.getItem("Authorization");
-
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe`,
           {

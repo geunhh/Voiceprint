@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
-import kakaoIcon from "../assets/icons/kakao.png";
-import googleIcon from "../assets/icons/google.png";
-import bg from "../assets/icons/bg.png";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import bg from "../assets/icons/bg.png";
+import googleIcon from "../assets/icons/google.png";
+import kakaoIcon from "../assets/icons/kakao.png";
 
 export default function HomePage() {
   const navigate = useNavigate();
