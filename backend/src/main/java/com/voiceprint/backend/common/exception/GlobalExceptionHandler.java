@@ -4,6 +4,7 @@ import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
 import com.voiceprint.backend.common.exception.diary.*;
+import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
@@ -135,6 +136,13 @@ public class GlobalExceptionHandler {
     public String handleUnauthorizedNotification(UnauthorizedNotificationException e) {
         return e.getMessage();
     }
+
+    @ExceptionHandler(GroupNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleGroupNotFound(GroupNotFoundException e) {
+        return e.getMessage();
+    }
+
 
     // 공통 응답 생성메서드
 
