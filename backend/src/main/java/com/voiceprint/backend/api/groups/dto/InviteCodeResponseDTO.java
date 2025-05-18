@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class InviteCreateResponseDTO {
+public class InviteCodeResponseDTO {
     private String inviteCode;
 }

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InviteInfoReponseDTO {
     private String groupName;
-    private String inviterName;
+    private String groupImage;
     private LocalDateTime expiredAt;
     private boolean alreadyJoined;
 }
