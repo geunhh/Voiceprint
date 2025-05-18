@@ -2,6 +2,7 @@ package com.voiceprint.backend.domain.Repository;
 
 import com.voiceprint.backend.domain.Entity.GroupDiary;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,4 +27,15 @@ public interface GroupDiaryRepository extends JpaRepository<GroupDiary, Long> {
     );
 
     Optional<GroupDiary> findByGroupIdAndDiaryId(Long groupId, Long diaryId);
+
+    @Query("""
+    SELECT gd FROM GroupDiary gd JOIN FETCH gd.diary d
+    WHERE gd.group.id IN :groupIds AND d.user.id != :userId
+    AND (:cursor IS NULL OR gd.sharedAt < :cursor)
+    ORDER BY gd.sharedAt DESC
+    """)
+    List<GroupDiary> findByGroupIdsWithCursorExcludeUser(
+            @Param("groupIds") List<Long> groupIds,
+            @Param("cursor") LocalDateTime cursor,
+            @Param("userId") Long userId, Pageable pageable);
 }

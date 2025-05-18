@@ -36,5 +36,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             where gu.group.id = :groupId
             """)
     List<User> findUsersByGroupId(@Param("groupId") Long groupId);
+
+    List<Long> findGroupIdsByUserId(Long userId);
 }
 

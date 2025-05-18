@@ -82,6 +82,21 @@ public class GroupController {
         GroupDiaryListWithCursorDTO result = groupDiaryService.getGroupDiaries(request, groupId, cursor, size);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 내 공유 일기 조회 성공", result));
     }
+    /**
+     * 속한 그룹 전체 공유일기 목록 조회하는 API
+     * @param size 페이지네이션 안에 들어갈 객체 갯수
+     * @param cursor 다음 페이지 확인용, 마지막 페이지이면 null
+     */
+    @GetMapping("/diaries")
+    public ResponseEntity<CommonResponse<GroupDiaryListWithCursorDTO>> getAllGroupDiaries(
+            @RequestParam(required = false) LocalDateTime cursor,
+            @RequestParam(defaultValue = "7") int size,
+            HttpServletRequest request
+    ) {
+        GroupDiaryListWithCursorDTO result = groupDiaryService.getAllGroupDiaries(request, cursor, size);
+        return ResponseEntity.ok(new CommonResponse<>(200, "모든 그룹의 공유일기 조회 성공", result));
+    }
+
 
     /**
      * 그룹 공유일기 상세조회 API
