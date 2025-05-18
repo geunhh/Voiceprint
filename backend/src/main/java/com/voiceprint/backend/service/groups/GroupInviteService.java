@@ -1,7 +1,10 @@
 package com.voiceprint.backend.service.groups;
 
 import com.voiceprint.backend.api.groups.dto.InviteCreateResponseDTO;
+import com.voiceprint.backend.api.groups.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
+import com.voiceprint.backend.common.exception.group.InviteExpiredException;
+import com.voiceprint.backend.common.exception.group.InviteNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.Group;
@@ -63,4 +66,29 @@ public class GroupInviteService {
         return new InviteCreateResponseDTO(invite.getInviteCode());
     }
 
+    /**
+     * 그룹 코드에 대한 그룹 정보를 조회하는 메서드
+     */
+    public InviteInfoReponseDTO getInviteInfo(String code, Long userId) {
+        // 초대 정보 확인
+        GroupInvite invite = groupInviteRepository.findByInviteCode(code)
+                .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
+
+        // 유효성 검사
+        if (!invite.isUsable()) {
+            throw new InviteExpiredException("초대 코드가 만료되었거나 더 이상 유효하지 않습니다.");
+        }
+
+        // 이미 등록된 유저인가??
+        boolean alreadyJoined = groupUserRepository
+                .findByGroupIdAndUserId(invite.getGroup().getId(), userId)
+                .isPresent();
+
+        return new InviteInfoReponseDTO(
+                invite.getGroup().getName(),
+                invite.getInviter().getNickname(),
+                invite.getExpiredAt(),
+                alreadyJoined
+        );
+    }
 }

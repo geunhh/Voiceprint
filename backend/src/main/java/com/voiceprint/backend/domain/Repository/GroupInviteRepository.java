@@ -11,4 +11,6 @@ public interface GroupInviteRepository extends JpaRepository<GroupInvite, Long> 
 
     // 최신 그룹 초대 엔티티 조회
     Optional<GroupInvite> findTopByGroupIdOrderByCreatedAtDesc(Long groupId);
+
+    Optional<GroupInvite> findByInviteCode(String code);
 }

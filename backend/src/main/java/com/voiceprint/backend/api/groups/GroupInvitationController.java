@@ -3,6 +3,7 @@ package com.voiceprint.backend.api.groups;
 import com.voiceprint.backend.api.groups.dto.GroupCreateRequest;
 import com.voiceprint.backend.api.groups.dto.GroupCreateResponse;
 import com.voiceprint.backend.api.groups.dto.InviteCreateResponseDTO;
+import com.voiceprint.backend.api.groups.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.diary.GroupDiaryService;
@@ -33,13 +34,28 @@ public class GroupInvitationController {
             HttpServletRequest request,
             @PathVariable Long groupId)
     {
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
+
         log.info("그룹 초대 코드 생성 및 조회 API 호출");
         InviteCreateResponseDTO response = groupInviteService.createInvite(groupId, userId);
         log.debug("초대 코드 : {} ",response.getInviteCode());
 
         return ResponseEntity.ok(new CommonResponse<>(200, "초대 링크 조회 완료", response));
+    }
+
+    @GetMapping("/invite-info")
+    public ResponseEntity<CommonResponse<?>> getInviteInfo(
+            @RequestParam("code") String code,
+            HttpServletRequest request
+    ) {
+//        Long userId = authService.getUserIdFromRequest(request);
+        Long userId = 1L;
+
+        InviteInfoReponseDTO response = groupInviteService.getInviteInfo(code, userId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "초대 정보 조회 성공", response
+        ));
     }
 
 }
