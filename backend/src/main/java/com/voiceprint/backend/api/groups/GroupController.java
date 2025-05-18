@@ -1,6 +1,5 @@
 package com.voiceprint.backend.api.groups;
 
-import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.api.groups.dto.*;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
@@ -10,7 +9,6 @@ import com.voiceprint.backend.service.groups.GroupUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -19,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/group")
 @RequiredArgsConstructor
-public class GroupUserController {
+public class GroupController {
 
     private final GroupUserService groupUserService;
     private final GroupService groupService;
@@ -69,9 +67,9 @@ public class GroupUserController {
     }
 
     /**
-     * 내가 작성한 일기를 조회하는 API
-     * @param size
-     * @param request
+     * 특정 그룹에 공유일기 목록 조회하는 API
+     * @param size 페이지네이션 안에 들어갈 객체 갯수
+     * @param cursor 다음 페이지 확인용, 마지막 페이지이면 null
      */
     @GetMapping("/{groupId}/diaries")
     public ResponseEntity<CommonResponse<GroupDiaryListWithCursorDTO>> getGroupDiaries(
@@ -83,6 +81,20 @@ public class GroupUserController {
 
         GroupDiaryListWithCursorDTO result = groupDiaryService.getGroupDiaries(request, groupId, cursor, size);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 내 공유 일기 조회 성공", result));
+    }
+
+    /**
+     * 그룹 공유일기 상세조회 API
+     */
+    @GetMapping("/{groupId}/{diaryId}")
+    public ResponseEntity<CommonResponse<GroupDiaryDetailResponse>> getGroupDiaryDetail(
+            HttpServletRequest request,
+            @PathVariable Long groupId,
+            @PathVariable Long diaryId
+    ) {
+        Long userId = authService.getUserIdFromRequest(request);
+        GroupDiaryDetailResponse response = groupDiaryService.getGroupDiaryDetail(userId, groupId, diaryId);
+        return ResponseEntity.ok(new CommonResponse<>(200, "그룹 일기 상세조회 성공", response));
     }
 
     /**

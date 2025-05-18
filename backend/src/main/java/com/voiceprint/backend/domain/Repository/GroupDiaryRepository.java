@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,4 +25,5 @@ public interface GroupDiaryRepository extends JpaRepository<GroupDiary, Long> {
             Pageable pageable
     );
 
+    Optional<GroupDiary> findByGroupIdAndDiaryId(Long groupId, Long diaryId);
 }
