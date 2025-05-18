@@ -78,7 +78,7 @@ public class AuthService {
             throw new RuntimeException("토큰에 ID 정보가 없습니다.");
         }
 
-        System.out.printf("email="+jwtId);
+        System.out.printf("jwtId="+jwtId);
         // 3. Redis에 저장된 리프레시 토큰 조회
         String storedToken = refreshTokenRepository.findRefreshToken(jwtId);
         if (storedToken == null || !storedToken.equals(refreshToken)) {
@@ -94,7 +94,7 @@ public class AuthService {
         User user = userOptional.get();
 
         // 5. 새로운 액세스 토큰과 리프레시 토큰 생성
-        String newAccessToken = jwtUtil.createAccessToken(user.getEmail());
+        String newAccessToken = jwtUtil.createAccessToken(user.getProviderId());
         String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
         // 6. Redis에 새로운 리프레시 토큰 저장
@@ -141,7 +141,7 @@ public class AuthService {
      * Authorization 헤더에서 토큰을 추출하고, 토큰 유효성을 검증한 후 사용자 ID를 반환합니다.
      *
      * @param authorizationHeader Bearer 토큰이 포함된 Authorization 헤더 값
-     * @return 유효한 토큰이고 해당 이메일의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
+     * @return 유효한 토큰이고 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
      */
     @Transactional(readOnly = true)
     public Long getUserIdFromAuthHeader(String authorizationHeader) {
@@ -154,26 +154,26 @@ public class AuthService {
             return null;
         }
 
-        // 토큰에서 이메일 추출
-        String email = jwtUtil.getEmail(token);
-        if (email == null) {
-            log.error("이메일 null 출력");
+        // 토큰에서 providerId 추출
+        String providerId = jwtUtil.getProviderId(token);
+        if (providerId == null) {
+            log.error("providerId null");
             return null;
         }
-        log.info("email이 정상적으로 추출 : {}",email);
+        log.info("providerId이 정상적으로 추출 : {}",providerId);
 
-        // 이메일로 사용자 조회
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        // providerId로 사용자 조회
+        Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
     }
 
     /**
-     * 토큰에서 이메일을 추출하고 해당 이메일의 사용자 ID를 반환합니다.
+     * 토큰에서 providerId을 추출하고 해당 providerId의 사용자 ID를 반환합니다.
      *
      * @param token JWT 토큰
-     * @return 유효한 토큰이고 해당 이메일의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
+     * @return 유효한 토큰이고 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
      */
     @Transactional(readOnly = true)
     public Long getUserIdFromToken(String token) {
@@ -188,14 +188,14 @@ public class AuthService {
                 return null;
             }
 
-            // 토큰에서 이메일 추출
-            String email = jwtUtil.getEmail(token);
-            if (email == null) {
+            // 토큰에서 providerId 추출
+            String providerId = jwtUtil.getProviderId(token);
+            if (providerId == null) {
                 return null;
             }
 
-            // 이메일로 사용자 조회
-            Optional<User> userOptional = userRepository.findByEmail(email);
+            // providerId로 사용자 조회
+            Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
             // 사용자가 존재하면 ID 반환, 없으면 null 반환
             return userOptional.map(User::getId).orElse(null);
@@ -206,20 +206,20 @@ public class AuthService {
     }
 
     /**
-     * 이메일로 사용자 ID를 조회합니다.
+     * providerId로 사용자 ID를 조회합니다.
      *
-     * @param email 사용자 이메일
-     * @return 해당 이메일의 사용자가 존재하면 사용자 ID 반환, 없으면 null 반환
+     * @param providerId 사용자 providerId
+     * @return 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 없으면 null 반환
      */
     @Transactional(readOnly = true)
-    public Long getUserIdByEmail(String email) {
-        // 이메일이 null이면 null 반환
-        if (email == null) {
+    public Long getUserIdByProviderId(String providerId) {
+        // providerId이 null이면 null 반환
+        if (providerId == null) {
             return null;
         }
 
-        // 이메일로 사용자 조회
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        // providerId로 사용자 조회
+        Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
