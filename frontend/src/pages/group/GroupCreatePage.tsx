@@ -96,16 +96,14 @@ export default function GroupCreatePage() {
       const { data } = await axiosInstance.post("/api/v1/group", formData);
       const groupId = data.data.groupId;
       setGroupId(groupId);
-      // console.log("그룹 생성 응답: ", data.data);
+      console.log("그룹 생성 응답: ", data.data);
 
       // 초대 코드 생성
-      // const inviteRes = await axiosInstance.post(
-      //   `/api/v1/group/${groupId}/invites`
-      // );
-      // const inviteCode = inviteRes.data.inviteCode;
-
-      // 개발용 임시 초대코드
-      const inviteCode = "dummy-invite-code-1234";
+      const inviteRes = await axiosInstance.post(
+        `/api/v1/group/${groupId}/invites`
+      );
+      const inviteCode = inviteRes.data.data.inviteCode;
+      // console.log("초대 코드 확인: ", inviteCode);
 
       // 초대 링크 생성 - 배포용
       // const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
