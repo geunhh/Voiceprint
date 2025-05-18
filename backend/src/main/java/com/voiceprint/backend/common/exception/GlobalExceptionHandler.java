@@ -1,18 +1,20 @@
 package com.voiceprint.backend.common.exception;
 
+import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
 import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
 import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.common.exception.diary.*;
-import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.common.exception.group.*;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
 import com.voiceprint.backend.common.exception.user.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -137,6 +139,31 @@ public class GlobalExceptionHandler {
     public String handleUnauthorizedNotification(UnauthorizedNotificationException e) {
         return e.getMessage();
     }
+
+    @ExceptionHandler(GroupNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleGroupNotFound(GroupNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(InviteNotFoundException.class)
+    public ResponseEntity<CommonResponse<Void>> handleInviteNotFound(InviteNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new CommonResponse<>(404,e.getMessage(),null));
+    }
+
+    @ExceptionHandler(InviteExpiredException.class)
+    public ResponseEntity<CommonResponse<Void>> handleInviteExpired(InviteExpiredException e) {
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(new CommonResponse<>(410, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(AlreadyJoinedGroupException.class)
+    public ResponseEntity<CommonResponse<Void>> handleAlreadyJoined(AlreadyJoinedGroupException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new CommonResponse<>(409, e.getMessage(), null));
+    }
+
 
     @ExceptionHandler(UnauthorizedCommentAccessException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
