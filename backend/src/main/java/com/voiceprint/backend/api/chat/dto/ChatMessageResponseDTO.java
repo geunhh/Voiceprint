@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChatMessageResponseDTO {
     private String role;
-    private String message;
+    private String content;
 
 }

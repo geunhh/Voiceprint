@@ -23,7 +23,7 @@ public class TodayQuestionScheduler {
         this.todayQuestionRepository = todayQuestionRepository;
     }
 
-    @Scheduled(cron = "0 23 17 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void randomTodayQuestion() {
         log.info("schedule 작동");
         // 1) 랜덤 질문 ID 조회

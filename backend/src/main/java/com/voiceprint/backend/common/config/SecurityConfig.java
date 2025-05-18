@@ -41,6 +41,7 @@ public class SecurityConfig {
                         CorsConfiguration configuration = new CorsConfiguration();
                         configuration.setAllowedOrigins(List.of(
                                 "https://k12b106.p.ssafy.io",
+                                "http://localhost:63342", //Todo: 개발 후에 제거하기
                                 "http://localhost:5173"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
@@ -79,8 +80,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao").permitAll()
-                        .anyRequest().authenticated()); // 일단 막기.
-//                        .anyRequest().permitAll());
+//                        .anyRequest().authenticated()); // 일단 막기.
+                        .anyRequest().permitAll());
 
         //세션 설정 : STATELESS
         http

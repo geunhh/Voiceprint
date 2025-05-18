@@ -33,7 +33,7 @@ public class NotificationService {
     /**
      * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
      */
-    public void sendAndSave(User user, NotificationDTO dto) {
+    public Long sendAndSave(User user, NotificationDTO dto) {
         // 1.DB 저장
         Notification notification = Notification.create(
                 user,
@@ -41,7 +41,7 @@ public class NotificationService {
                 dto.getMessage(),
                 dto.getMetadata()
         );
-        notificationRepository.save(notification);
+        notificationRepository.saveAndFlush(notification); // save를 하면,
 
         // 2. Redis 전송
         NotificationDTO inputDto = new NotificationDTO(
@@ -50,6 +50,8 @@ public class NotificationService {
                 Map.of("notificationId", notification.getId())
         );
         redisPublisher.publishNotification(inputDto);
+
+        return notification.getId();
     }
 
 
@@ -102,6 +104,26 @@ public class NotificationService {
         if (!notification.isRead()){
             notification.markAsRead(); // 캡슐화
             log.debug("noti Id : {} -  읽음 처리 성공",notificationId);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void publishAllNotifications(List<Notification> notification) {
+        for (Notification n : notification) {
+            log.debug("notification : {}",notification);
+            NotificationDTO dto = new NotificationDTO(
+                    n.getType(),
+                    n.getMessage(),
+                    Map.of(
+                            "notificationId",n.getId(),
+                            "groupId",n.getMetadata().get("groupId"),
+                            "diaryId",n.getMetadata().get("diaryId"))
+                );
+            log.debug("notiDTO : {}",dto);
+            log.debug("notiDTO meta : {}",dto.getMetadata());
+            redisPublisher.publishNotification(dto);
+
+
         }
     }
 }
