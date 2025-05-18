@@ -37,7 +37,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         else if (providerName.equals("kakao")) {
-            oAuth2Response = new KakaoResponse((Map<String, Object>) oAuth2User.getAttributes());
+            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
         }
         else {
             return null; // 지원하지 않는 OAuth 제공자일 경우 null 반환
@@ -49,7 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String name = oAuth2Response.getName();
         ProfileImage profileImage = profileImageRepository.findById(1L)
                 .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));;
-        User user = userRepository.findByAuthProviderId(providerId)
+        User user = userRepository.findByProviderId(providerId)
                 .orElseGet(() -> {
                     User newUser = User.builder()
                             .profileImage(profileImage)

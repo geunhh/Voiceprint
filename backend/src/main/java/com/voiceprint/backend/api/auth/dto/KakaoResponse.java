@@ -36,23 +36,5 @@ public class KakaoResponse implements OAuth2Response {
 
         return "Unknown";
     }
-
-    @Override
-    public String getProfileImage() {
-        Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
-        if (properties != null && properties.containsKey("profile_image")) {
-            return properties.get("profile_image").toString();
-        }
-
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        if (kakaoAccount != null && kakaoAccount.containsKey("profile")) {
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-            if (profile.containsKey("profile_image_url")) {
-                return profile.get("profile_image_url").toString();
-            }
-        }
-
-        return null;
-    }
 }
 

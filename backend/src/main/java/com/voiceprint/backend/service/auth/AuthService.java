@@ -163,7 +163,7 @@ public class AuthService {
         log.info("providerId이 정상적으로 추출 : {}",providerId);
 
         // providerId로 사용자 조회
-        Optional<User> userOptional = userRepository.findByAuthProviderId(providerId);
+        Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
@@ -195,7 +195,7 @@ public class AuthService {
             }
 
             // providerId로 사용자 조회
-            Optional<User> userOptional = userRepository.findByAuthProviderId(providerId);
+            Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
             // 사용자가 존재하면 ID 반환, 없으면 null 반환
             return userOptional.map(User::getId).orElse(null);
@@ -219,7 +219,7 @@ public class AuthService {
         }
 
         // providerId로 사용자 조회
-        Optional<User> userOptional = userRepository.findByAuthProviderId(providerId);
+        Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);

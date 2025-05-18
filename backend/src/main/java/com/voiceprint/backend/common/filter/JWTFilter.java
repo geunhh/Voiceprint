@@ -51,7 +51,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 return;
             }
 
-            User user = userRepository.findByAuthProviderId(providerId)
+            User user = userRepository.findByProviderId(providerId)
                     .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));
 
             CustomOAuth2User customUser = new CustomOAuth2User(user);
