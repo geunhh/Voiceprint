@@ -45,13 +45,13 @@ public class JWTFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String email = jwtUtil.getEmail(token);
-            if (email == null) {
+            String providerId = jwtUtil.getProviderId(token);
+            if (providerId == null) {
                 setJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
                 return;
             }
 
-            User user = userRepository.findByEmail(email)
+            User user = userRepository.findByAuthProviderId(providerId)
                     .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));
 
             CustomOAuth2User customUser = new CustomOAuth2User(user);
