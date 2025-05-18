@@ -48,8 +48,7 @@ public class GroupInvitationController {
             @RequestParam("code") String code,
             HttpServletRequest request
     ) {
-//        Long userId = authService.getUserIdFromRequest(request);
-        Long userId = 1L;
+        Long userId = authService.getUserIdFromRequest(request);
 
         InviteInfoReponseDTO response = groupInviteService.getInviteInfo(code, userId);
 
