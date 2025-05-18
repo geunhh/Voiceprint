@@ -23,7 +23,7 @@
         // Map<sessionId, Callback> 으로 여러 세션 지원
         private final Map<String, Consumer<Object>> callbacks = new ConcurrentHashMap<>();
         private Session session;
-        @Value("${ai-server.url}")
+        @Value("${ai-websocket.url}")
         private String aiUrl;
 
         public void connect(Long userId, String frontSessionId,

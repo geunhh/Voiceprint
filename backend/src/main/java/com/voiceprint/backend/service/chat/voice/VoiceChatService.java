@@ -2,11 +2,11 @@ package com.voiceprint.backend.service.chat.voice;
 
 import com.voiceprint.backend.api.chat.dto.ChatMessage;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.chat.ChatSessionStatus;
-import com.voiceprint.backend.domain.chat.Chatbot;
-import com.voiceprint.backend.domain.chat.ChatbotRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
+import com.voiceprint.backend.domain.Entity.Chatbot;
+import com.voiceprint.backend.domain.Repository.ChatbotRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
