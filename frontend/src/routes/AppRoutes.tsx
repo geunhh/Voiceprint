@@ -95,6 +95,31 @@ const Layout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 로그인하지 않은 사용자의 접근
+  useEffect(() => {
+    const token = localStorage.getItem("Authorization");
+
+    // 공개 페이지
+    const isPublicPage = path === "/" || path === "/login-success";
+    // 그룹 초대 관련
+    const isInvitePage =
+      path.startsWith("/group/") &&
+      (path.includes("/invite/") || path.includes("/invite-info"));
+
+    if (!token) {
+      // 로그인 안 했고, 공개 페이지도 아니고, 초대 페이지도 아니면 로그인 페이지로 이동
+      if (!isPublicPage && !isInvitePage) {
+        navigate("/", { replace: true });
+      }
+    } else {
+      // 로그인 되어 있고, 공개 페이지면
+      // 초대 페이지는 예외로 두고 나머지는 메인으로 보냄
+      if (isPublicPage && !isInvitePage) {
+        navigate("/main", { replace: true });
+      }
+    }
+  }, [path, navigate]);
+
   useEffect(() => {
     const controller = new AbortController();
 
