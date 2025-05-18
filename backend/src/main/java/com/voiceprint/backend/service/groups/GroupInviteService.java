@@ -1,15 +1,11 @@
 package com.voiceprint.backend.service.groups;
 
-import com.voiceprint.backend.api.groups.dto.InviteCreateResponseDTO;
+import com.voiceprint.backend.api.groups.dto.InviteAcceptResponseDTO;
+import com.voiceprint.backend.api.groups.dto.InviteCodeResponseDTO;
 import com.voiceprint.backend.api.groups.dto.InviteInfoReponseDTO;
-import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
-import com.voiceprint.backend.common.exception.group.InviteExpiredException;
-import com.voiceprint.backend.common.exception.group.InviteNotFoundException;
-import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.common.exception.group.*;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.Group;
-import com.voiceprint.backend.domain.Entity.GroupInvite;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.GroupInviteRepository;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
 import com.voiceprint.backend.domain.Repository.GroupUserRepository;
@@ -36,7 +32,7 @@ public class GroupInviteService {
      * 유효한 초대 코드가 있을 경우 반환, 없으면 생성 후 반환
      */
     @Transactional(readOnly = false)
-    public InviteCreateResponseDTO createInvite(Long groupId, Long userId) {
+    public InviteCodeResponseDTO createInvite(Long groupId, Long userId) {
         // 그룹 조회
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("그룹을 찾을 수 없습니다."));
@@ -63,7 +59,7 @@ public class GroupInviteService {
                 });
 
 
-        return new InviteCreateResponseDTO(invite.getInviteCode());
+        return new InviteCodeResponseDTO(invite.getInviteCode());
     }
 
     /**
@@ -84,11 +80,57 @@ public class GroupInviteService {
                 .findByGroupIdAndUserId(invite.getGroup().getId(), userId)
                 .isPresent();
 
+
         return new InviteInfoReponseDTO(
                 invite.getGroup().getName(),
-                invite.getInviter().getNickname(),
+                invite.getGroup().getGroupImage(),
                 invite.getExpiredAt(),
                 alreadyJoined
+        );
+    }
+
+    /**
+     * 초대를 수락하는 메서드
+     */
+    @Transactional(readOnly = false)
+    public InviteAcceptResponseDTO acceptInvite(String code, Long userId) {
+
+        // 초대 코드 확인
+        GroupInvite invite = groupInviteRepository.findByInviteCode(code)
+                .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
+
+        if (invite.isExpired()) {
+            throw new InviteExpiredException("초대 코드가 만료되었거나 더 이상 유효하지 않습니다.");
+        }
+
+        // 그룹 조회
+        Group group = invite.getGroup();
+        log.info("group : {} and groupId :{}",group,group.getId());
+
+        // 유저 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+
+        boolean alreadyMember = groupUserRepository.existsByGroupAndUser(group,user);
+
+        if (alreadyMember) {
+            log.debug("이미 참여중인 사용자입니다. alreadyMember : {}", alreadyMember);
+            throw new AlreadyJoinedGroupException("이미 해당 그룹에 참여 중입니다.");
+        }
+
+        // 그룹 - 사용자 연관 관계 생성
+        GroupUser groupUser = GroupUser.builder()
+                .id(new GroupUserId(userId, group.getId()))
+                .group(group)
+                .user(user)
+                .role(GroupUser.Role.MEMBER)
+                .build();
+
+        groupUserRepository.save(groupUser);
+        log.info("groupUser : {} ",groupUser);
+
+        return new InviteAcceptResponseDTO(
+                group.getId()
         );
     }
 }

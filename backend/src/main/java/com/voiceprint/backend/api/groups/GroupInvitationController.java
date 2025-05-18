@@ -1,15 +1,12 @@
 package com.voiceprint.backend.api.groups;
 
-import com.voiceprint.backend.api.groups.dto.GroupCreateRequest;
-import com.voiceprint.backend.api.groups.dto.GroupCreateResponse;
-import com.voiceprint.backend.api.groups.dto.InviteCreateResponseDTO;
+import com.voiceprint.backend.api.groups.dto.InviteAcceptResponseDTO;
+import com.voiceprint.backend.api.groups.dto.InviteCodeRequestDTO;
+import com.voiceprint.backend.api.groups.dto.InviteCodeResponseDTO;
 import com.voiceprint.backend.api.groups.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.diary.GroupDiaryService;
 import com.voiceprint.backend.service.groups.GroupInviteService;
-import com.voiceprint.backend.service.groups.GroupService;
-import com.voiceprint.backend.service.groups.GroupUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,21 +27,21 @@ public class GroupInvitationController {
      * 유효 기간 1시간.
      */
     @PostMapping("/{groupId}/invites")
-    public ResponseEntity<CommonResponse<InviteCreateResponseDTO>> createInvite(
+    public ResponseEntity<CommonResponse<InviteCodeResponseDTO>> createInvite(
             HttpServletRequest request,
             @PathVariable Long groupId)
     {
         Long userId = authService.getUserIdFromRequest(request);
 
         log.info("그룹 초대 코드 생성 및 조회 API 호출");
-        InviteCreateResponseDTO response = groupInviteService.createInvite(groupId, userId);
+        InviteCodeResponseDTO response = groupInviteService.createInvite(groupId, userId);
         log.debug("초대 코드 : {} ",response.getInviteCode());
 
         return ResponseEntity.ok(new CommonResponse<>(200, "초대 링크 조회 완료", response));
     }
 
     @GetMapping("/invite-info")
-    public ResponseEntity<CommonResponse<?>> getInviteInfo(
+    public ResponseEntity<CommonResponse<InviteInfoReponseDTO>> getInviteInfo(
             @RequestParam("code") String code,
             HttpServletRequest request
     ) {
@@ -54,6 +51,21 @@ public class GroupInvitationController {
 
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "초대 정보 조회 성공", response
+        ));
+    }
+
+    @PostMapping("/invite/accept")
+    public ResponseEntity<CommonResponse<InviteAcceptResponseDTO>> acceptInvite(
+            HttpServletRequest httprequest,
+            @RequestBody InviteCodeRequestDTO request
+    ) {
+        Long userId = authService.getUserIdFromRequest(httprequest);
+        log.info("{} 유저가 그룹 초대를 수락하려고 합니다.",userId);
+
+        InviteAcceptResponseDTO response = groupInviteService.acceptInvite(request.getInviteCode(), userId);
+
+        return ResponseEntity.ok(new CommonResponse<>(
+                200, "초대 요청 처리 완료", response
         ));
     }
 

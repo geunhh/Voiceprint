@@ -1,6 +1,7 @@
 package com.voiceprint.backend.domain.Repository;
 
 import com.voiceprint.backend.api.groups.dto.UserInfoDTO;
+import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
 import com.voiceprint.backend.domain.Entity.User;
@@ -36,5 +37,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             where gu.group.id = :groupId
             """)
     List<User> findUsersByGroupId(@Param("groupId") Long groupId);
+
+    boolean existsByGroupAndUser(Group group, User user);
 }
 
