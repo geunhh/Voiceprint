@@ -79,33 +79,31 @@ const Layout = () => {
     if (!token || userId || isFetchedRef.current) return;
 
     const fetchUser = async () => {
-      isFetchedRef.current = true;
       if (location.pathname === "/") return; // 로그인 화면에서는 진행 X
       try {
         const res = await axiosInstance.get("/api/v1/user/profile");
 
         const { userId, nickname, imageUrl } = res.data.data;
         dispatch(setUser({ userId, nickname, imageUrl }));
+        isFetchedRef.current = true;
       } catch (err) {
         console.error("유저 정보 불러오기 실패:", err);
       }
     };
 
     fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sseConnected = useRef(false);
-  const controllerRef = useRef<AbortController | null>(null);
-
   useEffect(() => {
-    if (sseConnected.current || !userId || location.pathname === "/") return;
-
     const controller = new AbortController();
-    controllerRef.current = controller;
 
     const connectSSE = async () => {
+      if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
+
       try {
         const token = localStorage.getItem("Authorization");
+
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/notifications/subscribe`,
           {
@@ -117,8 +115,6 @@ const Layout = () => {
             signal: controller.signal, // 이후 연결을 중단할 수 있도록 설정
           }
         );
-
-        sseConnected.current = true;
 
         if (!res.body) {
           console.error("SSE 연결 실패");
@@ -195,11 +191,9 @@ const Layout = () => {
 
     connectSSE();
 
-    return () => {
-      controllerRef.current?.abort();
-      sseConnected.current = false;
-    };
-  }, [userId]);
+    return () => controller.abort(); // 컴포넌트가 언마운트될 때 서버와 SSE 연결 해제
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full min-h-dvh flex justify-center bg-neutral-50 overflow-x-hidden">
