@@ -27,6 +27,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -36,9 +37,6 @@ public class CommentService {
     private final NotificationRepository notificationRepository;
     private final GroupUserRepository groupUserRepository;
 
-
-
-    @Transactional
     // 댓글 작성
     public CommentCreateResponseDTO saveComment (Integer userId, Integer groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
 

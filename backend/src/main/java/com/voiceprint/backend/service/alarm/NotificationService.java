@@ -23,7 +23,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional(readOnly = false)
+@Transactional
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;

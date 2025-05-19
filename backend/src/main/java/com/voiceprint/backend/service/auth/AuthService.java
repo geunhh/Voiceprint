@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -226,6 +227,7 @@ public class AuthService {
         return userOptional.map(User::getId).orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public List<ProfileImageResponse> getProfileImages() {
         // DB에서 모든 프로필 이미지 정보를 조회
         List<ProfileImage> images = profileImageRepository.findAll();
@@ -269,6 +271,7 @@ public class AuthService {
         return userRepository.existsByNicknameAndIdNot(nickname, userId);
     }
 
+    @Transactional(readOnly = true)
     // 유저 알림 여부 확인 메서드
     public AlarmSettingsResponseDTO isReminderEnabled(Integer userId) {
         User user = userRepository.findById(userId)

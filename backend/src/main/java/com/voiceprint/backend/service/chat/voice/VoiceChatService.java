@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class VoiceChatService {
 

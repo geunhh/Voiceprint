@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 @Slf4j
-
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class GroupService {
@@ -137,7 +137,7 @@ public class GroupService {
                 group.getGroupImage()
         );
     }
-
+    @Transactional(readOnly = true)
     public List<MyGroupResponse> getMyGroups(Integer userId) {
         List<Group> groups = groupRepository.findAllByUserId(userId);
 

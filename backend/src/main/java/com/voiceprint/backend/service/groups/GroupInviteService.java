@@ -94,7 +94,6 @@ public class GroupInviteService {
     /**
      * 초대를 수락하는 메서드
      */
-    @Transactional(readOnly = false)
     public InviteAcceptResponseDTO acceptInvite(String code, Integer userId) {
 
         // 초대 코드 확인
@@ -136,7 +135,7 @@ public class GroupInviteService {
         );
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public List<Notification> saveAndSendNewMember(Integer groupId, Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
