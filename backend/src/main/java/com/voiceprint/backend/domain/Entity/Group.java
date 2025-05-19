@@ -29,9 +29,6 @@ public class Group {
     @Column(length = 255)
     private String description;
 
-    @Column(length = 10)
-    private String invitationCode;
-
     @Column(nullable = false)
     private String groupImage;
 

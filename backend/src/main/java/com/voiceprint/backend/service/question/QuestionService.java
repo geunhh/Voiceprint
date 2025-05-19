@@ -6,6 +6,7 @@ import com.voiceprint.backend.domain.Entity.TodayQuestion;
 import com.voiceprint.backend.domain.Repository.QuestionRepository;
 import com.voiceprint.backend.domain.Repository.TodayQuestionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -13,6 +14,7 @@ import java.util.NoSuchElementException;
 
 
 @Service
+@Transactional(readOnly = true)
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
