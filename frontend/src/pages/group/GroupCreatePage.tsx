@@ -4,23 +4,21 @@ import { DayPicker } from "../../components/group/DayPicker";
 import ImageUploader from "../../components/group/ImageUploader";
 import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
-import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
+import { useNavigate } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
 
 export default function GroupCreatePage() {
+  const navigate = useNavigate();
+
   const [groupName, setGroupName] = useState(""); // 그룹명
   const [groupImageFile, setGroupImageFile] = useState<File | null>(null); // 그룹 이미지
-  const [enableAlarm, setEnableAlarm] = useState(true); // 알림 설정
+  const [enableAlarm, setEnableAlarm] = useState(false); // 알림 설정
   const [alarmTime, setAlarmTime] = useState("12:00"); // 알림 시간
   const [alarmDays, setAlarmDays] = useState<string[]>([]); // 알림 요일
   const [showTimePicker, setShowTimePicker] = useState(false); // 알림
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
-  const [modalOpen, setModalOpen] = useState(false); // 초대 모달 표시 여부
-
-  const [inviteLink, setInviteLink] = useState(""); // 초대 코드
-  const [groupId, setGroupId] = useState(""); // 그룹아이디
 
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -87,24 +85,10 @@ export default function GroupCreatePage() {
     }
 
     try {
-      const { data } = await axiosInstance.post("/api/v1/group", formData);
-      const groupId = data.data.groupId;
-      setGroupId(groupId);
-      console.log("그룹 생성 응답: ", data.data);
-
-      // 초대 코드 생성
-      const inviteRes = await axiosInstance.post(
-        `/api/v1/group/${groupId}/invites`
-      );
-      const inviteCode = inviteRes.data.data.inviteCode;
-      // console.log("초대 코드 확인: ", inviteCode);
-
-      // 초대 링크 생성 - 배포용
-      // const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
-      // 초대 링크 생성 - 개발용
-      const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
-      setInviteLink(fullLink);
-      setModalOpen(true); // 모달 열기
+      const res = await axiosInstance.post("/api/v1/group", formData);
+      const groupId = res.data.data.groupId;
+      console.log("그룹 생성 확인: ", res.data);
+      navigate(`/group/${groupId}`);
     } catch (err) {
       console.error(err);
       alert("그룹 생성에 실패했습니다.");
@@ -216,15 +200,6 @@ export default function GroupCreatePage() {
           onClick={handleCreateGroup}
         />
       </div>
-
-      {/* 그룹 초대 모달 */}
-      {modalOpen && (
-        <GroupInviteModal
-          link={inviteLink}
-          onClose={() => setModalOpen(false)}
-          groupId={groupId}
-        />
-      )}
     </div>
   );
 }
