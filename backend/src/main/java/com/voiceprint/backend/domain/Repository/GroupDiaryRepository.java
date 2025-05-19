@@ -34,8 +34,8 @@ public interface GroupDiaryRepository extends JpaRepository<GroupDiary, Integer>
     ORDER BY gd.sharedAt DESC
     """)
     List<GroupDiary> findByGroupIdsWithCursorExcludeUser(
-            @Param("groupIds") List<Long> groupIds,
+            @Param("groupIds") List<Integer> groupIds,
             @Param("cursor") LocalDateTime cursor,
-            @Param("userId") Long userId, Pageable pageable);
+            @Param("userId") Integer userId, Pageable pageable);
     Optional<GroupDiary> findByGroupIdAndDiaryId(Integer groupId, Integer diaryId);
 }

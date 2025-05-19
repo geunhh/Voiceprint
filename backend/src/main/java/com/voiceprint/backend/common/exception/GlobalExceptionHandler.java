@@ -181,12 +181,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleCommentNotFoundException(CommentNotFoundException e) { return e.getMessage();}
 
-    @ExceptionHandler(GroupUserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleGroupUserNotFound(GroupUserNotFoundException e) {
-        return e.getMessage();
-    }
-
     // 공통 응답 생성메서드
 
 }
