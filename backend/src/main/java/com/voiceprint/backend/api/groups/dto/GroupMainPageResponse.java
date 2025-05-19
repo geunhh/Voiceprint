@@ -1,5 +1,6 @@
 package com.voiceprint.backend.api.groups.dto;
 
+import com.voiceprint.backend.domain.Entity.GroupUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -21,4 +22,5 @@ public class GroupMainPageResponse {
     private List<UserInfoDTO> groupUserList;
     private LocalDateTime joinedAt;
     private String groupImage;
+    private GroupUser.Role role;
 }
