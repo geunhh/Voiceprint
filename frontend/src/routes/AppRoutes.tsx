@@ -99,23 +99,19 @@ const Layout = () => {
   useEffect(() => {
     const token = localStorage.getItem("Authorization");
 
-    // 공개 페이지
     const isPublicPage = path === "/" || path === "/login-success";
-    // 그룹 초대 관련
     const isInvitePage =
       path.startsWith("/group/") &&
-      (path.includes("/invite/") || path.includes("/invite-info"));
+      (path.includes("/invite") || path.includes("/invite-info"));
 
     if (!token) {
-      // 로그인 안 했고, 공개 페이지도 아니고, 초대 페이지도 아니면 로그인 페이지로 이동
-      if (!isPublicPage && !isInvitePage) {
-        navigate("/", { replace: true });
+      // 초대 페이지면 리다이렉트 경로 저장
+      if (isInvitePage) {
+        localStorage.setItem("redirectAfterLogin", path);
       }
-    } else {
-      // 로그인 되어 있고, 공개 페이지면
-      // 초대 페이지는 예외로 두고 나머지는 메인으로 보냄
-      if (isPublicPage && !isInvitePage) {
-        navigate("/main", { replace: true });
+
+      if (!isPublicPage) {
+        navigate("/", { replace: true });
       }
     }
   }, [path, navigate]);
