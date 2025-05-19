@@ -126,6 +126,8 @@ const Layout = () => {
     const connectSSE = async () => {
       if (location.pathname === "/") return; // 로그인 화면에서는 알림 보이지 않도록
 
+      console.log("[SSE] 연결 시도");
+
       try {
         const token = localStorage.getItem("Authorization");
 
@@ -140,11 +142,18 @@ const Layout = () => {
             signal: controller.signal, // 이후 연결을 중단할 수 있도록 설정
           }
         );
+        console.log("[SSE] 응답 상태:", res.status);
 
-        if (!res.body) {
-          console.error("SSE 연결 실패");
+        if (!res.ok) {
+          console.error("[SSE] 실패 - 응답 코드:", res.status);
           return;
         }
+
+        if (!res.body) {
+          return;
+        }
+
+        console.log("[SSE] 연결 성공!");
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder("utf-8");
@@ -154,7 +163,11 @@ const Layout = () => {
           // 서버에서 실시간으로 알림이 올 경우 읽기
           const { done, value } = await reader.read();
           // done일 경우 연결이 끊어진 것
-          if (done) break;
+          if (done) {
+            console.warn("[SSE] 연결 종료 -> 5초 후 재연결");
+            setTimeout(connectSSE, 5000);
+            break;
+          }
 
           buffer += decoder.decode(value, { stream: true }); // 서버에서 받은 데이터를 텍스트로 바꾸고 buffer에 누적
 
@@ -207,6 +220,7 @@ const Layout = () => {
             }
           }
         }
+        setTimeout(connectSSE, 5000); // 5초 후 재시도
       } catch (err: unknown) {
         if (err instanceof Error && err.name !== "AbortError") {
           console.error("SSE 연결 오류:", err);
@@ -216,8 +230,17 @@ const Layout = () => {
 
     connectSSE();
 
-    return () => controller.abort(); // 컴포넌트가 언마운트될 때 서버와 SSE 연결 해제
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // 브라우저가 닫히거나 새로고침되면 연결 끊기
+    const handleBeforeUnload = () => {
+      console.log("[SSE] 브라우저 종료 감지 → 연결 중단");
+      controller.abort();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      controller.abort(); // 컴포넌트 언마운트 시 중단
+      window.removeEventListener("beforeunload", handleBeforeUnload); // 이벤트 제거
+    };
   }, []);
 
   return (
