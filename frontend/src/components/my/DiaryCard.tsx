@@ -13,11 +13,11 @@ interface DiaryCardProps {
 }
 
 const emotionIcons = {
-  행복: { img: emotion1, bg: "bg-[#FFA9A9]" },
-  설렘: { img: emotion2, bg: "bg-[#FFBA66]" },
-  피로: { img: emotion3, bg: "bg-[#FFE792]" },
-  짜증: { img: emotion4, bg: "bg-[#91DD4B]" },
-  우울: { img: emotion5, bg: "bg-[#7DBEFF]" },
+  행복: { img: emotion1, bg: "bg-[#FFA9A9]", border: "border-[#FFA9A9]/30" },
+  설렘: { img: emotion2, bg: "bg-[#FFBA66]", border: "border-[#FFBA66]/30" },
+  피로: { img: emotion3, bg: "bg-[#FFE792]", border: "border-[#FFE792]/30" },
+  짜증: { img: emotion4, bg: "bg-[#91DD4B]", border: "border-[#91DD4B]/30" },
+  우울: { img: emotion5, bg: "bg-[#7DBEFF]", border: "border-[#7DBEFF]/30" },
 };
 
 function formatDate(dateString: string) {
@@ -35,12 +35,12 @@ export default function DiaryCard({
   emotion,
 }: DiaryCardProps) {
   const navigate = useNavigate();
-  const { img, bg } = emotionIcons[emotion];
+  const { img, bg, border } = emotionIcons[emotion];
 
   return (
     <div
       onClick={() => navigate(`/diary/${diaryId}`)}
-      className="w-28 p-3 rounded-2xl border border-gray-100 hover:shadow-md cursor-pointer transition transform max-[375px]:scale-90"
+      className={`w-28 p-3 rounded-2xl border ${border} hover:shadow-md cursor-pointer transition transform max-[375px]:scale-90`}
     >
       <div
         className={`w-full h-16 rounded-lg flex items-center justify-center ${bg}`}

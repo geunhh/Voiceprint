@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import CommentBubble from "./CommentBubble";
 
 interface Comment {
+  commentId: number;
   userId: number;
   userName: string;
   userImage: string;
@@ -9,41 +10,70 @@ interface Comment {
   createdAt: string;
 }
 
+interface CommentProps {
+  comments: Comment[];
+  authorId: number;
+  onReachBottom: () => void;
+  hasNext: boolean;
+  currentUserId: number | null;
+  onDeleteComment: (commentId: number) => void;
+}
+
 export default function CommentList({
   comments,
   authorId,
-}: {
-  comments: Comment[];
-  authorId: number;
-}) {
-  const endRef = useRef<HTMLDivElement | null>(null);
+  onReachBottom,
+  hasNext,
+  currentUserId,
+  onDeleteComment,
+}: CommentProps) {
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const lastCommentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView();
-  }, [comments]);
+    if (!hasNext || !lastCommentRef.current) return;
 
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onReachBottom();
+        }
+      },
+      {
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    observerRef.current.observe(lastCommentRef.current);
+
+    return () => observerRef.current?.disconnect();
+  }, [comments, hasNext]);
   return (
     <div
       className="
         comment-list
-        w-11/12 mx-auto rounded-xl border border-yellow-400 bg-white 
-        px-5 py-4 text-gray-700 text-sm overflow-y-auto
-        space-y-4
-        max-h-[450px] min-h-[300px]
+        w-full mx-auto rounded-xl
+         text-gray-700 text-sm overflow-y-auto
+        space-y-4 pb-24
       "
     >
-      {comments.map((c, i) => (
-        <CommentBubble
-          key={i}
-          from={c.userId === authorId ? "author" : "others"}
-          text={c.content}
-          userImage={c.userImage}
-          userName={c.userName}
-          createdAt={c.createdAt}
-        />
-      ))}
-      {/* 마지막 요소에 ref 연결 */}
-      <div ref={endRef} />
+      {comments.map((c, i) => {
+        const isLast = i === comments.length - 1;
+        return (
+          <div key={c.commentId} ref={isLast ? lastCommentRef : null}>
+            <CommentBubble
+              comment={c}
+              isAuthor={c.userId === authorId}
+              currentUserId={currentUserId}
+              onDelete={onDeleteComment}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

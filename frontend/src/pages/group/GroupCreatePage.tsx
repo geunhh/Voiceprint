@@ -1,8 +1,6 @@
-import Add from "../../assets/icons/add.png";
 import ImageEdit from "../../assets/icons/edit.png";
 
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 import Button from "../../components/common/Button";
 import { DayPicker } from "../../components/group/DayPicker";
 import ImageUploader from "../../components/group/ImageUploader";
@@ -14,12 +12,8 @@ import { useSelector } from "react-redux";
 import axiosInstance from "../../api/axiosInstance";
 import { RootState } from "../../store/store";
 
-// 초대 링크
-const inviteLink = "www.voice_print/group/1/invite/1234";
-
 export default function GroupCreatePage() {
   const user = useSelector((state: RootState) => state.user);
-  const navigate = useNavigate();
 
   const [groupName, setGroupName] = useState(""); // 그룹명
   const [groupImageFile, setGroupImageFile] = useState<File | null>(null); // 그룹 이미지
@@ -30,6 +24,9 @@ export default function GroupCreatePage() {
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
   const [modalOpen, setModalOpen] = useState(false); // 초대 모달 표시 여부
+
+  const [inviteLink, setInviteLink] = useState(""); // 초대 코드
+  const [groupId, setGroupId] = useState(""); // 그룹아이디
 
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -97,8 +94,23 @@ export default function GroupCreatePage() {
 
     try {
       const { data } = await axiosInstance.post("/api/v1/group", formData);
-      // 성공 시 해당 그룹 상세 페이지로 이동
-      navigate(`/group/${data.data.groupId}`);
+      const groupId = data.data.groupId;
+      setGroupId(groupId);
+      console.log("그룹 생성 응답: ", data.data);
+
+      // 초대 코드 생성
+      const inviteRes = await axiosInstance.post(
+        `/api/v1/group/${groupId}/invites`
+      );
+      const inviteCode = inviteRes.data.data.inviteCode;
+      // console.log("초대 코드 확인: ", inviteCode);
+
+      // 초대 링크 생성 - 배포용
+      const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
+      // 초대 링크 생성 - 개발용
+      // const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
+      setInviteLink(fullLink);
+      setModalOpen(true); // 모달 열기
     } catch (err) {
       console.error(err);
       alert("그룹 생성에 실패했습니다.");
@@ -143,13 +155,6 @@ export default function GroupCreatePage() {
             />
             <p className="font-semibold text-gray-500">{user.nickname}</p>
           </div>
-          {/* 초대하기 버튼 */}
-          <img
-            src={Add}
-            alt="초대하기"
-            className="w-12 h-12"
-            onClick={() => setModalOpen(true)}
-          />
         </div>
       </div>
 
@@ -234,6 +239,7 @@ export default function GroupCreatePage() {
         <GroupInviteModal
           link={inviteLink}
           onClose={() => setModalOpen(false)}
+          groupId={groupId}
         />
       )}
     </div>
