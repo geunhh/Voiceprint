@@ -127,7 +127,7 @@ public class DiaryThemaService {
         return new DiaryThemaCreateResponse(saved.getId(), saved.getExample());
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public void updateCustomThemaFromDiary(Long userId, Long diaryId) {
         //1. 일기 조회
         Diary diary = diaryRepository.findById(diaryId)
@@ -163,6 +163,7 @@ public class DiaryThemaService {
     /**
      * 사용중인 테마 조회 메소드
      */
+    @Transactional(readOnly = true)
     public UsingDiaryThemaResponseDTO getUsingThema(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));

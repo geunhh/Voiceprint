@@ -27,6 +27,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -36,9 +37,6 @@ public class CommentService {
     private final NotificationRepository notificationRepository;
     private final GroupUserRepository groupUserRepository;
 
-
-
-    @Transactional
     // 댓글 작성
     public CommentCreateResponseDTO saveComment (long userId, long groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
 
@@ -150,7 +148,6 @@ public class CommentService {
 
 
     // 댓글 삭제
-    @Transactional
     public void deleteComment (int commentId, long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("댓글이 없습니다."));

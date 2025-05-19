@@ -4,12 +4,13 @@ import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
 import com.voiceprint.backend.domain.Repository.GroupUserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class GroupUserService {
 
@@ -18,7 +19,6 @@ public class GroupUserService {
     /**
      * 새로운 관리자로 승급할 때 기존 관리자 강등
      */
-    @Transactional
     public ResponseEntity<CommonResponse<String>> promoteToAdmin(Long groupId, Long currentAdminId, Long newAdminUserId) {
         // 현재 ADMIN 확인
         GroupUser currentAdmin = groupUserRepository.findByGroupIdAndRole(groupId, GroupUser.Role.ADMIN);

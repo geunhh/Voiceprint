@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class GroupDiaryService {
     private final GroupDiaryRepository groupDiaryRepository;
@@ -43,7 +44,6 @@ public class GroupDiaryService {
      * 사용자가 선택한 일기를 선택한 그룹들에 공유함
      * 선택한 그룹에 포함된 유저들에게 알림 생성 후 전송.
      */
-    @Transactional(readOnly = false)
     public List<Notification> saveSharedDiary(Long diaryId, Long userId, List<Long> groupIds) {
         // Diary 찾기.
         Diary diary = diaryRepository.findById(diaryId)
