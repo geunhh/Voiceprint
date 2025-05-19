@@ -77,9 +77,8 @@ public class User {
     private Chatbot lastChatbot;
 
     // 알림 여부
-    @Column(columnDefinition = "BOOLEAN", nullable = true)
-    @Builder.Default
-    private Boolean enableAlarm = null;
+    @Column(nullable = true, columnDefinition = "BOOLEAN")
+    private Boolean enableAlarm;
 
     // 알람 시간 21:00 기본.
     @Column(columnDefinition = "TIME DEFAULT '21:00'")
