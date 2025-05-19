@@ -157,9 +157,9 @@ export default function GroupEditPage() {
       // console.log("초대 코드 확인: ", inviteCode);
 
       // 초대 링크 생성 - 배포용
-      // const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
+      const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
       // 초대 링크 생성 - 개발용
-      const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
+      // const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
       setInviteLink(fullLink);
       setModalOpen(true);
     } catch (err) {
