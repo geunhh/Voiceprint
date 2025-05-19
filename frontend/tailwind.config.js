@@ -30,11 +30,17 @@ module.exports = {
           "60%": { transform: "translateX(3px)  rotate(2deg)" },
           "75%": { transform: "translateX(-2px) rotate(-1deg)" },
         },
+        /* 테두리 애니메이션 효과 */
+        shimmer: {
+          "0%": { backgroundPosition: "0% 50%" },
+          "100%": { backgroundPosition: "150% 50%" },
+        },
       },
       animation: {
         /* 이름:  키프레임 시간 타이밍 옵션 */
         float: "float 3s ease-in-out infinite",
         shake: "shake 2s linear infinite",
+        shimmer: "shimmer 3s linear infinite",
       },
     },
   },
