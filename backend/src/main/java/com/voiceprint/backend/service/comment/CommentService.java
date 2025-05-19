@@ -63,7 +63,7 @@ public class CommentService {
             if (target.getId() == userId) continue;
 
             Map<String, Object> metadata = Map.of(
-                    "groupId", groupDiary.getGroup().getId(),
+                    "groupId", group.getId(),
                     "diaryId", groupDiary.getDiary().getId()
             );
 
@@ -71,18 +71,21 @@ public class CommentService {
                     target,
                     "newComment",
                     user.getNickname() + "님이 " + group.getName() + " 그룹의 내 일기에 댓글을 남겼습니다. 확인해보세요!!",
-                    null
+                    metadata
             );
             notifications.add(notification);
         }
 
         notificationRepository.saveAll(notifications); // 먼저 저장 -> ID확보
+        notificationRepository.flush();
 
         // 트랜잭션 커밋 이후 실행
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
+                // Metadata에 알림Id 추가.
                 for (Notification notification : notifications) {
+                    log.debug("notification : {}, id : {}",notification, notification.getId());
                     Map<String, Object> metadata = Map.of(
                             "notificationId", notification.getId(),
                             "groupId", group.getId(),
