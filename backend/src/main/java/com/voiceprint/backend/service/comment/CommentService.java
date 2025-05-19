@@ -27,6 +27,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -36,11 +37,8 @@ public class CommentService {
     private final NotificationRepository notificationRepository;
     private final GroupUserRepository groupUserRepository;
 
-
-
-    @Transactional
     // 댓글 작성
-    public CommentCreateResponseDTO saveComment (long userId, long groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
+    public CommentCreateResponseDTO saveComment (Integer userId, Integer groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User를 찾을 수 없습니다."));
@@ -65,7 +63,7 @@ public class CommentService {
             if (target.getId() == userId) continue;
 
             Map<String, Object> metadata = Map.of(
-                    "groupId", groupDiary.getGroup().getId(),
+                    "groupId", group.getId(),
                     "diaryId", groupDiary.getDiary().getId()
             );
 
@@ -73,19 +71,21 @@ public class CommentService {
                     target,
                     "newComment",
                     user.getNickname() + "님이 " + group.getName() + " 그룹의 내 일기에 댓글을 남겼습니다. 확인해보세요!!",
-                    null
+                    metadata
             );
             notifications.add(notification);
         }
 
-        // 저장
-        notificationRepository.saveAll(notifications);
+        notificationRepository.saveAll(notifications); // 먼저 저장 -> ID확보
+        notificationRepository.flush();
 
         // 트랜잭션 커밋 이후 실행
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
+                // Metadata에 알림Id 추가.
                 for (Notification notification : notifications) {
+                    log.debug("notification : {}, id : {}",notification, notification.getId());
                     Map<String, Object> metadata = Map.of(
                             "notificationId", notification.getId(),
                             "groupId", group.getId(),
@@ -94,6 +94,10 @@ public class CommentService {
                     notification.setMetadata(metadata);  // 메타데이터 주입
                 }
 
+                // 메타데이터 DB 반영
+                notificationService.updateNotificationMetadata(notifications);
+
+                // SSE 발행
                 notificationService.publishAllNotifications(notifications);
             }
         });
@@ -151,7 +155,7 @@ public class CommentService {
 
     // 댓글 삭제
     @Transactional
-    public void deleteComment (int commentId, long userId) {
+    public void deleteComment (Integer commentId, Integer userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("댓글이 없습니다."));
 

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ProfileImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Byte id;
 
     @Column(nullable = false)
     private String title;

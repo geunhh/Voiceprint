@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // 프로필 이미지
     @ManyToOne(fetch = FetchType.LAZY)

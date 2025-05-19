@@ -21,8 +21,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         order by n.id desc
         """)
     List<Notification> findMyNotifications(
-            @Param("userId") Long userId,
+            @Param("userId") Integer userId,
             @Param("cursor") Long cursor, Pageable pageable);
 
-    Optional<Notification> findByIdAndUserId(Long notificationId, Long userId);
+    Optional<Notification> findByIdAndUserId(Long notificationId, Integer userId);
 }

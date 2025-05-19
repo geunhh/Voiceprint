@@ -12,24 +12,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface DiaryRepository extends JpaRepository<Diary, Long> {
+public interface DiaryRepository extends JpaRepository<Diary, Integer> {
 
     @Query("SELECT d from Diary d where d.user.id = :userId" +
             " and (:cursor is null or d.id < :cursor) order by d.id desc")
-    List<Diary> findMyDiaries(@Param("userId") Long userId,@Param("cursor") Long cursor, Pageable pageable);
+    List<Diary> findMyDiaries(@Param("userId") Integer userId,@Param("cursor") Integer cursor, Pageable pageable);
 
     @Query("select d from Diary d where d.user.id = :userId and d.createdAt between :startDate and :endDate order by d.createdAt desc")
     List<Diary> findByUserIdAndDateRange(
-            @Param("userId") Long userId,
+            @Param("userId") Integer userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
-    List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Long userId);
+    List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Integer userId);
 
     @Query("select d from Diary d where" +
             " d.user.id = :userId and d.createdAt between :start and :end")
     List<Diary> findByUserIdAndCreatedAtBetween(
-            @Param("userId") Long userId,
+            @Param("userId") Integer userId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 }
