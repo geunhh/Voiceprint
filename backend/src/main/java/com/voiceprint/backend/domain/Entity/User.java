@@ -25,7 +25,7 @@ public class User {
 
 
     @Column(nullable = false, length = 50)
-    private String email;
+    private String providerId;
 
     @Column(nullable = false, length = 30)
     private String nickname;

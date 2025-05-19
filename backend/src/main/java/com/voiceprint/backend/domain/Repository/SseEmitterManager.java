@@ -16,8 +16,15 @@ public class SseEmitterManager {
 
     // 새로운 SSE 연결을 추가하는 메서드
     public SseEmitter add(Long userId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); //무한 타임아웃 설정
+        // 기존 emitter가 있다면, 먼저 종료하고 제거
+        if (emitters.containsKey(userId)) {
+            try {
+                emitters.get(userId).complete(); // 서버 -> client 연결 강제 종료
+            } catch (Exception ignored) {}
+            emitters.remove(userId);
+        }
 
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); //무한 타임아웃 설정
         emitters.put(userId, emitter);
 
         // 연결이 끊기거나 오류가 날 경우 emitter 제거

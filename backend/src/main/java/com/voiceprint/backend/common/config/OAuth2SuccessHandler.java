@@ -30,9 +30,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         try {
             CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
 
-            String email = user.getUsername();
+            String providerId = user.getUsername();
             Long userId = user.getUserId();
-            String accessToken = jwtUtil.createAccessToken(email);
+            String accessToken = jwtUtil.createAccessToken(providerId);
             String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
 
             // Redis에 리프레시 토큰 저장
