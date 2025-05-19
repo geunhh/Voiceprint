@@ -6,6 +6,8 @@ module.exports = {
       fontFamily: {
         sans: ["Pretendard", "ui-sans-serif", "system-ui"],
         onemobile: ["ONEMobilePOP", "sans-serif"],
+        muruk: ["Muruk", "sans-serif"],
+        uhbee: ["Uhbee", "sans-serif"],
       },
       colors: {
         mint: "#B5E6E2", // 민트색
