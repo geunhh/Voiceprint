@@ -36,6 +36,7 @@ public class AuthService {
     private final ProfileImageRepository profileImageRepository;
     private final DiaryRepository diaryRepository;
 
+    @Transactional(readOnly = true)
     public ProfileResponse getProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
