@@ -114,6 +114,7 @@ export default function GroupEditPage() {
         setIsOn(d.enableAlarm);
         setSelectedTime(d.alarmTime?.slice(0, 5) ?? "12:00");
         setSelectedDays((d.alarmDays || []).map((e: string) => engToKor[e]));
+        console.log(d);
       } catch (err) {
         console.error(err);
       } finally {

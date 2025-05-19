@@ -1,6 +1,6 @@
 interface NotificationFilterTabsProps {
-  selected: "all" | "newDiary" | "newComment";
-  onSelect: (type: "all" | "newDiary" | "newComment") => void;
+  selected: "all" | "newDiary" | "newComment" | "newMember";
+  onSelect: (type: "all" | "newDiary" | "newComment" | "newMember") => void;
 }
 
 export default function NotificationFilterTabs({
@@ -15,7 +15,7 @@ export default function NotificationFilterTabs({
         onClick={() => onSelect("all")}
       />
       <TabButton
-        label="그룹 일기"
+        label="일기"
         isSelected={selected === "newDiary"}
         onClick={() => onSelect("newDiary")}
       />
@@ -23,6 +23,11 @@ export default function NotificationFilterTabs({
         label="댓글"
         isSelected={selected === "newComment"}
         onClick={() => onSelect("newComment")}
+      />
+      <TabButton
+        label="멤버"
+        isSelected={selected === "newMember"}
+        onClick={() => onSelect("newMember")}
       />
     </div>
   );

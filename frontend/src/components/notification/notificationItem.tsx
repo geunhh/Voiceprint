@@ -2,9 +2,10 @@ import { useNavigate } from "react-router";
 import happyCharacter from "../../assets/icons/happyCharacter.png";
 import lovelyCharacter from "../../assets/icons/lovelyCharacter.png";
 import questionCharacter from "../../assets/icons/questionCharacter.png";
+import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 interface NotificationItemProps {
-  type: "reminder" | "newComment" | "newDiary";
+  type: "reminder" | "newComment" | "newDiary" | "newMember";
   groupId?: number;
   diaryId?: number;
   message: string;
@@ -16,12 +17,14 @@ const notificationImageMap: Record<NotificationItemProps["type"], string> = {
   reminder: lovelyCharacter,
   newComment: happyCharacter,
   newDiary: questionCharacter,
+  newMember: robotCharacter,
 };
 
 const notificationTitleMap: Record<NotificationItemProps["type"], string> = {
   reminder: "오늘의 말자국",
   newComment: "새로운 댓글",
   newDiary: "새로운 일기",
+  newMember: "새로운 멤버",
 };
 
 function NotificationItem({
@@ -40,8 +43,14 @@ function NotificationItem({
   const handleClick = () => {
     if (onClick) return onClick();
     if (groupId && diaryId) {
-      // 그룹 댓글 및 그룹 일기 알림의 경우 해당 일기 상세 페이지로 이동
+      // newComment, newDiary 알림의 경우 해당 일기 상세 페이지로 이동
       navigate(`/group/${groupId}/diary/${diaryId}`);
+    } else if (type === "newMember") {
+      // newMenber 알림의 경우 해당 그룹 상세 페이지로 이동
+      navigate(`/group/${groupId}`);
+    } else if (type === "newComment") {
+      // newComment 알림의 경우 해당 그룹 상세 페이지로 이동
+      navigate(`/group/${groupId}`);
     } else {
       // 일기 작성 reminder 알림의 경우 일기 작성 페이지로 이동
       navigate("diary/setting/friend");
