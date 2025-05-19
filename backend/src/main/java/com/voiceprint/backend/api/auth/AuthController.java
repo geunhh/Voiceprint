@@ -137,10 +137,23 @@ public class AuthController {
         return null;
     }
 
-    @GetMapping("/google")
-    public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/oauth2/authorization/google");  // Spring Security OAuth2 URL로 리다이렉트
+    /**
+     * Google 로그인 페이지로 리다이렉트하는 엔드포인트
+     *
+     * @param response HTTP 응답 객체
+     * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
+     */
+    @GetMapping("/{type}")
+    public void redirectToGoogleLogin(
+            @PathVariable String type, HttpServletResponse response) throws IOException {
+
+        if (type.equals("google")) {
+            response.sendRedirect("/oauth2/authorization/google");
+        } else if (type.equals("kakao")) {
+            response.sendRedirect("/oauth2/authorization/kakao");
+        }
     }
+
 
     @GetMapping("/search")
     public ResponseEntity<?>findUser(HttpServletRequest request) {
