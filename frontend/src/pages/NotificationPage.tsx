@@ -6,7 +6,7 @@ const notifications = [
     message: "[알림 1] 표시할 메시지",
   },
   {
-    type: "commentCreated",
+    type: "newComment",
     message: "[알림 2] 표시할 메시지",
     groupId: 1,
     diaryId: 1,
