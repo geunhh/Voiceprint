@@ -10,9 +10,6 @@ import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
 import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
-// 초대 링크
-const inviteLink = "www.voice_print/group/1/invite/1234";
-
 interface GroupUser {
   id: number;
   profileImageUrl: string;
@@ -64,6 +61,8 @@ export default function GroupEditPage() {
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
 
+  const [inviteLink, setInviteLink] = useState("");
+
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
     const weekends = ["토요일", "일요일"];
@@ -114,6 +113,7 @@ export default function GroupEditPage() {
         setIsOn(d.enableAlarm);
         setSelectedTime(d.alarmTime?.slice(0, 5) ?? "12:00");
         setSelectedDays((d.alarmDays || []).map((e: string) => engToKor[e]));
+        console.log(d);
       } catch (err) {
         console.error(err);
       } finally {
@@ -141,6 +141,30 @@ export default function GroupEditPage() {
     } catch (err) {
       console.error(err);
       alert("수정 실패");
+    }
+  };
+
+  // 그룹 초대 코드 생성
+  const fetchInviteLink = async () => {
+    if (!groupId) return;
+
+    try {
+      // 초대 코드 생성
+      const inviteRes = await axiosInstance.post(
+        `/api/v1/group/${groupId}/invites`
+      );
+      const inviteCode = inviteRes.data.data.inviteCode;
+      // console.log("초대 코드 확인: ", inviteCode);
+
+      // 초대 링크 생성 - 배포용
+      const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
+      // 초대 링크 생성 - 개발용
+      // const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
+      setInviteLink(fullLink);
+      setModalOpen(true);
+    } catch (err) {
+      console.error("초대 코드 생성 실패", err);
+      alert("초대 링크를 생성하는 데 실패했습니다.");
     }
   };
 
@@ -197,7 +221,7 @@ export default function GroupEditPage() {
             src={Add}
             alt="초대하기"
             className="w-12 h-12 shrink-0"
-            onClick={() => setModalOpen(true)}
+            onClick={fetchInviteLink}
           />
         </div>
       </div>

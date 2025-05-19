@@ -1,7 +1,7 @@
 import QuestionCharacter from "../../assets/icons/questionCharacter.png";
 
 interface TodayQuestionProps {
-  question: string[];
+  question: string;
 }
 
 function TodayQuestion({ question }: TodayQuestionProps) {
