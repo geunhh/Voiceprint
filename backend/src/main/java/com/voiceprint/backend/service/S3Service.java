@@ -3,6 +3,7 @@ package com.voiceprint.backend.service;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class S3Service {
 

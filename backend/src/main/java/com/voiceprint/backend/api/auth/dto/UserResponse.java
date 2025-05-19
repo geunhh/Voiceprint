@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserResponse {
-    private Long userId;
+    private Integer userId;
 }

@@ -13,6 +13,6 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)  // null 필드 제외
 public class ProfileUpdateRequest {
     private String nickname;
-    private Long profileImageId;
+    private Byte profileImageId;
 }
 

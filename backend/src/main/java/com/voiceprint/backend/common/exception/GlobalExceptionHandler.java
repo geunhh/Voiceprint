@@ -146,6 +146,12 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(GroupUserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleGroupUserNotFound(GroupUserNotFoundException e) {
+        return e.getMessage();
+    }
+
     @ExceptionHandler(InviteNotFoundException.class)
     public ResponseEntity<CommonResponse<Void>> handleInviteNotFound(InviteNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

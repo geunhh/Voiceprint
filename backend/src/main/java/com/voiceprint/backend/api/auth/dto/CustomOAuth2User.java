@@ -49,7 +49,7 @@ public class CustomOAuth2User implements OAuth2User {
     }
 
     // 사용자 ID 반환 (리프레시 토큰용)
-    public Long getUserId() {
+    public Integer getUserId() {
         return user.getId();
     }
 }

@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class GroupDiaryDetailResponse {
-    private Long groupDiaryId;
-    private Long groupId;
+    private Integer groupDiaryId;
+    private Integer groupId;
     private String groupName;
-    private Long diaryId;
-    private Long userId;
+    private Integer diaryId;
+    private Integer userId;
     private String userName;
     private String userImage;
     private LocalDateTime createdAt;

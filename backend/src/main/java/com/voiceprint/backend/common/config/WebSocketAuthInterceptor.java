@@ -30,7 +30,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
 //                Long userId = 1L;
                 // backend 병합 후 주석 해제
-                Long userId = authService.getUserIdFromAuthHeader(authHeader);
+                Integer userId = authService.getUserIdFromAuthHeader(authHeader);
                 if (userId != null) {
                     attributes.put("userId", userId);
                     return true;
@@ -41,7 +41,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             String token = servletRequest.getServletRequest().getParameter("token");
             if (token != null) {
 //                Long userId = 1L;
-                Long userId = authService.getUserIdFromToken(token);
+                Integer userId = authService.getUserIdFromToken(token);
                 if (userId != null) {
                     attributes.put("userId", userId);
                     return true;

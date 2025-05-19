@@ -12,22 +12,22 @@ public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void saveText(Long userId, String transcript) {
+    public void saveText(Integer userId, String transcript) {
         String sessionKey = "voice:session:" + userId;
         redisTemplate.opsForHash().put(sessionKey, "transcript", transcript);
     }
 
-    public void saveSession(Long userId, Map<String, Object> data) {
+    public void saveSession(Integer userId, Map<String, Object> data) {
         String sessionKey = "voice:session:" + userId;
         redisTemplate.opsForHash().putAll(sessionKey, data);
     }
 
-    public void updateStatus(Long userId, String status) {
+    public void updateStatus(Integer userId, String status) {
         String sessionKey = "voice:session:" + userId;
         redisTemplate.opsForHash().put(sessionKey, "status", status);
     }
 
-    public void deleteSession(Long userId) {
+    public void deleteSession(Integer userId) {
         String sessionKey = "voice:session:" + userId;
         redisTemplate.delete(sessionKey);
     }

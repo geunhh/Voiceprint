@@ -23,7 +23,7 @@ public class TodayQuestion {
     private LocalDate date; // pk 오늘 날짜
 
     @Column(name = "question_id", nullable = false)
-    private byte questionId;
+    private Byte questionId;
 
     public TodayQuestion(LocalDate date) {
         this.date = date;
