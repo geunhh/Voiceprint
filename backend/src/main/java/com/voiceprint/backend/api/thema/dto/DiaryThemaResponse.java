@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class DiaryThemaResponse {
-    private Long id;
+    private Integer id;
     private String title;
     private String description;
     private String example;

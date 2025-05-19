@@ -7,5 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class EmotionCountDTO {
     private String emotion;
-    private int count;
+    private Integer count;
 }

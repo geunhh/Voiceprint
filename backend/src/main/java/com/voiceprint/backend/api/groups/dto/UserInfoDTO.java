@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserInfoDTO {
-    private Long id;
+    private Integer id;
     private String profileImageUrl;
     private String nickname;
 }

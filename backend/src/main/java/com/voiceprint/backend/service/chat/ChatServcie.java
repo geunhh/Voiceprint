@@ -29,7 +29,7 @@ public class ChatServcie {
     @Value("${message.key}")
     private String message_key;
 
-    public ChatTextResponseDTO processChat(Long userId, String message) {
+    public ChatTextResponseDTO processChat(Integer userId, String message) {
         // requestBody 초기화
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("user_id",userId);

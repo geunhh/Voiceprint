@@ -30,7 +30,7 @@ public class ChatSessionController {
         @Valid @RequestBody SessionStartRequestDTO request,
         HttpServletRequest httprequest // 유저 토큰
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 채팅 세션 시작 / userid : {}",userId);
 
 
@@ -47,7 +47,7 @@ public class ChatSessionController {
     @GetMapping("/status")
     public ResponseEntity<CommonResponse<String>> getSessionStatus(
             HttpServletRequest request) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 세션 확인 / userid : {}",userId);
         ChatSessionStatus status = chatSessionService.getSessionStatus(userId);
 
@@ -64,7 +64,7 @@ public class ChatSessionController {
     @GetMapping("/messages")
     public ResponseEntity<CommonResponse<ChatMessageListWithTokenDTO>> getMessages(
             HttpServletRequest request) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 기록 조회 / userid : {}",userId);
         ChatMessageListWithTokenDTO response = chatSessionService.getMessages(userId);
         log.info("response : {}",response);

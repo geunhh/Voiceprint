@@ -23,7 +23,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional(readOnly = false)
+@Transactional
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -59,7 +59,7 @@ public class NotificationService {
      * 읽지 않은 알림 정보를 조회하는 메서드 (커서 기반 무한스크롤)
      */
     @Transactional(readOnly = true)
-    public NotificationListWithCursorDTO getUnreadNotifications(Long userId, Long cursor, int size) {
+    public NotificationListWithCursorDTO getUnreadNotifications(Integer userId, Long cursor, Integer size) {
         PageRequest page = PageRequest.of(0,size+1);
 
         List<Notification> notifications = notificationRepository.findMyNotifications(userId,cursor,page);
@@ -97,7 +97,7 @@ public class NotificationService {
     /**
      * 알림 읽음 처리 메서드
      */
-    public void markNotification(Long userId, Long notificationId) {
+    public void markNotification(Integer userId, Long notificationId) {
         Notification notification = notificationRepository.findByIdAndUserId(notificationId,userId)
                 .orElseThrow(() -> new NotificationNotFoundException("해당 알림이 존재하지 않거나 권한이 없습니다."));
 

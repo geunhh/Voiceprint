@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class GroupInvite {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // 그룹
     @ManyToOne(fetch = FetchType.LAZY)
@@ -23,7 +23,7 @@ public class GroupInvite {
     private User inviter;
 
     // 초대 코드
-    @Column(name = "invite_code", nullable = false, unique = true)
+    @Column(name = "invite_code", length = 16, nullable = false, unique = true)
     private String inviteCode;
 
     // 생성시간

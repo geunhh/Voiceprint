@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 public class ChatbotResponseDTO {
-    private Long id;
+    private Byte id;
     private String name;
     private String description;
     private String imageUrl;

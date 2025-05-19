@@ -31,7 +31,7 @@ public class GroupController {
     public ResponseEntity<CommonResponse<GroupCreateResponse>> createGroup(HttpServletRequest request,
                                                                            @ModelAttribute GroupCreateRequest requestData) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         GroupCreateResponse response = groupService.createGroup(userId, requestData);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 생성 완료", response));
     }
@@ -41,10 +41,10 @@ public class GroupController {
      */
     @GetMapping("/{groupId}")
     public ResponseEntity<CommonResponse<GroupMainPageResponse>> getGroupMainPage(
-            @PathVariable Long groupId,
+            @PathVariable Integer groupId,
             HttpServletRequest request) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         GroupMainPageResponse response = groupService.getGroupMainPage(groupId, userId);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 메인 페이지 조회 완료", response));
@@ -55,11 +55,11 @@ public class GroupController {
      */
     @PatchMapping(path = "/{groupId}", consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse<GroupUpdateResponse>> updateGroup(
-            @PathVariable Long groupId,
+            @PathVariable Integer groupId,
             @ModelAttribute GroupUpdateRequest updateRequest,
             HttpServletRequest request) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         GroupUpdateResponse updatedGroup = groupService.updateGroup(groupId, userId, updateRequest);
 
@@ -73,9 +73,9 @@ public class GroupController {
      */
     @GetMapping("/{groupId}/diaries")
     public ResponseEntity<CommonResponse<GroupDiaryListWithCursorDTO>> getGroupDiaries(
-            @PathVariable Long groupId,
+            @PathVariable Integer groupId,
             @RequestParam(required = false) LocalDateTime cursor,
-            @RequestParam(defaultValue = "7") int size,
+            @RequestParam(defaultValue = "7") Integer size,
             HttpServletRequest request
     ) {
 
@@ -89,10 +89,10 @@ public class GroupController {
     @GetMapping("/{groupId}/{diaryId}")
     public ResponseEntity<CommonResponse<GroupDiaryDetailResponse>> getGroupDiaryDetail(
             HttpServletRequest request,
-            @PathVariable Long groupId,
-            @PathVariable Long diaryId
+            @PathVariable Integer groupId,
+            @PathVariable Integer diaryId
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         GroupDiaryDetailResponse response = groupDiaryService.getGroupDiaryDetail(userId, groupId, diaryId);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 일기 상세조회 성공", response));
     }
@@ -101,11 +101,11 @@ public class GroupController {
      * 관리자로 승급
      */
     @PostMapping("/{groupId}/promote/{newUserId}")
-    public ResponseEntity<CommonResponse<String>> promoteToAdmin(@PathVariable Long groupId,
-                                                         @PathVariable Long newUserId,
+    public ResponseEntity<CommonResponse<String>> promoteToAdmin(@PathVariable Integer groupId,
+                                                         @PathVariable Integer newUserId,
                                                          HttpServletRequest request) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         return groupUserService.promoteToAdmin(groupId, userId, newUserId);
     }
     /**
@@ -113,7 +113,7 @@ public class GroupController {
      */
     @GetMapping("/my")
     public ResponseEntity<CommonResponse<List<MyGroupResponse>>> getMyGroups(HttpServletRequest request) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         List<MyGroupResponse> myGroups = groupService.getMyGroups(userId);
         return ResponseEntity.ok(new CommonResponse<>(200, "내 그룹 목록 조회 성공", myGroups));
     }

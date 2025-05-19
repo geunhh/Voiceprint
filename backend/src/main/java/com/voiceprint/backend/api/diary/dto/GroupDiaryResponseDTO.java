@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class GroupDiaryResponseDTO {
-    private Long groupId;
-    private Long diaryId;
+    private Integer groupId;
+    private Integer diaryId;
     private String title;
     private String content;
     private String createdAt;

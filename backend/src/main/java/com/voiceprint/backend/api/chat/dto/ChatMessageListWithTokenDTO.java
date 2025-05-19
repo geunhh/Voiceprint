@@ -9,6 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ChatMessageListWithTokenDTO {
     private List<ChatMessageResponseDTO> chatlog;
-    private int curToken;
-    private int totalToken;
+    private Integer curToken;
+    private Integer totalToken;
 }

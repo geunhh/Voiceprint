@@ -18,7 +18,7 @@ public class RefreshTokenRepository {
      * 리프레시 토큰을 Redis에 저장합니다.
      * 키는 "RT:{userId}" 형식으로 저장됩니다.
      */
-    public void saveRefreshToken(Long userId, String refreshToken) {
+    public void saveRefreshToken(Integer userId, String refreshToken) {
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
         String key = getKey(userId);
         vop.set(key, refreshToken, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
@@ -27,7 +27,7 @@ public class RefreshTokenRepository {
     /**
      * 사용자 ID로 저장된 리프레시 토큰을 조회합니다.
      */
-    public String findRefreshToken(Long userId) {
+    public String findRefreshToken(Integer userId) {
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
         String key = getKey(userId);
         Object value = vop.get(key);
@@ -37,7 +37,7 @@ public class RefreshTokenRepository {
     /**
      * 사용자 ID로 저장된 리프레시 토큰을 삭제합니다.
      */
-    public void deleteRefreshToken(Long userId) {
+    public void deleteRefreshToken(Integer userId) {
         String key = getKey(userId);
         redisTemplate.delete(key);
     }
@@ -45,7 +45,7 @@ public class RefreshTokenRepository {
     /**
      * 리프레시 토큰의 키를 생성합니다.
      */
-    private String getKey(Long userId) {
+    private String getKey(Integer userId) {
         return "RT:" + userId;
     }
 }

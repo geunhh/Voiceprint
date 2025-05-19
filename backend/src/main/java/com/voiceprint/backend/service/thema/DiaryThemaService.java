@@ -40,7 +40,7 @@ public class DiaryThemaService {
     private final DiaryRepository diaryRepository;
     private final WebClient fastApiWebClient;
     @Transactional(readOnly = true)
-    public DiaryThemaListResponseDTO getThemasForUser(Long userId) {
+    public DiaryThemaListResponseDTO getThemasForUser(Integer userId) {
 
         List<DiaryThema> themas = diaryThemaRepository.findByUserIdOrDefault(userId);
         System.out.println(themas);
@@ -60,7 +60,7 @@ public class DiaryThemaService {
         return new DiaryThemaListResponseDTO(defaultThemas,customThemas);
     }
 
-    public void selectThema(Long userId, Long themaId) {
+    public void selectThema(Integer userId, Integer themaId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저정보X"));
         System.out.println("현재 사용중인 테마 :"+user);
@@ -78,7 +78,7 @@ public class DiaryThemaService {
 
     }
 
-    public DiaryThemaCreateResponse createCustomThema(Long userId, String exampleDiary) {
+    public DiaryThemaCreateResponse createCustomThema(Integer userId, String exampleDiary) {
         // 유저 정보 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
@@ -127,8 +127,8 @@ public class DiaryThemaService {
         return new DiaryThemaCreateResponse(saved.getId(), saved.getExample());
     }
 
-    @Transactional(readOnly = false)
-    public void updateCustomThemaFromDiary(Long userId, Long diaryId) {
+    @Transactional
+    public void updateCustomThemaFromDiary(Integer userId, Integer diaryId) {
         //1. 일기 조회
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("일기를 찾을 수 없습니다."));
@@ -163,12 +163,13 @@ public class DiaryThemaService {
     /**
      * 사용중인 테마 조회 메소드
      */
-    public UsingDiaryThemaResponseDTO getUsingThema(Long userId) {
+    @Transactional(readOnly = true)
+    public UsingDiaryThemaResponseDTO getUsingThema(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         DiaryThema thema = user.getUsingThema();
-        Long themaId = (thema != null) ? thema.getId() : null;
+        Integer themaId = (thema != null) ? thema.getId() : null;
         log.debug("{} user의 사용중인 themaId : {}",userId,themaId);
         return new UsingDiaryThemaResponseDTO(themaId);
     }

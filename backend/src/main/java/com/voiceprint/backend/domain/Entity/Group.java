@@ -21,16 +21,13 @@ public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false, length = 30)
     private String name;
 
     @Column(length = 255)
     private String description;
-
-    @Column(length = 10)
-    private String invitationCode;
 
     @Column(nullable = false)
     private String groupImage;

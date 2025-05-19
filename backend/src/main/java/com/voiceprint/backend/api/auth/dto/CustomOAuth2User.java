@@ -22,7 +22,7 @@ public class CustomOAuth2User implements OAuth2User {
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
         this.attributes = Map.of(
                 "id", user.getId(),
-                "email", user.getEmail(),
+                "providerId", user.getProviderId(),
                 "name", user.getNickname()
         );
     }
@@ -39,17 +39,17 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return user.getEmail();
+        return user.getProviderId();
     }
 
     // OAuth2User 인터페이스의 getName()은 principal의 name을 반환하도록 되어 있는데,
-    // 우리는 email을 principal로 사용하기 때문에 getUsername()은 email을 반환
+    // 우리는 providerId을 principal로 사용하기 때문에 getUsername()은 providerId을 반환
     public String getUsername() {
-        return user.getEmail();
+        return user.getProviderId();
     }
 
     // 사용자 ID 반환 (리프레시 토큰용)
-    public Long getUserId() {
+    public Integer getUserId() {
         return user.getId();
     }
 }

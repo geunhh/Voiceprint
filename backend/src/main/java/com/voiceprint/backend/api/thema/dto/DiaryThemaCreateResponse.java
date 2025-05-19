@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class DiaryThemaCreateResponse {
-    private Long themaId;
+    private Integer themaId;
     private String example;
 }
