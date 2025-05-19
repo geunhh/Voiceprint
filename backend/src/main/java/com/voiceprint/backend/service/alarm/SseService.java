@@ -1,6 +1,7 @@
 package com.voiceprint.backend.service.alarm;
 
 import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
+import com.voiceprint.backend.common.util.ConnectionPoolMonitor;
 import com.voiceprint.backend.domain.Repository.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,12 @@ import java.util.Set;
 @Slf4j
 public class SseService {
     private final SseEmitterManager emitterManager;
+    private final ConnectionPoolMonitor connectionPoolMonitor;
 
     // 클라이언트가 구독 요청할 때 호출
     public SseEmitter subscribe(Long userId) {
+
+        connectionPoolMonitor.logHikariStatus();
         return emitterManager.add(userId); // Emitter 생성 및 저장
     }
 
