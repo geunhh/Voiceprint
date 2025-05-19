@@ -39,7 +39,7 @@ export default function NotificationPage() {
 
         setNotifications(res.data.data.diaries);
         setNextCursor(res.data.data.nextCursor);
-        // console.log("초기 알림 목록 조회: ", res.data.data);
+        console.log("초기 알림 목록 조회: ", res.data.data);
       } catch (err) {
         console.error("알림 목록 조회 실패:", err);
       }
@@ -84,6 +84,29 @@ export default function NotificationPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [nextCursor, isLoading]);
 
+  // 알림 읽음 처리
+  const handleNotificationClick = async (item: Notification) => {
+    try {
+      // 읽음 처리 요청
+      const res = await axiosInstance.patch(
+        `/api/notifications/${item.metadata.notificationId}/read`
+      );
+      console.log("알림 읽음 처리: ", res.data);
+    } catch (err) {
+      console.error("알림 읽음 처리 실패:", err);
+    }
+
+    if (item.metadata.groupId && item.metadata.diaryId) {
+      navigate(
+        `/group/${item.metadata.groupId}/diary/${item.metadata.diaryId}`
+      );
+    } else if (item.type === "newMember") {
+      navigate(`/group/${item.metadata.groupId}`);
+    } else {
+      navigate("diary/setting/friend");
+    }
+  };
+
   const filtered = notifications.filter((item) => {
     if (filter === "all") return true;
     return item.type === filter;
@@ -110,15 +133,7 @@ export default function NotificationPage() {
             message={item.message}
             groupId={item.metadata.groupId}
             diaryId={item.metadata.diaryId}
-            onClick={() => {
-              if (item.metadata.groupId && item.metadata.diaryId) {
-                navigate(
-                  `/group/${item.metadata.groupId}/diary/${item.metadata.diaryId}`
-                );
-              } else {
-                navigate("diary/setting/friend");
-              }
-            }}
+            onClick={() => handleNotificationClick(item)}
             variant="list"
           />
         ))
