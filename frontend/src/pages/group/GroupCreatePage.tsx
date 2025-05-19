@@ -1,5 +1,3 @@
-import ImageEdit from "../../assets/icons/edit.png";
-
 import { useEffect, useRef, useState } from "react";
 import Button from "../../components/common/Button";
 import { DayPicker } from "../../components/group/DayPicker";
@@ -8,16 +6,12 @@ import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
 import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
-import { useSelector } from "react-redux";
 import axiosInstance from "../../api/axiosInstance";
-import { RootState } from "../../store/store";
 
 export default function GroupCreatePage() {
-  const user = useSelector((state: RootState) => state.user);
-
   const [groupName, setGroupName] = useState(""); // 그룹명
   const [groupImageFile, setGroupImageFile] = useState<File | null>(null); // 그룹 이미지
-  const [enableAlarm, setEnableAlarm] = useState(false); // 알림 설정
+  const [enableAlarm, setEnableAlarm] = useState(true); // 알림 설정
   const [alarmTime, setAlarmTime] = useState("12:00"); // 알림 시간
   const [alarmDays, setAlarmDays] = useState<string[]>([]); // 알림 요일
   const [showTimePicker, setShowTimePicker] = useState(false); // 알림
@@ -106,9 +100,9 @@ export default function GroupCreatePage() {
       // console.log("초대 코드 확인: ", inviteCode);
 
       // 초대 링크 생성 - 배포용
-      const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
+      // const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
       // 초대 링크 생성 - 개발용
-      // const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
+      const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
       setInviteLink(fullLink);
       setModalOpen(true); // 모달 열기
     } catch (err) {
@@ -120,12 +114,8 @@ export default function GroupCreatePage() {
   return (
     <div className="p-4">
       {/* 페이지 안내 및 그룹 이미지 업로드 */}
-      <div className="flex items-center place-content-between mt-5">
+      <div className="flex items-center place-content-between my-5">
         <p className="font-bold text-2xl">그룹 만들기</p>
-        <ImageUploader
-          defaultImage={ImageEdit}
-          onImageChange={(file: File) => setGroupImageFile(file)}
-        />
       </div>
 
       {/* 그룹명 입력 */}
@@ -144,18 +134,11 @@ export default function GroupCreatePage() {
 
       {/* 멤버 */}
       <div className="mt-2 ">
-        <p className="text-darkmint text-lg font-semibold mb-2">멤버</p>
-        <div className="flex gap-3 items-center">
-          {/* 로그인한 유저 */}
-          <div className="flex flex-col items-center gap-2">
-            <img
-              src={user.imageUrl}
-              alt="유저 프로필"
-              className="w-20 rounded-full"
-            />
-            <p className="font-semibold text-gray-500">{user.nickname}</p>
-          </div>
-        </div>
+        <p className="text-darkmint text-lg font-semibold mb-2">그룹 이미지</p>
+        <ImageUploader
+          defaultImage=""
+          onImageChange={(file: File) => setGroupImageFile(file)}
+        />
       </div>
 
       <hr className="my-4 border-t border-gray-300" />
