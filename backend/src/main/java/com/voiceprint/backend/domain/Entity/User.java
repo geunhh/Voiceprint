@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // 프로필 이미지
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,7 +25,7 @@ public class User {
 
 
     @Column(nullable = false, length = 50)
-    private String email;
+    private String providerId;
 
     @Column(nullable = false, length = 30)
     private String nickname;
@@ -77,9 +77,8 @@ public class User {
     private Chatbot lastChatbot;
 
     // 알림 여부
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    @Builder.Default
-    private Boolean enableAlarm = false;
+    @Column(nullable = true, columnDefinition = "BOOLEAN")
+    private Boolean enableAlarm;
 
     // 알람 시간 21:00 기본.
     @Column(columnDefinition = "TIME DEFAULT '21:00'")

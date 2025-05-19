@@ -8,6 +8,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class ChatbotListResponseDTO {
-    private Long recentChatbotId;
+    private Byte recentChatbotId;
     private List<ChatbotResponseDTO> chatbots;
 }

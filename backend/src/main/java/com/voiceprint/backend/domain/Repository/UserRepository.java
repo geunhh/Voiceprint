@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByAuthProviderAndEmail(User.AuthProvider provider, String email);
+public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findByProviderId(String providerId);
 
-    Optional<User> findByEmail(String email);
+//    Optional<User> findByEmail(String email);
 
-    boolean existsByNicknameAndIdNot(String nickname, Long userId);
+    boolean existsByNicknameAndIdNot(String nickname, Integer userId);
 
     List<User> findByEnableAlarmIsTrueAndAlarmTime(LocalTime alarmTime);
 }

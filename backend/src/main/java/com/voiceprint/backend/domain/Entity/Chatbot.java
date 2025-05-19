@@ -15,7 +15,7 @@ import java.util.List;
 public class Chatbot {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Byte id;
 
     @Column(length = 30, nullable = false)
     private String name;

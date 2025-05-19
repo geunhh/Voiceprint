@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ProfileUpdateResponse {
-    private Long userId;
+    private Integer userId;
     private String nickname;
-    private Long profileImageId;
+    private Byte profileImageId;
 }
