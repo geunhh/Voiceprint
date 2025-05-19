@@ -34,7 +34,7 @@ public class DiaryController {
      */
     @GetMapping("/diary/{diaryId}")
     public ResponseEntity<CommonResponse<DiaryDetailResponseDTO>> getDiaryDetail(
-            @PathVariable Long diaryId,
+            @PathVariable Integer diaryId,
             HttpServletRequest request    ){
         log.info("다이어리 상세보기 호출 diaryId: {}",diaryId);
 
@@ -47,7 +47,7 @@ public class DiaryController {
 
     @GetMapping("/diary/{diaryId}/chat")
     public ResponseEntity<CommonResponse<List<ChatMessageResponseDTO>>> getDiaryChat(
-            @PathVariable Long diaryId,
+            @PathVariable Integer diaryId,
             HttpServletRequest request    ) {
         log.info("id:{ }  다이어리 채팅 내역 조회 API 호출");
 
@@ -67,8 +67,8 @@ public class DiaryController {
      */
     @GetMapping("/me/all")
     public ResponseEntity<CommonResponse<DiaryListWithCursorDTO>> getMyDiaries(
-            @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "7") int size,
+            @RequestParam(required = false) Integer cursor,
+            @RequestParam(defaultValue = "7") Integer size,
             HttpServletRequest request
     ) {
 
@@ -78,8 +78,8 @@ public class DiaryController {
 
     @GetMapping("/monthly")
     public ResponseEntity<CommonResponse<DiaryMontlyListDTO>> getMonthlyDiaries(
-            @RequestParam int year,
-            @RequestParam int month,
+            @RequestParam Integer year,
+            @RequestParam Integer month,
             HttpServletRequest request
     ) {
 
@@ -94,11 +94,11 @@ public class DiaryController {
      */
     @PostMapping("/shared/{diaryId}")
     public ResponseEntity<CommonResponse<String>> shareDiary(
-            @PathVariable Long diaryId,
+            @PathVariable Integer diaryId,
             @RequestBody SharedDiaryRequest request,
             HttpServletRequest httpRequest) {
 
-        Long userId = authService.getUserIdFromRequest(httpRequest);
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
 //        Long userId = 1L;
         List<Notification> notifications = groupDiaryService.saveSharedDiary(diaryId, userId, request.getGroupIds());
 

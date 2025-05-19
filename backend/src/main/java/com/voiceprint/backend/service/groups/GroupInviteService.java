@@ -34,7 +34,7 @@ public class GroupInviteService {
      * 유효한 초대 코드가 있을 경우 반환, 없으면 생성 후 반환
      */
     @Transactional(readOnly = false)
-    public InviteCodeResponseDTO createInvite(Long groupId, Long userId) {
+    public InviteCodeResponseDTO createInvite(Integer groupId, Integer userId) {
         // 그룹 조회
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("그룹을 찾을 수 없습니다."));
@@ -67,7 +67,7 @@ public class GroupInviteService {
     /**
      * 그룹 코드에 대한 그룹 정보를 조회하는 메서드
      */
-    public InviteInfoReponseDTO getInviteInfo(String code, Long userId) {
+    public InviteInfoReponseDTO getInviteInfo(String code, Integer userId) {
         // 초대 정보 확인
         GroupInvite invite = groupInviteRepository.findByInviteCode(code)
                 .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
@@ -94,8 +94,7 @@ public class GroupInviteService {
     /**
      * 초대를 수락하는 메서드
      */
-    @Transactional(readOnly = false)
-    public InviteAcceptResponseDTO acceptInvite(String code, Long userId) {
+    public InviteAcceptResponseDTO acceptInvite(String code, Integer userId) {
 
         // 초대 코드 확인
         GroupInvite invite = groupInviteRepository.findByInviteCode(code)
@@ -136,8 +135,8 @@ public class GroupInviteService {
         );
     }
 
-    @Transactional(readOnly = false)
-    public List<Notification> saveAndSendNewMember(Long groupId, Long userId) {
+    @Transactional
+    public List<Notification> saveAndSendNewMember(Integer groupId, Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
 

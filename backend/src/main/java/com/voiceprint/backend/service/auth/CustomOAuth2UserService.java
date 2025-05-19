@@ -14,11 +14,13 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
@@ -47,7 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
         String providerId = oAuth2Response.getProviderId();
         String name = oAuth2Response.getName();
-        ProfileImage profileImage = profileImageRepository.findById(1L)
+        ProfileImage profileImage = profileImageRepository.findById((byte)1)
                 .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));;
         User user = userRepository.findByProviderId(providerId)
                 .orElseGet(() -> {

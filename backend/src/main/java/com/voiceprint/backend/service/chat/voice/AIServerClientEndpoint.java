@@ -8,12 +8,14 @@ import jakarta.websocket.OnClose;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 @ClientEndpoint
 public class AIServerClientEndpoint {
     private final AIServerClient client;

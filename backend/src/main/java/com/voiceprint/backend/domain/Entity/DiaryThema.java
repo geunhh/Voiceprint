@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class DiaryThema {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // unique 해제

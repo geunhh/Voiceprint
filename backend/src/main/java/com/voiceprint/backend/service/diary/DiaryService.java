@@ -37,9 +37,9 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
     private final AuthService authService;
-    public DiaryDetailResponseDTO getDiaryDetail(HttpServletRequest request, Long diaryId) {
+    public DiaryDetailResponseDTO getDiaryDetail(HttpServletRequest request, Integer diaryId) {
         // 유저 정보 추출 및 확인
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
@@ -63,9 +63,9 @@ public class DiaryService {
         );
     }
 
-    public DiaryListWithCursorDTO getUserDiaries(HttpServletRequest request, Long cursor, Integer size) {
+    public DiaryListWithCursorDTO getUserDiaries(HttpServletRequest request, Integer cursor, Integer size) {
         // 유저 정보 추출 및 확인
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
@@ -88,7 +88,7 @@ public class DiaryService {
         }
 
         //nextCursor 설정 : 없으면 null
-        Long nextCursor = hasNext ? diaries.getLast().getId() : null;
+        Integer nextCursor = hasNext ? diaries.getLast().getId() : null;
 
         List<DiarySummaryResponseDTO> response = diaries.stream()
                 .map(d -> new DiarySummaryResponseDTO(
@@ -105,7 +105,7 @@ public class DiaryService {
 
     public DiaryMontlyListDTO getMonthlyDiaries(HttpServletRequest request, int year, int month) {
         // 유저 정보 추출 및 확인
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
 
 
@@ -135,9 +135,9 @@ public class DiaryService {
         return new DiaryMontlyListDTO(result);
     }
 
-    public List<ChatMessageResponseDTO> getChatRecordFromDiary(HttpServletRequest request, Long diaryId) {
+    public List<ChatMessageResponseDTO> getChatRecordFromDiary(HttpServletRequest request, Integer diaryId) {
         // 유저 정보 조회
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
 
         // 일기 정보 조회

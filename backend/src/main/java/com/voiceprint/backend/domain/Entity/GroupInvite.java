@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class GroupInvite {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // 그룹
     @ManyToOne(fetch = FetchType.LAZY)
