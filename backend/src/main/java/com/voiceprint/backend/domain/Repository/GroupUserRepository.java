@@ -19,24 +19,24 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
     /**
      * 그룹 내 ADMIN 역할 사용자 찾기
      */
-    GroupUser findByGroupIdAndRole(Long groupId, GroupUser.Role role);
+    GroupUser findByGroupIdAndRole(Integer groupId, GroupUser.Role role);
 
-    Optional<GroupUser> findByGroupIdAndUserId(Long groupId, Long userId);
+    Optional<GroupUser> findByGroupIdAndUserId(Integer groupId, Integer userId);
 
-    List<GroupUser> findAllByGroupId(Long groupId);
+    List<GroupUser> findAllByGroupId(Integer groupId);
 
     @Query("SELECT new com.voiceprint.backend.api.groups.dto.UserInfoDTO(u.id, p.imageUrl, u.nickname) " +
             "FROM GroupUser gu JOIN gu.user u " +
             "JOIN u.profileImage p " +
             "WHERE gu.group.id = :groupId")
-    List<UserInfoDTO> findUserInfoByGroupId(@Param("groupId") Long groupId);
+    List<UserInfoDTO> findUserInfoByGroupId(@Param("groupId") Integer groupId);
 
 
     @Query("""
             select  gu.user from GroupUser gu 
             where gu.group.id = :groupId
             """)
-    List<User> findUsersByGroupId(@Param("groupId") Long groupId);
+    List<User> findUsersByGroupId(@Param("groupId") Integer groupId);
 
     boolean existsByGroupAndUser(Group group, User user);
 }

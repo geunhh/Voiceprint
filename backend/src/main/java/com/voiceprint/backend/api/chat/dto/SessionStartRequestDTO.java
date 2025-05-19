@@ -10,5 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SessionStartRequestDTO {
     @NotNull
-    private Long chatbotId;
+    private Byte chatbotId;
 }

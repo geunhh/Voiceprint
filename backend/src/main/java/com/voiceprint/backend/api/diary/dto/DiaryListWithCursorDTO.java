@@ -9,5 +9,5 @@ import java.util.List;
 @AllArgsConstructor
 public class DiaryListWithCursorDTO {
     private List<DiarySummaryResponseDTO> diaries;
-    private Long nextCursor;
+    private Integer nextCursor;
 }

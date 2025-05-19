@@ -34,7 +34,7 @@ public class GroupService {
     private final AuthService authService;
 
     @Transactional
-    public GroupCreateResponse createGroup(Long userId, GroupCreateRequest request) {
+    public GroupCreateResponse createGroup(Integer userId, GroupCreateRequest request) {
         // 유저 조회
         User createUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));;
@@ -76,7 +76,7 @@ public class GroupService {
                 group.getAlarmDays() != null ? group.getAlarmDays().toString() : null);
     }
 
-    public GroupUpdateResponse updateGroup(Long groupId, Long userId, GroupUpdateRequest updateRequest) {
+    public GroupUpdateResponse updateGroup(Integer groupId, Integer userId, GroupUpdateRequest updateRequest) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
 
@@ -109,7 +109,7 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public GroupMainPageResponse getGroupMainPage(Long groupId, Long userId) {
+    public GroupMainPageResponse getGroupMainPage(Integer groupId, Integer userId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
 
@@ -138,7 +138,7 @@ public class GroupService {
         );
     }
 
-    public List<MyGroupResponse> getMyGroups(Long userId) {
+    public List<MyGroupResponse> getMyGroups(Integer userId) {
         List<Group> groups = groupRepository.findAllByUserId(userId);
 
         return groups.stream().map(group -> {

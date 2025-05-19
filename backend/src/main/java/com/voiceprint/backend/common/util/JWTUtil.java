@@ -62,7 +62,7 @@ public class JWTUtil {
      * @param userId 사용자 ID
      * @return 생성된 리프레시 토큰
      */
-    public String createRefreshToken(Long userId) {
+    public String createRefreshToken(Integer userId) {
         return Jwts.builder()
                 .setId(userId.toString()) // Redis 키로 사용할 ID 설정
                 .setSubject("refresh")

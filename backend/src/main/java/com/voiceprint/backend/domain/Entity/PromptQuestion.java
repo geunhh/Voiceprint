@@ -17,7 +17,7 @@ public class PromptQuestion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
-    private byte id;
+    private Byte id;
 
     @Column(name = "question", length = 50)
     private String question;

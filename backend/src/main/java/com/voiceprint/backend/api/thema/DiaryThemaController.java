@@ -29,7 +29,7 @@ public class DiaryThemaController {
     public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThmeas(
             HttpServletRequest request    ) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 테마 전체 조회 / userid : {}",userId);
         DiaryThemaListResponseDTO response = diaryThemaService.getThemasForUser(userId);
         return ResponseEntity.ok(
@@ -38,10 +38,10 @@ public class DiaryThemaController {
 
     @PutMapping("/select/{themaId}")
     public ResponseEntity<CommonResponse<Void>> selectTheam(
-            @PathVariable Long themaId,
+            @PathVariable Integer themaId,
             HttpServletRequest request) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 테마 선택 / userid : {}",userId);
         diaryThemaService.selectThema(userId,themaId);
 
@@ -55,7 +55,7 @@ public class DiaryThemaController {
             @Valid @RequestBody DiaryThemaCreateRequest request,
             HttpServletRequest httprequest
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 커스텀 테마 생성 / userid : {}",userId);
 
         DiaryThemaCreateResponse response = diaryThemaService.createCustomThema(userId, request.getExampleDiary());
@@ -67,10 +67,10 @@ public class DiaryThemaController {
 
     @PatchMapping("/extract/{diaryId}")
     public ResponseEntity<CommonResponse<?>> extractThema(
-            @PathVariable Long diaryId,
+            @PathVariable Integer diaryId,
             HttpServletRequest httprequest
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 일기에서 테마 추출 / userid : {}",userId);
         diaryThemaService.updateCustomThemaFromDiary(userId,diaryId);
 
@@ -87,7 +87,7 @@ public class DiaryThemaController {
             HttpServletRequest request
     ) {
         log.info("### UsingThema 조회 API 호출");
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         UsingDiaryThemaResponseDTO response = diaryThemaService.getUsingThema(userId);
 
         return ResponseEntity.ok(new CommonResponse<>(

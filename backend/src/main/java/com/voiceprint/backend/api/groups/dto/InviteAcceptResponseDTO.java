@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class InviteAcceptResponseDTO {
-    private Long groupId;
+    private Integer groupId;
 }

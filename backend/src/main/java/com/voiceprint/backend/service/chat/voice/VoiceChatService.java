@@ -30,7 +30,7 @@ public class VoiceChatService {
     private String messageKeyPrefix;
 
     @Transactional(readOnly = true)
-    public void startSession(Long userId, Long chatbotId) {
+    public void startSession(Integer userId, Byte chatbotId) {
         String sessionKey = sessionKeyPrefix + ":" + userId;
         String messageKey = messageKeyPrefix + ":" + userId;
 
@@ -97,11 +97,11 @@ public class VoiceChatService {
     /**
      * 전체 토큰 수를 누적하여 저장합니다.
      */
-    public void accumulateToken(Long userId, int tokenDelta) {
+    public void accumulateToken(Long userId, Integer tokenDelta) {
         String sessionKey = sessionKeyPrefix + ":" + userId;
 
         Object value = redisTemplate.opsForHash().get(sessionKey, "total_token");
-        int currentToken = (value instanceof Integer) ? (Integer) value : 0;
+        Integer currentToken = (value instanceof Integer) ? (Integer) value : 0;
 
         int updated = currentToken + tokenDelta;
         redisTemplate.opsForHash().put(sessionKey, "total_token", updated);

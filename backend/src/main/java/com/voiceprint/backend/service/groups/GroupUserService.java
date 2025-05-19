@@ -19,7 +19,7 @@ public class GroupUserService {
      * 새로운 관리자로 승급할 때 기존 관리자 강등
      */
     @Transactional
-    public ResponseEntity<CommonResponse<String>> promoteToAdmin(Long groupId, Long currentAdminId, Long newAdminUserId) {
+    public ResponseEntity<CommonResponse<String>> promoteToAdmin(Integer groupId, Integer currentAdminId, Integer newAdminUserId) {
         // 현재 ADMIN 확인
         GroupUser currentAdmin = groupUserRepository.findByGroupIdAndRole(groupId, GroupUser.Role.ADMIN);
 

@@ -9,10 +9,10 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class MyGroupResponse {
-    private Long groupId;
+    private Integer groupId;
     private String groupName;
     private String groupImageUrl;
-    private int memberCount;
+    private Integer memberCount;
     private List<String> memberProfileImages; // 최대 3명
     private LocalDateTime createdAt;
 }

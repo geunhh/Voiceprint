@@ -44,7 +44,7 @@ public class GroupDiaryService {
      * 선택한 그룹에 포함된 유저들에게 알림 생성 후 전송.
      */
     @Transactional(readOnly = false)
-    public List<Notification> saveSharedDiary(Long diaryId, Long userId, List<Long> groupIds) {
+    public List<Notification> saveSharedDiary(Integer diaryId, Integer userId, List<Integer> groupIds) {
         // Diary 찾기.
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow();
@@ -60,7 +60,7 @@ public class GroupDiaryService {
 
         log.debug("###권한 검사 통과 & 그룹별 알람 생성 시작");
 
-        for (Long groupId : groupIds) {
+        for (Integer groupId : groupIds) {
             Group group = groupRepository.findById(groupId)
                     .orElseThrow();
 
@@ -111,9 +111,9 @@ public class GroupDiaryService {
      * 공유 일기 목록 조회 메서드
      * 사용자가 속한 특정 그룹에 공유 일기 목록 조회
      */
-    public GroupDiaryListWithCursorDTO getGroupDiaries(HttpServletRequest request, Long groupId, LocalDateTime cursor, Integer size) {
+    public GroupDiaryListWithCursorDTO getGroupDiaries(HttpServletRequest request, Integer groupId, LocalDateTime cursor, Integer size) {
         // 1. 로그인한 사용자 ID 추출
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         // 2. 사용자 유효성 검사
         User user = userRepository.findById(userId)
@@ -154,7 +154,7 @@ public class GroupDiaryService {
     }
 
 
-    public GroupDiaryDetailResponse getGroupDiaryDetail(Long userId, Long groupId, Long diaryId) {
+    public GroupDiaryDetailResponse getGroupDiaryDetail(Integer userId, Integer groupId, Integer diaryId) {
         GroupDiary groupDiary = groupDiaryRepository.findByGroupIdAndDiaryId(groupId, diaryId)
                 .orElseThrow(() -> new RuntimeException("해당 그룹 일기를 찾을 수 없습니다."));
 
