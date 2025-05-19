@@ -69,7 +69,7 @@ public class RedisSubscriber implements MessageListener {
             return;
         }
 
-        Long userId = notification.getUser().getId();
+        Integer userId = notification.getUser().getId();
 
         if (emitterManager.hasEmitter(userId)) {
             emitterManager.sendTo(userId,dto.getType(),dto); // SSE 전송

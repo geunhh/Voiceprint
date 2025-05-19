@@ -26,7 +26,7 @@ public class NotificationController {
     public SseEmitter subscribe(
             HttpServletRequest request
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         return sseService.subscribe(userId);
     }
@@ -36,7 +36,7 @@ public class NotificationController {
      */
     @GetMapping(value = "/subscribe/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter testSubscribe() {
-        Long testUserId = 2L; // 임시 유저
+        Integer testUserId = 2; // 임시 유저
         return sseService.subscribe(testUserId);
     }
 
@@ -47,9 +47,9 @@ public class NotificationController {
     public ResponseEntity<CommonResponse<NotificationListWithCursorDTO>> getUnreadNotifications(
             HttpServletRequest request,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") Integer size
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 //        Long userId = 1L;
         log.info("userid : {}, 알림 조회 ",userId);
         NotificationListWithCursorDTO response = notificationService.getUnreadNotifications(userId,cursor, size);
@@ -67,7 +67,7 @@ public class NotificationController {
             HttpServletRequest request,
             @PathVariable Long notificationId
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 //        Long userId = 1L;
         notificationService.markNotification(userId, notificationId);
         return ResponseEntity.ok(new CommonResponse<>(

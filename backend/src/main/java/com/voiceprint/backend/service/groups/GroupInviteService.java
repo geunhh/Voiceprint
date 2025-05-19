@@ -6,14 +6,15 @@ import com.voiceprint.backend.api.groups.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.common.exception.group.*;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
-import com.voiceprint.backend.domain.Repository.GroupInviteRepository;
-import com.voiceprint.backend.domain.Repository.GroupRepository;
-import com.voiceprint.backend.domain.Repository.GroupUserRepository;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -26,13 +27,14 @@ public class GroupInviteService {
     private final UserRepository userRepository;
     private final GroupInviteRepository groupInviteRepository;
     private final GroupUserRepository groupUserRepository;
+    private final NotificationRepository notificationRepository;
 
     /**
      * 그룹 초대 코드를 생성하는 메소드
      * 유효한 초대 코드가 있을 경우 반환, 없으면 생성 후 반환
      */
     @Transactional(readOnly = false)
-    public InviteCodeResponseDTO createInvite(Long groupId, Long userId) {
+    public InviteCodeResponseDTO createInvite(Integer groupId, Integer userId) {
         // 그룹 조회
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("그룹을 찾을 수 없습니다."));
@@ -65,7 +67,7 @@ public class GroupInviteService {
     /**
      * 그룹 코드에 대한 그룹 정보를 조회하는 메서드
      */
-    public InviteInfoReponseDTO getInviteInfo(String code, Long userId) {
+    public InviteInfoReponseDTO getInviteInfo(String code, Integer userId) {
         // 초대 정보 확인
         GroupInvite invite = groupInviteRepository.findByInviteCode(code)
                 .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
@@ -92,8 +94,7 @@ public class GroupInviteService {
     /**
      * 초대를 수락하는 메서드
      */
-    @Transactional(readOnly = false)
-    public InviteAcceptResponseDTO acceptInvite(String code, Long userId) {
+    public InviteAcceptResponseDTO acceptInvite(String code, Integer userId) {
 
         // 초대 코드 확인
         GroupInvite invite = groupInviteRepository.findByInviteCode(code)
@@ -132,5 +133,42 @@ public class GroupInviteService {
         return new InviteAcceptResponseDTO(
                 group.getId()
         );
+    }
+
+    @Transactional
+    public List<Notification> saveAndSendNewMember(Integer groupId, Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("그룹 정보가 없습니다."));
+
+        List<User> users = groupUserRepository.findUsersByGroupId(groupId);
+
+        List<Notification> toSaveNotifications = new ArrayList<>();
+
+        // 2. 알림 생성 및 전송
+        for (User member : users) {
+            if (member.getId().equals(userId)) continue; // 뉴멤버 제외
+
+            //메타 데이터 구성
+            Map<String, Object> metadata = Map.of(
+                    "groupId", groupId
+            );
+
+            String message = user.getNickname() + "님이 " + group.getName() + " 그룹에 참여했어요.! 환영해주세요!!!";
+
+            // 알림 Entity 직접 생성
+            Notification notification = Notification.create(
+                    member,
+                    "newMember",
+                    message,
+                    metadata
+            );
+            toSaveNotifications.add(notification);
+        }
+        notificationRepository.saveAll(toSaveNotifications);
+
+        return toSaveNotifications;
     }
 }

@@ -1,10 +1,7 @@
 package com.voiceprint.backend.domain.Entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,9 +16,11 @@ public class Emotion {
     private Byte id;
 
     // 이름 : 불안, 행복, 기쁨, 슬픔 ...
+    @Column(length = 10)
     private String name;
 
     //색상 코드
+    @Column(length = 10)
     private String color;
 
     //== 생성 메서드 ==//

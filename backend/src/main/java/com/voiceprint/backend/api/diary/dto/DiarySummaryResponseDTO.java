@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class DiarySummaryResponseDTO {
-    private Long diaryId;
+    private Integer diaryId;
     private String title;
     private String content;
     private String emotion;

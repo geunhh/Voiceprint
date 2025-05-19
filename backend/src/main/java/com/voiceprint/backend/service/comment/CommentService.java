@@ -7,42 +7,44 @@ import com.voiceprint.backend.api.comment.dto.CommentListWithCursorDTO;
 import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
 import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.Comment;
-import com.voiceprint.backend.domain.Entity.GroupDiary;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.CommentRepository;
-import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.*;
+import com.voiceprint.backend.domain.Repository.*;
+import com.voiceprint.backend.service.alarm.NotificationService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
+@Slf4j
+@Transactional
+@RequiredArgsConstructor
 public class CommentService {
-    private CommentRepository commentRepository;
-    private UserRepository userRepository;
-    private GroupDiaryRepository groupDiaryRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final GroupDiaryRepository groupDiaryRepository;
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
+    private final GroupUserRepository groupUserRepository;
 
-    public CommentService (CommentRepository commentRepository,
-                           UserRepository userRepository,
-                           GroupDiaryRepository groupDiaryRepository) {
-        this.commentRepository = commentRepository;
-        this.userRepository = userRepository;
-        this.groupDiaryRepository =groupDiaryRepository;
-    }
-
-    @Transactional
     // 댓글 작성
-    public CommentCreateResponseDTO saveComment (long userId, long groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
+    public CommentCreateResponseDTO saveComment (Integer userId, Integer groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User를 찾을 수 없습니다."));
 
         GroupDiary groupDiary = groupDiaryRepository.getById(groupDiaryId);
+        Group group = groupDiary.getGroup();
 
         Comment comment = Comment.builder()
                 .user(user)
@@ -53,9 +55,49 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        CommentCreateResponseDTO responseDTO = new CommentCreateResponseDTO();
-        responseDTO.setContent(comment.getContent());
-        return responseDTO;
+        // 댓글 작성자 제외한 그룹 유저들에게 알림 생성
+        List<User> users = groupUserRepository.findUsersByGroupId(group.getId());
+        List<Notification> notifications = new ArrayList<>();
+
+        for (User target : users) {
+            if (target.getId() == userId) continue;
+
+            Map<String, Object> metadata = Map.of(
+                    "groupId", groupDiary.getGroup().getId(),
+                    "diaryId", groupDiary.getDiary().getId()
+            );
+
+            Notification notification = Notification.create(
+                    target,
+                    "newComment",
+                    user.getNickname() + "님이 " + group.getName() + " 그룹의 내 일기에 댓글을 남겼습니다. 확인해보세요!!",
+                    null
+            );
+            notifications.add(notification);
+        }
+
+        // 저장
+        notificationRepository.saveAll(notifications);
+
+        // 트랜잭션 커밋 이후 실행
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                for (Notification notification : notifications) {
+                    Map<String, Object> metadata = Map.of(
+                            "notificationId", notification.getId(),
+                            "groupId", group.getId(),
+                            "diaryId", groupDiary.getDiary().getId()
+                    );
+                    notification.setMetadata(metadata);  // 메타데이터 주입
+                }
+
+                notificationService.publishAllNotifications(notifications);
+            }
+        });
+
+        // 응답 반환
+        return new CommentCreateResponseDTO(comment.getContent());
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +149,7 @@ public class CommentService {
 
     // 댓글 삭제
     @Transactional
-    public void deleteComment (int commentId, long userId) {
+    public void deleteComment (Integer commentId, Integer userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("댓글이 없습니다."));
 
