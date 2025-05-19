@@ -14,8 +14,8 @@ import java.util.Objects;
 @EqualsAndHashCode  //equals()와 hashCode() 메서드를 자동으로 생성
 public class GroupUserId implements Serializable {
 
-    private Long userId;
-    private Long groupId;
+    private Integer userId;
+    private Integer groupId;
 
 }
 

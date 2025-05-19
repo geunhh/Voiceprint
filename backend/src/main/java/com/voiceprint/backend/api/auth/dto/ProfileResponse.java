@@ -10,7 +10,7 @@ import java.util.List;
 @Slf4j
 @AllArgsConstructor
 public class ProfileResponse {
-    private Long userId;
+    private Integer userId;
     private String nickname;
     private String imageUrl;
     private List<DiaryResponse> diaries;

@@ -31,14 +31,14 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     // 세션 관리를 위한 맵
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     // 사용자 ID별 세션 관리 (한 사용자가 여러 세션을 가질 수 있음)
-    private final Map<Long, Set<String>> userSessions = new ConcurrentHashMap<>();
+    private final Map<Integer, Set<String>> userSessions = new ConcurrentHashMap<>();
     // 세션과 AI 서버 연결 관리
     // private final Map<String, Object> sessionToAIConnection = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String sessionId = session.getId();
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
 
         // 2. WebSocket 세션 등록
         sessions.put(sessionId, session);
@@ -77,7 +77,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String sessionId = session.getId();
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
         String payload = message.getPayload();
         log.debug("📩 텍스트 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 내용: {}", userId, sessionId, payload);
 
@@ -103,7 +103,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     @Override
     protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
         String sessionId = session.getId();
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
         ByteBuffer buffer = message.getPayload();
         log.info("📥 바이너리 메시지 수신 - 사용자 ID: {}, 세션 ID: {}, 크기: {}", userId, sessionId, buffer.remaining());
 
@@ -120,7 +120,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String sessionId = session.getId();
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
 
         // 세션 정리
         sessions.remove(sessionId);
@@ -146,7 +146,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         String sessionId = session.getId();
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
 
         log.error("WebSocket 전송 오류 - 사용자 ID: {}, 세션 ID: {}", userId, sessionId, exception);
 
@@ -162,7 +162,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
         WebSocketSession session = sessions.get(sessionId);
         if (session == null || !session.isOpen()) return;
 
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
 
         if (response instanceof byte[]) {
             session.sendMessage(new BinaryMessage(ByteBuffer.wrap((byte[]) response)));
@@ -239,7 +239,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
 
 
     // 사용자 ID로 모든 세션에 메시지 전송
-    public void sendToUser(Long userId, Object message) throws IOException {
+    public void sendToUser(Integer userId, Object message) throws IOException {
         Set<String> sessionIds = userSessions.get(userId);
         if (sessionIds != null) {
             for (String sessionId : sessionIds) {
@@ -260,7 +260,7 @@ public class VoiceChatWebSocketHandler extends AbstractWebSocketHandler {
     // 오디오 완료 시그널 처리
     private void handleAudioComplete(WebSocketSession session) {
         String sessionId = session.getId();
-        Long userId = (Long) session.getAttributes().get("userId");
+        Integer userId = (Integer) session.getAttributes().get("userId");
 
         try {
             // AI 서버로 전송할 메시지 형식 구성

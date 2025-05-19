@@ -9,13 +9,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class DiaryReminderScheduler {
 
@@ -50,7 +51,7 @@ public class DiaryReminderScheduler {
                 continue;  // 알람 시간 없음, 알람 꺼짐, 알람 시각 아님 → 패스
             }
 
-            Long userId = user.getId();
+            Integer userId = user.getId();
             String sessionKey = session_key + ":" +userId;
 
             Object statusObj = redisTemplate.opsForHash().get(sessionKey,"status");

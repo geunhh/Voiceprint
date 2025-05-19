@@ -28,12 +28,12 @@ public class ChatbotService {
     private final AuthService authService;
     public ChatbotListResponseDTO getChatbots(HttpServletRequest request) {
         //유저 정보 조회
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         // 최근 사용 챗봇
-        Long recentChatbotId = null;
+        Byte recentChatbotId = null;
         if (user.getLastChatbot() != null) {
             recentChatbotId = user.getLastChatbot().getId();
         }

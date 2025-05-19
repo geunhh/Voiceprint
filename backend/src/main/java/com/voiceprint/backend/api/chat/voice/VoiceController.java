@@ -30,7 +30,7 @@ public class VoiceController {
      */
     @GetMapping("/session")
     public ResponseEntity<VoiceSessionResponseDto> getVoiceSession(HttpServletRequest HttpRequest,
-                                                                   @RequestParam("chatbotId") Long chatbotId) {
+                                                                   @RequestParam("chatbotId") Byte chatbotId) {
         String token = jwtUtil.extractTokenFromHeader(HttpRequest.getHeader("Authorization"));
 
 
@@ -38,7 +38,7 @@ public class VoiceController {
             return ResponseEntity.status(401).body(null);
         }
 
-        Long userId = authService.getUserIdFromRequest(HttpRequest);
+        Integer userId = authService.getUserIdFromRequest(HttpRequest);
 
         if (userId == null) {
             return ResponseEntity.status(401).body(null);
@@ -50,7 +50,7 @@ public class VoiceController {
                 .userId(userId)
                 .build();
         System.out.printf("######wsUrl= "+"ws://localhost:8080/ws?token=" + token);
-        voiceChatService.startSession(userId, (chatbotId != null)? chatbotId : 1L);
+        voiceChatService.startSession(userId, (chatbotId != null)? chatbotId : 1);
         return ResponseEntity.ok(responseDto);
     }
 }

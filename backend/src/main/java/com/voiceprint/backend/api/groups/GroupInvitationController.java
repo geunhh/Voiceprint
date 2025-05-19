@@ -35,9 +35,9 @@ public class GroupInvitationController {
     @PostMapping("/{groupId}/invites")
     public ResponseEntity<CommonResponse<InviteCodeResponseDTO>> createInvite(
             HttpServletRequest request,
-            @PathVariable Long groupId)
+            @PathVariable Integer groupId)
     {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         log.info("그룹 초대 코드 생성 및 조회 API 호출");
         InviteCodeResponseDTO response = groupInviteService.createInvite(groupId, userId);
@@ -51,7 +51,7 @@ public class GroupInvitationController {
             @RequestParam("code") String code,
             HttpServletRequest request
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         InviteInfoReponseDTO response = groupInviteService.getInviteInfo(code, userId);
 
@@ -65,7 +65,7 @@ public class GroupInvitationController {
             HttpServletRequest httprequest,
             @RequestBody InviteCodeRequestDTO request
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("{} 유저가 그룹 초대를 수락하려고 합니다.",userId);
 
         InviteAcceptResponseDTO response = groupInviteService.acceptInvite(request.getInviteCode(), userId);

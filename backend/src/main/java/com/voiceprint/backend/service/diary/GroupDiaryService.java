@@ -5,8 +5,10 @@ import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.api.diary.dto.GroupDiaryResponseDTO;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryDetailResponse;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
+import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 
+import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
@@ -27,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class GroupDiaryService {
     private final GroupDiaryRepository groupDiaryRepository;
@@ -43,8 +46,8 @@ public class GroupDiaryService {
      * 사용자가 선택한 일기를 선택한 그룹들에 공유함
      * 선택한 그룹에 포함된 유저들에게 알림 생성 후 전송.
      */
-    @Transactional(readOnly = false)
-    public List<Notification> saveSharedDiary(Long diaryId, Long userId, List<Long> groupIds) {
+
+    public List<Notification> saveSharedDiary(Integer diaryId, Integer userId, List<Integer> groupIds) {
         // Diary 찾기.
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow();
@@ -60,7 +63,7 @@ public class GroupDiaryService {
 
         log.debug("###권한 검사 통과 & 그룹별 알람 생성 시작");
 
-        for (Long groupId : groupIds) {
+        for (Integer groupId : groupIds) {
             Group group = groupRepository.findById(groupId)
                     .orElseThrow();
 
@@ -111,9 +114,9 @@ public class GroupDiaryService {
      * 공유 일기 목록 조회 메서드
      * 사용자가 속한 특정 그룹에 공유 일기 목록 조회
      */
-    public GroupDiaryListWithCursorDTO getGroupDiaries(HttpServletRequest request, Long groupId, LocalDateTime cursor, Integer size) {
+    public GroupDiaryListWithCursorDTO getGroupDiaries(HttpServletRequest request, Integer groupId, LocalDateTime cursor, Integer size) {
         // 1. 로그인한 사용자 ID 추출
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         // 2. 사용자 유효성 검사
         User user = userRepository.findById(userId)
@@ -154,9 +157,16 @@ public class GroupDiaryService {
     }
 
 
-    public GroupDiaryDetailResponse getGroupDiaryDetail(Long userId, Long groupId, Long diaryId) {
+    public GroupDiaryDetailResponse getGroupDiaryDetail(Integer userId, Integer groupId, Integer diaryId) {
+        // ✅ 그룹 가입 여부 확인
+        boolean isMember = groupUserRepository.existsByUserIdAndGroupId(userId, groupId);
+        if (!isMember) {
+            throw new UnauthorizedGroupAccessException("해당 그룹에 속해있지 않은 사용자입니다.");
+        }
+
+        // ✅ 그룹 일기 존재 확인
         GroupDiary groupDiary = groupDiaryRepository.findByGroupIdAndDiaryId(groupId, diaryId)
-                .orElseThrow(() -> new RuntimeException("해당 그룹 일기를 찾을 수 없습니다."));
+                .orElseThrow(() -> new DiaryNotFoundException("해당 그룹 일기를 찾을 수 없습니다."));
 
         Diary diary = groupDiary.getDiary();
         User user = diary.getUser();
@@ -175,4 +185,5 @@ public class GroupDiaryService {
                 diary.getContent()
         );
     }
+
 }

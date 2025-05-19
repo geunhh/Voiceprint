@@ -7,5 +7,5 @@ import lombok.Getter;
 @Builder
 public class VoiceSessionResponseDto {
     private String wsUrl;
-    private Long userId;
+    private Integer userId;
 }

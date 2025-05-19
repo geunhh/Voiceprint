@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ChatTextResponseDTO {
     private String response;
-    private int limit;
-    private int totalToken;
+    private Integer limit;
+    private Integer totalToken;
 
 }

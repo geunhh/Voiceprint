@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 //@AllArgsConstructor
 @Slf4j
 public class DiaryResponse {
-    private Long diaryId;
+    private Integer diaryId;
     private String title;
     private String content;
     private LocalDateTime createdAt;

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Diary {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     //유저
     @ManyToOne(fetch = FetchType.LAZY)

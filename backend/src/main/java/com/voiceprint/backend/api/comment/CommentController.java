@@ -29,9 +29,9 @@ public class CommentController {
     @PostMapping("/{groupDiaryId}")
     public ResponseEntity<CommonResponse<CommentCreateResponseDTO>> creatComment (HttpServletRequest request,
                                                                                   @RequestBody CommentCreatRequestDTO commentCreatRequestDTO,
-                                                                                  @PathVariable("groupDiaryId") long groupDiaryId) {
+                                                                                  @PathVariable("groupDiaryId") Integer groupDiaryId) {
         // 1. 로그인한 유저 아이디 조회
-        long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 
         // 2. 서비스 호출
         CommentCreateResponseDTO responseDTO = commentService.saveComment(userId, groupDiaryId, commentCreatRequestDTO);
@@ -43,7 +43,7 @@ public class CommentController {
     @GetMapping("/{groupDiaryId}")
     public ResponseEntity<CommentListWithCursorDTO> getComment (@PathVariable("groupDiaryId") long groupDiaryId,
                                                                 @RequestParam(required = false) Integer cursor,
-                                                                @RequestParam(defaultValue = "7") int size) {
+                                                                @RequestParam(defaultValue = "7") Integer size) {
 
         CommentListWithCursorDTO result = commentService.getComments(groupDiaryId, cursor, size);
         return ResponseEntity.ok(result);
@@ -52,10 +52,10 @@ public class CommentController {
     // 댓글 삭제
     @DeleteMapping("/{commentId}")
     public ResponseEntity<CommonResponse<Void>> deleteComment (HttpServletRequest request,
-                                                            @PathVariable("commentId") int commentId) {
+                                                            @PathVariable("commentId") Integer commentId) {
 
         // 1. 로그인한 유저 아이디 조회
-        long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         commentService.deleteComment(commentId, userId);
         CommonResponse<Void> commonResponse = new CommonResponse<>(204, "댓글 삭제 성공", null);
         return ResponseEntity.ok(commonResponse);

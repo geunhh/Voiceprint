@@ -12,5 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SharedDiaryRequest {
-    private List<Long> groupIds;
+    private List<Integer> groupIds;
 }
