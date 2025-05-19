@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 export default function NotFound() {
@@ -8,7 +7,7 @@ export default function NotFound() {
       <p className="text-lg">페이지를 찾을 수 없습니다.</p>
       <Link
         to="/"
-        className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+        className="px-4 py-2 rounded-md bg-mint text-white hover:bg-darkmint"
       >
         홈으로 이동
       </Link>

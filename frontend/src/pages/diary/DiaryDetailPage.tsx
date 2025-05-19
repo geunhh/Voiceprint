@@ -5,16 +5,17 @@ import axiosInstance from "../../api/axiosInstance";
 import DiaryContent from "../../components/diary/DiaryContent";
 import ChatHistoryModal from "../../components/modal/ChatHistoryModal";
 import CustomThemaModal from "../../components/modal/CustumThemaModal";
+import DiaryShareGroupModal from "../../components/modal/diaryShareGroupModal";
 
 import happyCharacter from "../../assets/icons/happyCharacter.png";
 import lovelyCharacter from "../../assets/icons/lovelyCharacter.png";
+import shareIcon from "../../assets/icons/share.png";
 import emotionTag1 from "../../assets/temp/emotionTag1.png";
 import emotionTag2 from "../../assets/temp/emotionTag2.png";
 import emotionTag3 from "../../assets/temp/emotionTag3.png";
 import emotionTag4 from "../../assets/temp/emotionTag4.png";
 import emotionTag5 from "../../assets/temp/emotionTag5.png";
 
-// 감정 태그 매핑
 const emotionTagMap: Record<string, string> = {
   행복: emotionTag1,
   설렘: emotionTag2,
@@ -35,10 +36,12 @@ interface DiaryData {
 
 export default function DiaryDetailPage() {
   const { diaryId } = useParams<{ diaryId: string }>();
+  const diaryIdNum = diaryId ? Number(diaryId) : null;
   const [diary, setDiary] = useState<DiaryData | null>(null);
 
   const [showChatModal, setShowChatModal] = useState(false);
   const [showThemaModal, setShowThemaModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const fetchDiary = async () => {
@@ -46,6 +49,7 @@ export default function DiaryDetailPage() {
         const res = await axiosInstance.get(`/api/diaries/diary/${diaryId}`);
 
         setDiary(res.data.data);
+        // console.log("다이어리 불러오기: ", res.data.data);
       } catch (err) {
         console.error("다이어리 불러오기 실패", err);
       }
@@ -54,7 +58,8 @@ export default function DiaryDetailPage() {
     if (diaryId) fetchDiary();
   }, [diaryId]);
 
-  if (!diary) return null;
+  if (!diary || !diary.emotion) return null;
+  if (!diaryIdNum) return null;
 
   const date = new Date(diary.createdAt);
   const year = date.getFullYear();
@@ -65,22 +70,35 @@ export default function DiaryDetailPage() {
 
   return (
     <div className="pb-28">
-      {/* 날짜 및 감정 태그 */}
-      <div className="flex gap-2 mt-10 ml-4 items-center">
-        <p className="font-semibold text-gray-500 text-lg">
-          {year}.{month}.{day}
-        </p>
-        <img src={emotionTagImage} alt="감정태그" className="w-12 h-5" />
-      </div>
+      <div className="flex items-center justify-between mt-10">
+        <div>
+          {/* 날짜 및 감정 태그 */}
+          <div className="flex gap-2 ml-4 items-center">
+            <p className="font-semibold text-gray-500 text-lg">
+              {year}.{month}.{day}
+            </p>
+            <img src={emotionTagImage} alt="감정태그" className="w-12 h-5" />
+          </div>
 
-      {/* 일기 제목 */}
-      <div className="ml-4 mb-4">
-        <p className="font-semibold text-xl"> {diary.title}</p>
+          {/* 일기 제목 */}
+          <div className="ml-4 mb-2">
+            <p className="font-semibold text-xl"> {diary.title}</p>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <img
+            src={shareIcon}
+            alt="공유하기"
+            className="w-8 mb-4"
+            onClick={() => setShowShareModal(true)}
+          />
+        </div>
       </div>
 
       {/* 일기 내용 */}
-      <div className="mb-4">
-        <DiaryContent content={diary.content} />
+      <div className="mb-4 px-4">
+        <DiaryContent content={diary.content} emotion={diary.emotion} />
       </div>
 
       {/* 이전 채팅 기록 버튼 */}
@@ -106,7 +124,7 @@ export default function DiaryDetailPage() {
       >
         <div className="flex-col start ml-4">
           <p className="text-darkmint font-bold text-lg mb-1">
-            커스텀 테마 생성
+            커스텀 테마 적용
           </p>
           <p className="text-gray-500 text-base">
             생성된 일기가 마음에 든다면
@@ -122,7 +140,17 @@ export default function DiaryDetailPage() {
       )}
 
       {showThemaModal && (
-        <CustomThemaModal onClose={() => setShowThemaModal(false)} />
+        <CustomThemaModal
+          diaryId={diaryIdNum}
+          onClose={() => setShowThemaModal(false)}
+        />
+      )}
+
+      {showShareModal && (
+        <DiaryShareGroupModal
+          diaryId={diaryIdNum}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </div>
   );

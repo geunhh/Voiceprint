@@ -158,7 +158,7 @@ export default function MainPage() {
           const res = await axiosInstance.get("/api/v1/today-question");
 
           setTodayQuestion(res.data.data.question);
-          console.log("확인하기", res.data.data.question);
+          // console.log("오늘의 질문 불러오기", res.data.data.question);
         } catch (err) {
           console.error("오늘의 질문 불러오기 오류: ", err);
         }
@@ -253,7 +253,7 @@ export default function MainPage() {
       <p className=" text-yellow-400 font-semibold mb-2">최근 말자국</p>
       <div className="pb-20">
         {diaries.map((diary) => (
-          <div className="mb-3">
+          <div key={diary.diaryId} className="mb-3">
             <DiaryPreview {...diary} />
           </div>
         ))}
