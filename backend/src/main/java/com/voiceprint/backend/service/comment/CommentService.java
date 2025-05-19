@@ -76,8 +76,7 @@ public class CommentService {
             notifications.add(notification);
         }
 
-        // 저장
-        notificationRepository.saveAll(notifications);
+        notificationRepository.saveAll(notifications); // 먼저 저장 -> ID확보
 
         // 트랜잭션 커밋 이후 실행
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -92,6 +91,10 @@ public class CommentService {
                     notification.setMetadata(metadata);  // 메타데이터 주입
                 }
 
+                // 메타데이터 DB 반영
+                notificationService.updateNotificationMetadata(notifications);
+
+                // SSE 발행
                 notificationService.publishAllNotifications(notifications);
             }
         });

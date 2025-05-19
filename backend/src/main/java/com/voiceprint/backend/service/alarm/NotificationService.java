@@ -126,4 +126,10 @@ public class NotificationService {
 
         }
     }
+
+    @Transactional
+    public void updateNotificationMetadata(List<Notification> notifications) {
+        notificationRepository.saveAll(notifications);
+    }
+
 }
