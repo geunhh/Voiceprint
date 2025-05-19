@@ -1,4 +1,4 @@
-CREATE DATABASE IF DEFAULT CHARACTER SET utf8mb4 NOT EXISTS voiceprint_db;
+CREATE DATABASE IF NOT EXISTS voiceprint_db DEFAULT CHARACTER SET utf8mb4;
 USE voiceprint_db;
 
 -- 1) chatbot
