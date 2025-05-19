@@ -2,6 +2,8 @@ package com.voiceprint.backend.service.groups;
 
 
 import com.voiceprint.backend.api.groups.dto.*;
+import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
@@ -39,10 +41,11 @@ public class GroupService {
         User createUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));;
         // 이미지 업로드
-        String imageUrl = null;
-        if (request.getGroupImage() != null && !request.getGroupImage().isEmpty()) {
-            imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+        if (request.getGroupImage() == null || request.getGroupImage().isEmpty()) {
+            throw new GroupNotFoundException("그룹 이미지가 없습니다.");
         }
+        String imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+
         // 그룹 엔티티 생성
         Group group = Group.builder()
                 .name(request.getName())
@@ -121,7 +124,11 @@ public class GroupService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹에 참여하지 않았습니다."));
 
         // 그룹에 속한 유저들
-        List<UserInfoDTO> groupUserList = groupUserRepository.findUserInfoByGroupId(groupId);
+        List<UserInfoDTO> groupUserList = groupUserRepository
+                .findUserInfoByGroupId(groupId).stream()
+                .map(opt -> opt.orElseThrow(() ->
+                        new GroupUserNotFoundException("그룹 내 유저가 없습니다.")))
+                .collect(Collectors.toList());
 
 
         return new GroupMainPageResponse(

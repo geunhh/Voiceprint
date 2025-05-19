@@ -49,7 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
         String providerId = oAuth2Response.getProviderId();
         String name = oAuth2Response.getName();
-        ProfileImage profileImage = profileImageRepository.findById(1L)
+        ProfileImage profileImage = profileImageRepository.findById((byte)1)
                 .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));;
         User user = userRepository.findByProviderId(providerId)
                 .orElseGet(() -> {

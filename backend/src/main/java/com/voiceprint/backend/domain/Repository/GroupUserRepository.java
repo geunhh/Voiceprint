@@ -29,7 +29,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             "FROM GroupUser gu JOIN gu.user u " +
             "JOIN u.profileImage p " +
             "WHERE gu.group.id = :groupId")
-    List<UserInfoDTO> findUserInfoByGroupId(@Param("groupId") Integer groupId);
+    List<Optional<UserInfoDTO>> findUserInfoByGroupId(@Param("groupId") Integer groupId);
 
 
     @Query("""
@@ -39,5 +39,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
     List<User> findUsersByGroupId(@Param("groupId") Integer groupId);
 
     boolean existsByGroupAndUser(Group group, User user);
+
+    boolean existsByUserIdAndGroupId(Integer userId, Integer groupId);
 }
 

@@ -5,8 +5,10 @@ import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.api.diary.dto.GroupDiaryResponseDTO;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryDetailResponse;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
+import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 
+import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
@@ -156,8 +158,15 @@ public class GroupDiaryService {
 
 
     public GroupDiaryDetailResponse getGroupDiaryDetail(Integer userId, Integer groupId, Integer diaryId) {
+        // ✅ 그룹 가입 여부 확인
+        boolean isMember = groupUserRepository.existsByUserIdAndGroupId(userId, groupId);
+        if (!isMember) {
+            throw new UnauthorizedGroupAccessException("해당 그룹에 속해있지 않은 사용자입니다.");
+        }
+
+        // ✅ 그룹 일기 존재 확인
         GroupDiary groupDiary = groupDiaryRepository.findByGroupIdAndDiaryId(groupId, diaryId)
-                .orElseThrow(() -> new RuntimeException("해당 그룹 일기를 찾을 수 없습니다."));
+                .orElseThrow(() -> new DiaryNotFoundException("해당 그룹 일기를 찾을 수 없습니다."));
 
         Diary diary = groupDiary.getDiary();
         User user = diary.getUser();
@@ -176,4 +185,5 @@ public class GroupDiaryService {
                 diary.getContent()
         );
     }
+
 }

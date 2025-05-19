@@ -112,11 +112,11 @@ public class JWTUtil {
     /**
      * 토큰에서 사용자 ID를 추출합니다. (리프레시 토큰용)
      */
-    public Long getUserIdFromToken(String token) {
+    public Integer getUserIdFromToken(String token) {
         try {
             Claims claims = getAllClaims(token);
             String id = claims.getId();
-            return id != null ? Long.parseLong(id) : null;
+            return id != null ? Integer.parseInt(id) : null;
         } catch (Exception e) {
             return null;
         }

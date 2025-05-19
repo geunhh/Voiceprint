@@ -88,7 +88,7 @@ public class VoiceChatService {
     /**
      * Redis에 채팅 메시지를 저장합니다.
      */
-    public void saveMessage(Long userId, String role, String content) {
+    public void saveMessage(Integer userId, String role, String content) {
         String key = messageKeyPrefix + ":" + userId;
         ChatMessage message = new ChatMessage(role, content);
         redisTemplate.opsForList().rightPush(key, message);
@@ -98,7 +98,7 @@ public class VoiceChatService {
     /**
      * 전체 토큰 수를 누적하여 저장합니다.
      */
-    public void accumulateToken(Long userId, Integer tokenDelta) {
+    public void accumulateToken(Integer userId, Integer tokenDelta) {
         String sessionKey = sessionKeyPrefix + ":" + userId;
 
         Object value = redisTemplate.opsForHash().get(sessionKey, "total_token");
