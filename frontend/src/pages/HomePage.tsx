@@ -15,9 +15,16 @@ export default function HomePage() {
     if (accessToken) {
       localStorage.setItem("Authorization", accessToken);
 
+      const redirectPath = localStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        localStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath, { replace: true });
+      } else {
+        navigate("/main");
+      }
+
       // URL 정리 (access 파라미터 제거) 후 /main 이동
       window.history.replaceState({}, "", "/");
-      navigate("/main");
     }
   }, [navigate]);
 
