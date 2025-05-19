@@ -149,7 +149,7 @@ public class DiaryService {
             log.debug("유저 id : {} 와 일기의 유저 id : {} 가 일치하지 않습니다.",userId, diary.getUser().getId());
             throw new UnauthorizedDiaryAccessException("diary에 권한이 없습니다.");
         }
-        log.debug("일기의 userID와 일치합니다. {}",diary.getUser().getEmail());
+        log.debug("일기의 userID와 일치합니다. {}",diary.getUser().getId());
 
         // messsages -> List로 매핑하기.
         String messagesJson = diary.getMessages();
