@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class GroupMainPageResponse {
-    private Long groupId;
+    private Integer groupId;
     private String name;
     private String description;
     private Boolean enableAlarm;

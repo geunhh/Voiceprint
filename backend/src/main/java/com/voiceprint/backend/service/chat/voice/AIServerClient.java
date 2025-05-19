@@ -8,6 +8,7 @@
     import lombok.extern.slf4j.Slf4j;
     import org.springframework.beans.factory.annotation.Value;
     import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
 
     import java.io.IOException;
     import java.net.URI;
@@ -17,6 +18,7 @@
     import java.util.function.Consumer;
 
     @Slf4j
+    @Transactional
     @RequiredArgsConstructor
     @Service
     public class AIServerClient {
@@ -26,7 +28,7 @@
         @Value("${ai-websocket.url}")
         private String aiUrl;
 
-        public void connect(Long userId, String frontSessionId,
+        public void connect(Integer userId, String frontSessionId,
                             Consumer<Object> onResponse) throws Exception {
             // 1) 콜백 저장
             callbacks.put(frontSessionId, onResponse);
@@ -45,14 +47,14 @@
             this.session = session;
         }
 
-        public void sendTextMessage(String sessionId, Long userId, String json) throws Exception {
+        public void sendTextMessage(String sessionId, Integer userId, String json) throws Exception {
             if (session != null && session.isOpen()) {
                 session.getBasicRemote().sendText(json);
                 log.info("🛫 AI 서버로 텍스트 전송: {}", json);
             }
         }
 
-        public void sendBinaryMessage(String sessionId, Long userId, ByteBuffer buffer) throws Exception {
+        public void sendBinaryMessage(String sessionId, Integer userId, ByteBuffer buffer) throws Exception {
             if (session != null && session.isOpen()) {
                 session.getBasicRemote().sendBinary(buffer);
                 log.info("🛫 AI 서버로 바이너리 전송 크기: {} 바이트", buffer.remaining());
@@ -71,7 +73,7 @@
             if (cb != null) cb.accept(data);
         }
 
-        public void disconnect(String sessionId, Long userId) {
+        public void disconnect(String sessionId, Integer userId) {
             try {
                 if (session != null && session.isOpen()) {
                     session.close();

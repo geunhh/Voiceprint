@@ -12,10 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SseEmitterManager {
 
     // 사용자 별로 연결된 SseEmitter를 저장하는 ConcurrentHashMap
-    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>(); // 멀티스레드 환경에서 안전하게 접근 가능
+    private final Map<Integer, SseEmitter> emitters = new ConcurrentHashMap<>(); // 멀티스레드 환경에서 안전하게 접근 가능
 
     // 새로운 SSE 연결을 추가하는 메서드
-    public SseEmitter add(Long userId) {
+    public SseEmitter add(Integer userId) {
         // 기존 emitter가 있다면, 먼저 종료하고 제거
         if (emitters.containsKey(userId)) {
             try {
@@ -36,7 +36,7 @@ public class SseEmitterManager {
     }
 
     // 알람을 특정 유저에게 전송하는 메서드
-    public void sendTo(Long userId, String eventName, Object data) {
+    public void sendTo(Integer userId, String eventName, Object data) {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
             try {
@@ -50,11 +50,11 @@ public class SseEmitterManager {
     }
 
     // emitter 존재 여부 확인 (디버깅 or 상태 체크용)
-    public boolean hasEmitter(Long userId) {
+    public boolean hasEmitter(Integer userId) {
         return emitters.containsKey(userId);
     }
 
-    public Set<Long> getSubscribedUserIds() {
+    public Set<Integer> getSubscribedUserIds() {
         return emitters.keySet();
     }
 }

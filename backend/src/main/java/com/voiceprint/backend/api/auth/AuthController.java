@@ -33,7 +33,7 @@ public class AuthController {
             HttpServletRequest request,
             @RequestBody ProfileUpdateRequest profileUpdateRequest) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         ProfileUpdateResponse updatedProfile = authService.updateProfile(userId, profileUpdateRequest);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "프로필 수정 완료", updatedProfile));
@@ -54,7 +54,7 @@ public class AuthController {
      */
     @GetMapping("/profile")
     public ResponseEntity<CommonResponse<ProfileResponse>> getProfile(HttpServletRequest request) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         ProfileResponse response = authService.getProfile(userId);
         return ResponseEntity.ok(new CommonResponse<>(200,"프로필 조회 완료.", response));
     }
@@ -165,7 +165,7 @@ public class AuthController {
             return ResponseEntity.status(401).body("인증 토큰이 없거나 형식이 잘못되었습니다.");
         }
         // 토큰에서 사용자 ID 조회
-        Long userId = authService.getUserIdFromAuthHeader(authHeader);
+        Integer userId = authService.getUserIdFromAuthHeader(authHeader);
 
         // 사용자 ID가 없는 경우 (유효하지 않은 토큰이거나 사용자가 없는 경우)
         if (userId == null) {
@@ -183,7 +183,7 @@ public class AuthController {
     public ResponseEntity<CommonResponse<AlarmSettingsResponseDTO>> isReminderEnabled(
             HttpServletRequest request
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
 //        Long userId = 1L;
         AlarmSettingsResponseDTO response = authService.isReminderEnabled(userId);
 
@@ -199,7 +199,7 @@ public class AuthController {
             HttpServletRequest httprequest,
             @RequestBody @Valid ReminderSettingRequest request
     ) {
-       Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
 
        Boolean response = authService.updateReminderSetting(request.getEnableAlarms(), userId);
 
@@ -216,7 +216,7 @@ public class AuthController {
             HttpServletRequest httprequest,
             @RequestBody @Valid ReminderTimeRequestDTO request
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
 
         String response = authService.updateReminderTime(request.getAlarmTime(), userId);
 

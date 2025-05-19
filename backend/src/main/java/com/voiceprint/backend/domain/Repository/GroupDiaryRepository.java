@@ -13,17 +13,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface GroupDiaryRepository extends JpaRepository<GroupDiary, Long> {
+public interface GroupDiaryRepository extends JpaRepository<GroupDiary, Integer> {
     // 그룹 ID를 기준으로 최신 순으로 그룹 다이어리 가져오기
     @Query("""
     SELECT gd FROM GroupDiary gd JOIN FETCH gd.diary d WHERE gd.group.id = :groupId
     AND (:cursor IS NULL OR gd.sharedAt < :cursor) ORDER BY gd.sharedAt DESC
     """)
     List<GroupDiary> findGroupDiariesWithCursor(
-            @Param("groupId") Long groupId,
+            @Param("groupId") Integer groupId,
             @Param("cursor") LocalDateTime cursor,
             Pageable pageable
     );
 
-    Optional<GroupDiary> findByGroupIdAndDiaryId(Long groupId, Long diaryId);
+    Optional<GroupDiary> findByGroupIdAndDiaryId(Integer groupId, Integer diaryId);
 }

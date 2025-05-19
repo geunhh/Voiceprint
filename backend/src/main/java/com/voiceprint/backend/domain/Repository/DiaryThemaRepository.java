@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DiaryThemaRepository extends JpaRepository<DiaryThema, Long> {
+public interface DiaryThemaRepository extends JpaRepository<DiaryThema, Integer> {
 
     @Query("select d from DiaryThema d where d.user.id IS NULL OR d.user.id = :userId")
-    List<DiaryThema> findByUserIdOrDefault(@Param("userId") Long userId);
+    List<DiaryThema> findByUserIdOrDefault(@Param("userId") Integer userId);
 
-    Optional<DiaryThema> findByUserId(Long userId);
+    Optional<DiaryThema> findByUserId(Integer userId);
 }
