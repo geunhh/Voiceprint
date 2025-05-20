@@ -94,6 +94,7 @@ public class GroupInviteService {
     /**
      * 초대를 수락하는 메서드
      */
+    @Transactional
     public InviteAcceptResponseDTO acceptInvite(String code, Integer userId) {
 
         // 초대 코드 확인

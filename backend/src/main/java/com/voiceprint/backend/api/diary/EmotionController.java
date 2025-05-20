@@ -41,7 +41,7 @@ public class EmotionController {
             HttpServletRequest request
     ) {
         Integer userId = authService.getUserIdFromRequest(request);
-//        Long userId = 2L;
+//        Integer userId = 1;
         log.info("이번달 사용자의 감정 통계 정보 조회// userId : {}",userId);
 
         MonthlyEmotionResponseDTO response = emotionService.getMonthlyEmotions(userId);
