@@ -117,7 +117,7 @@ export default function GroupDetailPage() {
       try {
         const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
         setGroup(res.data.data);
-        console.log("그룹 데이터 확인: ", res.data.data);
+        // console.log("그룹 데이터 확인: ", res.data.data);
 
         if (res.data.data.role === "ADMIN") {
           setIsAdmin(true);
@@ -134,9 +134,12 @@ export default function GroupDetailPage() {
 
   if (loading) {
     return (
-      <p className="p-4 flex justify-center items-center">
-        그룹 정보를 불러오는 중입니다...
-      </p>
+      <div className="flex justify-center items-center h-screen text-center flex-col">
+        <img src={happyCharacter} alt="캐릭터" />
+        <p className="p-4 text-gray-500 text-lg font-medium">
+          그룹 정보를 불러오는 중입니다.
+        </p>
+      </div>
     );
   }
 
