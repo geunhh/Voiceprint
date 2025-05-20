@@ -19,6 +19,8 @@ module.exports = {
 
         customyellow: "#FFC700", // 기본 노란색(Figma_yellow500)
         lightyellow: "#FFF6D4", // 밝은 노란색(Figma_yellow100)
+
+        customblack: "#2E2E2E", // black
       },
       keyframes: {
         /* 둥실둥실 이동 */
