@@ -8,7 +8,9 @@ import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 
+import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
@@ -22,10 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 @Service
 @Slf4j
@@ -185,5 +184,63 @@ public class GroupDiaryService {
                 diary.getContent()
         );
     }
+
+
+    public GroupDiaryListWithCursorDTO getAllGroupDiaries(HttpServletRequest request, LocalDateTime cursor, int size) {
+        Integer userId = authService.getUserIdFromRequest(request);
+
+        // 1. 유저 정보 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
+
+        log.debug("유저정보 확인");
+        // 2. 유저가 속한 그룹 ID 조회
+        List<Integer> groupIds = groupUserRepository.findGroupIdsByUserId(userId);
+        if (groupIds.isEmpty()) {
+            throw new GroupNotFoundException("속한 그룹이 조회되지 않습니다.");
+        }
+        log.debug("그룹 id 조회");
+        // 3. size + 1개 조회로 다음 페이지 여부 확인
+        PageRequest pageRequest = PageRequest.of(0, size * 2); // 중복 제거를 위해 넉넉히 조회
+        List<GroupDiary> groupDiaries = groupDiaryRepository.findByGroupIdsWithCursorExcludeUser(
+                                        groupIds, cursor, userId, pageRequest);
+        log.debug("그룹 공유일기 조회");
+        if (groupDiaries.isEmpty()) {
+            throw new GroupUserNotFoundException("공유 일기가 없습니다.");
+        }
+        log.debug("그룹 공유일기 중복제거");
+        // 4. diaryId 기준으로 중복 제거 (가장 최근 공유일기만 유지)
+        LinkedHashMap<Integer, GroupDiary> distinctDiaries = new LinkedHashMap<>();
+        for (GroupDiary gd : groupDiaries) {
+            Integer diaryId = gd.getDiary().getId();
+            if (!distinctDiaries.containsKey(diaryId)) {
+                distinctDiaries.put(diaryId, gd);
+            }
+            if (distinctDiaries.size() >= size) break;
+        }
+        log.debug("그룹 공유일기 마지막!");
+        List<GroupDiary> finalList = new ArrayList<>(distinctDiaries.values());
+
+        // 5. 다음 커서 설정
+        LocalDateTime nextCursor = finalList.size() == size ? finalList.get(finalList.size() - 1).getSharedAt() : null;
+
+        // 6. DTO 변환
+        List<GroupDiaryResponseDTO> response = finalList.stream()
+                .map(gd -> {
+                    Diary d = gd.getDiary();
+                    return new GroupDiaryResponseDTO(
+                            gd.getGroup().getId(),
+                            d.getId(),
+                            d.getTitle(),
+                            d.getContent(),
+                            gd.getSharedAt().toString(),
+                            d.getUser().getProfileImage().getImageUrl(),
+                            d.getUser().getNickname()
+                    );
+                }).toList();
+
+        return new GroupDiaryListWithCursorDTO(response, nextCursor);
+    }
+
 
 }
