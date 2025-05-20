@@ -4,5 +4,4 @@ public class GroupUserNotFoundException extends RuntimeException{
     public GroupUserNotFoundException(String message) {
         super(message);
     }
-
 }
