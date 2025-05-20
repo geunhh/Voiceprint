@@ -35,13 +35,15 @@ pipeline {
         withCredentials([
           file(credentialsId: 'env-backend', variable: 'BACKEND_ENV'),
           file(credentialsId: 'env-frontend', variable: 'FRONTEND_ENV'),
-          file(credentialsId: 'env-mysql', variable: 'MYSQL_ENV')
+          file(credentialsId: 'env-mysql', variable: 'MYSQL_ENV'),
+          file(credentialsId: 'env-redis', variable: 'REDIS_ENV')
         ]) {
           script {
             // 각각의 파일 내용을 읽어서 해당 위치에 저장
             writeFile file: 'backend/.env', text: readFile(BACKEND_ENV)
             writeFile file: 'frontend/.env', text: readFile(FRONTEND_ENV)
             writeFile file: 'mysql/.env', text: readFile(MYSQL_ENV)
+            writeFile file: 'redis/.env', text: readFile(REDIS_ENV)
           }
         }
       }
@@ -97,6 +99,8 @@ pipeline {
           scp -o StrictHostKeyChecking=no backend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/backend.env
           scp -o StrictHostKeyChecking=no frontend/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/frontend.env
           scp -o StrictHostKeyChecking=no mysql/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/mysql.env
+          scp -o StrictHostKeyChecking=no redis/.env ${DEPLOY_HOST}:${DEPLOY_PATH}/redis.env
+          scp -o StrictHostKeyChecking=no redis/redis.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/redis.conf
           scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml
           scp -o StrictHostKeyChecking=no voiceprint.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/voiceprint.conf
           # 2. 원격 접속 후 배포
@@ -107,7 +111,7 @@ pipeline {
             docker compose pull &&
             docker compose up -d &&
             docker image prune -f &&
-            rm -f backend.env frontend.env mysql.env
+            rm -f backend.env frontend.env mysql.env redis.env
           '
           """
         }

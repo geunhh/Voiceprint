@@ -32,7 +32,7 @@ public class ChatController {
             @RequestBody @Valid ChatTextRequestDTO request,
             HttpServletRequest httprequest
             ){
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 채팅 / userid : {}",userId);
         ChatTextResponseDTO response = chatServcie.processChat(userId, request.getMessage());
         log.info("답변 : {}",response.getResponse());
@@ -50,7 +50,7 @@ public class ChatController {
     public ResponseEntity<CommonResponse<String>> endChatSession(
             HttpServletRequest request) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 세션 종료 / userid : {}",userId);
         // 비동기 처리
         chatSessionService.endSession(userId);
@@ -66,7 +66,7 @@ public class ChatController {
             HttpServletRequest request
     ) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 임시 일기 조회 / userid : {}",userId);
         TempDiaryResponseDTO response = chatSessionService.getTempDiary(userId);
         log.info("## 일기 : {} ",response.getDiary());
@@ -78,7 +78,7 @@ public class ChatController {
             HttpServletRequest request
     ) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 임시 일기 재생성 / userid : {}",userId);
         chatSessionService.retryTempDiaryGeneration(userId);
 
@@ -98,7 +98,7 @@ public class ChatController {
             HttpServletRequest httprequest
     ) {
 //        Long userId = 1L;
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 임시 채팅 수정 / userid : {}",userId);
         UpdateDiaryResult result = chatSessionService.updateTempDiary(userId, request);
 
@@ -114,14 +114,14 @@ public class ChatController {
     }
 
     @PostMapping("/diary/temp/confirm")
-    public ResponseEntity<CommonResponse<Map<String, Long>>> confirmDiary(
+    public ResponseEntity<CommonResponse<Map<String, Integer>>> confirmDiary(
             HttpServletRequest request
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 일기 확정!! / userid : {}",userId);
-        Long diaryId = chatSessionService.confirmDiary(userId);
+        Integer diaryId = chatSessionService.confirmDiary(userId);
 
-        Map<String, Long> data = Map.of("diaryId", diaryId);
+        Map<String, Integer> data = Map.of("diaryId", diaryId);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "일기 저장 완료", data
         ));

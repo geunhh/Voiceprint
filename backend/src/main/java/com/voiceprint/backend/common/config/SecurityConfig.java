@@ -2,21 +2,26 @@ package com.voiceprint.backend.common.config;
 
 import com.voiceprint.backend.common.filter.JWTFilter;
 import com.voiceprint.backend.common.util.JWTUtil;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.service.auth.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.awt.*;
 import java.util.Collections;
+import java.util.List;
 
 
 @Configuration
@@ -38,8 +43,10 @@ public class SecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
                         CorsConfiguration configuration = new CorsConfiguration();
-
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+                        configuration.setAllowedOrigins(List.of(
+                                "https://k12b106.p.ssafy.io",
+                                "http://localhost:63342", //Todo: 개발 후에 제거하기
+                                "http://localhost:5173"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -76,7 +83,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/","/api/v1/user/google", "/api/v1/user/kakao","/login/**", "/oauth2/**").permitAll()
 //                        .anyRequest().authenticated()); // 일단 막기.
                         .anyRequest().permitAll());
 

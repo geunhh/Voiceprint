@@ -1,7 +1,6 @@
 package com.voiceprint.backend.api.auth.dto;
 
-import com.voiceprint.backend.domain.diary.Diary;
-import lombok.AllArgsConstructor;
+import com.voiceprint.backend.domain.Entity.Diary;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 //@AllArgsConstructor
 @Slf4j
 public class DiaryResponse {
-    private Long diaryId;
+    private Integer diaryId;
     private String title;
     private String content;
     private LocalDateTime createdAt;

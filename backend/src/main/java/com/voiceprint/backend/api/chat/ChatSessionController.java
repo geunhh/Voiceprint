@@ -1,10 +1,9 @@
 package com.voiceprint.backend.api.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatMessageListWithTokenDTO;
-import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.api.chat.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.common.dto.CommonResponse;
-import com.voiceprint.backend.domain.chat.ChatSessionStatus;
+import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.chat.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,7 +30,7 @@ public class ChatSessionController {
         @Valid @RequestBody SessionStartRequestDTO request,
         HttpServletRequest httprequest // 유저 토큰
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 채팅 세션 시작 / userid : {}",userId);
 
 
@@ -50,7 +47,7 @@ public class ChatSessionController {
     @GetMapping("/status")
     public ResponseEntity<CommonResponse<String>> getSessionStatus(
             HttpServletRequest request) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 세션 확인 / userid : {}",userId);
         ChatSessionStatus status = chatSessionService.getSessionStatus(userId);
 
@@ -67,8 +64,7 @@ public class ChatSessionController {
     @GetMapping("/messages")
     public ResponseEntity<CommonResponse<ChatMessageListWithTokenDTO>> getMessages(
             HttpServletRequest request) {
-//        Long userId = 1L;
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 기록 조회 / userid : {}",userId);
         ChatMessageListWithTokenDTO response = chatSessionService.getMessages(userId);
         log.info("response : {}",response);
