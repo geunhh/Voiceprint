@@ -38,7 +38,7 @@ public class DiaryReminderScheduler {
         int minute = now.getMinute();
 
         // 0 or 30분일 때만 실행.
-        if (minute != 0 && minute !=30) return;
+//        if (minute != 0 && minute !=30) return;
 
         log.info("🕒 리마인더 스케줄러 실행 시작: {}", now);
 
