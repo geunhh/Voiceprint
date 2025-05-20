@@ -141,7 +141,8 @@ public class GroupService {
                 group.getCreatedAt(),
                 groupUserList,
                 groupUser.getJoinedAt(),
-                group.getGroupImage()
+                group.getGroupImage(),
+                groupUser.getRole()
         );
     }
     @Transactional(readOnly = true)
