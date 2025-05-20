@@ -2,21 +2,23 @@ import { useNavigate } from "react-router";
 import useTimeAgo from "../../hooks/useTimeAgo";
 
 interface DiaryPreviewProps {
-  userImage: string;
-  userName: string;
-  groupName: string;
-  createdAt: string;
-  content: string;
+  groupId: number;
   diaryId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  profileUrl: string;
+  nickname: string;
 }
 
 function DiaryPreview(props: DiaryPreviewProps) {
-  const { userImage, userName, groupName, createdAt, content, diaryId } = props;
+  const { groupId, diaryId, title, content, createdAt, profileUrl, nickname } =
+    props;
   const timeAgo = useTimeAgo(createdAt);
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/diary/${diaryId}`);
+    navigate(`/group/${groupId}/diary/${diaryId}`);
   };
 
   return (
@@ -27,18 +29,18 @@ function DiaryPreview(props: DiaryPreviewProps) {
       {/* 유저 정보 및 그룹 이름, 일자 */}
       <div className="flex items-start gap-3">
         <img
-          src={userImage}
+          src={profileUrl}
           alt="User"
           className="h-12 w-12 rounded-full object-cover"
         />
         <div className="flex flex-col flex-1">
           <div className="flex justify-between items-center">
-            <p className="text-base font-semibold">{userName}</p>
+            <p className="text-base font-semibold">{nickname}</p>
             <span className="text-sm text-gray-400 whitespace-nowrap">
               {timeAgo}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-0.5">[{groupName}]</p>
+          <p className="text-sm text-gray-500 mt-0.5">[{title}]</p>
         </div>
       </div>
 

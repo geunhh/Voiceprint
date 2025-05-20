@@ -70,12 +70,18 @@ export default function GroupMainPage() {
 
       {/* 그룹 카드 */}
       <div className="relative mt-4 flex items-center justify-center">
-        <button
-          onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
-          className="absolute left-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
-        >
-          &lt;
-        </button>
+        {groups.length > 1 && (
+          <button
+            onClick={() =>
+              setCurrentIndex((prev) =>
+                prev === 0 ? groups.length - 1 : prev - 1
+              )
+            }
+            className="absolute left-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
+          >
+            &lt;
+          </button>
+        )}
 
         <GroupCard
           groupName={currentGroup.groupName}
@@ -88,14 +94,18 @@ export default function GroupMainPage() {
           }}
         />
 
-        <button
-          onClick={() =>
-            setCurrentIndex((prev) => Math.min(prev + 1, groups.length - 1))
-          }
-          className="absolute right-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
-        >
-          &gt;
-        </button>
+        {groups.length > 1 && (
+          <button
+            onClick={() =>
+              setCurrentIndex((prev) =>
+                prev === groups.length - 1 ? 0 : prev + 1
+              )
+            }
+            className="absolute right-4 text-3xl text-gray-200 transition-colors hover:text-yellow-400"
+          >
+            &gt;
+          </button>
+        )}
       </div>
 
       {/* 그룹 생성 버튼 */}
