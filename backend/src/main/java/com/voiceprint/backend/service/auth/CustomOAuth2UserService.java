@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Map;
 
 @Service
@@ -61,6 +62,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .isDeleted(false)
                             .createdAt(LocalDateTime.now())  // not null 설정으로 인한 명시적 설정
                             .updatedAt(LocalDateTime.now())
+                            .alarmTime(LocalTime.of(21, 0))  // ✅ 명시적으로 default 지정
                             .build();
                     return userRepository.save(newUser);
                 });
