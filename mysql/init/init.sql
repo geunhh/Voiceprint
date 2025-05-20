@@ -9,7 +9,7 @@ CREATE TABLE `chatbot` (
   `image_url`    VARCHAR(512) DEFAULT NULL,
   `prompt`       TEXT,
   `is_deleted`   BIT(1) DEFAULT NULL,
-  `init_ment`    VARCHAR(100) NOT NULL;
+  `init_ment`    VARCHAR(100) NOT NULL,
   `created_at`   DATETIME(0) DEFAULT NULL,
   `updated_at`   DATETIME(0) DEFAULT NULL,
    PRIMARY KEY (`id`)
