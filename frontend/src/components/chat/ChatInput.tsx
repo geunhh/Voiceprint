@@ -1,7 +1,3 @@
-// src/components/chat/ChatInput.tsx
-// 아래 입력창 + 전송 버튼을 담당
-
-import React from "react";
 import Button from "../common/Button";
 
 interface ChatInputProps {
@@ -24,7 +20,7 @@ export default function ChatInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="대화를 입력해주세요"
-        className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none"
+        className="flex-1 border max-w-[230px] border-gray-300 rounded-xl px-4 py-2 focus:outline-none"
         onKeyDown={(e) => e.key === "Enter" && onSend()}
       />
       <Button
