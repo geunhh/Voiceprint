@@ -1,6 +1,6 @@
 package com.voiceprint.backend.api.groups.dto;
 
-import com.voiceprint.backend.domain.Group;
+import com.voiceprint.backend.domain.Entity.Group;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class GroupUpdateResponse {
-    private Long groupId;
+    private Integer groupId;
     private String name;
     private String description;
     private String groupImage;

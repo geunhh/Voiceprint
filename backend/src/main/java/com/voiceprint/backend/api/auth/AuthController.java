@@ -33,7 +33,7 @@ public class AuthController {
             HttpServletRequest request,
             @RequestBody ProfileUpdateRequest profileUpdateRequest) {
 
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         ProfileUpdateResponse updatedProfile = authService.updateProfile(userId, profileUpdateRequest);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "프로필 수정 완료", updatedProfile));
@@ -54,7 +54,7 @@ public class AuthController {
      */
     @GetMapping("/profile")
     public ResponseEntity<CommonResponse<ProfileResponse>> getProfile(HttpServletRequest request) {
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         ProfileResponse response = authService.getProfile(userId);
         return ResponseEntity.ok(new CommonResponse<>(200,"프로필 조회 완료.", response));
     }
@@ -137,10 +137,23 @@ public class AuthController {
         return null;
     }
 
-    @GetMapping("/google")
-    public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/oauth2/authorization/google");  // Spring Security OAuth2 URL로 리다이렉트
+    /**
+     * Google 로그인 페이지로 리다이렉트하는 엔드포인트
+     *
+     * @param response HTTP 응답 객체
+     * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
+     */
+    @GetMapping("/{type}")
+    public void redirectToGoogleLogin(
+            @PathVariable String type, HttpServletResponse response) throws IOException {
+
+        if (type.equals("google")) {
+            response.sendRedirect("/oauth2/authorization/google");
+        } else if (type.equals("kakao")) {
+            response.sendRedirect("/oauth2/authorization/kakao");
+        }
     }
+
 
     @GetMapping("/search")
     public ResponseEntity<?>findUser(HttpServletRequest request) {
@@ -152,7 +165,7 @@ public class AuthController {
             return ResponseEntity.status(401).body("인증 토큰이 없거나 형식이 잘못되었습니다.");
         }
         // 토큰에서 사용자 ID 조회
-        Long userId = authService.getUserIdFromAuthHeader(authHeader);
+        Integer userId = authService.getUserIdFromAuthHeader(authHeader);
 
         // 사용자 ID가 없는 경우 (유효하지 않은 토큰이거나 사용자가 없는 경우)
         if (userId == null) {
@@ -163,23 +176,30 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 알림 수신 상태를 조회하는 API
+     */
     @GetMapping("/reminder-setting")
-    public ResponseEntity<CommonResponse<Boolean>> isReminderEnabled(
+    public ResponseEntity<CommonResponse<AlarmSettingsResponseDTO>> isReminderEnabled(
             HttpServletRequest request
     ) {
-        Long userId = authService.getUserIdFromRequest(request);
-        Boolean isEnabled = authService.isReminderEnabled(userId);
+        Integer userId = authService.getUserIdFromRequest(request);
+//        Long userId = 1L;
+        AlarmSettingsResponseDTO response = authService.isReminderEnabled(userId);
 
         return ResponseEntity.ok(
-                new CommonResponse<>(200, "유저 알람 여부 조회 성공", isEnabled));
+                new CommonResponse<>(200, "유저 알람 여부 조회 성공", response));
     }
 
+    /**
+     * 알림 조회 상태를 수정하는 API
+     */
     @PatchMapping("/reminder-setting")
     public ResponseEntity<CommonResponse<Boolean>> updateReminderSetting(
             HttpServletRequest httprequest,
             @RequestBody @Valid ReminderSettingRequest request
     ) {
-       Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
 
        Boolean response = authService.updateReminderSetting(request.getEnableAlarms(), userId);
 
@@ -188,12 +208,15 @@ public class AuthController {
        ));
     }
 
+    /**
+     * 알림 수신 시간을 설정하는 API
+     */
     @PatchMapping("/reminder-time")
     public ResponseEntity<CommonResponse<String>> updateReminderTime(
             HttpServletRequest httprequest,
             @RequestBody @Valid ReminderTimeRequestDTO request
     ) {
-        Long userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httprequest);
 
         String response = authService.updateReminderTime(request.getAlarmTime(), userId);
 

@@ -3,8 +3,8 @@ package com.voiceprint.backend.service.diary;
 import com.voiceprint.backend.api.diary.dto.EmotionCountDTO;
 import com.voiceprint.backend.api.diary.dto.MonthlyEmotionResponseDTO;
 import com.voiceprint.backend.api.diary.dto.WeeklyEmotionResponseDTO;
-import com.voiceprint.backend.domain.diary.Diary;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
+import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class EmotionService {
 
     private final DiaryRepository diaryRepository;
 
-    public WeeklyEmotionResponseDTO getWeeklyEmotions(Long userId) {
+    public WeeklyEmotionResponseDTO getWeeklyEmotions(Integer userId) {
 
         // 1. 이번주 시작(일요일)과 끝(토요일) 계산
         LocalDate today = LocalDate.now(); // 오늘 날짜
@@ -69,7 +69,7 @@ public class EmotionService {
         return new WeeklyEmotionResponseDTO(emotionList);
     }
 
-    public MonthlyEmotionResponseDTO getMonthlyEmotions(Long userId) {
+    public MonthlyEmotionResponseDTO getMonthlyEmotions(Integer userId) {
 
         // 1. 이번달 시작과 끝 계산
         LocalDate today = LocalDate.now(); // 오늘 날짜

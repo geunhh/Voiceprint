@@ -53,13 +53,21 @@ services:
 
   redis:
     container_name: redis
-    image: redis:7.4-alpine
+    image: redis:8
     ports:
       - "6379:6379"
+    env_file:
+      - ./redis.env
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: 
+      - /bin/sh
+      - -c
+      - redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
     networks:
       - voiceprint-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" ping"]
       interval: 5s
       retries: 10
   

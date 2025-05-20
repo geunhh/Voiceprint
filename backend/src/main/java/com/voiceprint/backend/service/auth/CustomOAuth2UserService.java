@@ -2,23 +2,25 @@ package com.voiceprint.backend.service.auth;
 
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
 import com.voiceprint.backend.api.auth.dto.GoogleResponse;
+import com.voiceprint.backend.api.auth.dto.KakaoResponse;
 import com.voiceprint.backend.api.auth.dto.OAuth2Response;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.domain.auth.ProfileImage;
-import com.voiceprint.backend.domain.auth.ProfileImageRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.Entity.ProfileImage;
+import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.Map;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
@@ -37,23 +39,23 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         else if (providerName.equals("kakao")) {
-            // 카카오 DTo
+            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
         }
         else {
-
-            return null;
+            return null; // 지원하지 않는 OAuth 제공자일 경우 null 반환
         }
 
+
         User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
-        String email = oAuth2Response.getEmail();
+        String providerId = oAuth2Response.getProviderId();
         String name = oAuth2Response.getName();
-        ProfileImage profileImage = profileImageRepository.findById(1L)
+        ProfileImage profileImage = profileImageRepository.findById((byte)1)
                 .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));;
-        User user = userRepository.findByAuthProviderAndEmail(provider, email)
+        User user = userRepository.findByProviderId(providerId)
                 .orElseGet(() -> {
                     User newUser = User.builder()
                             .profileImage(profileImage)
-                            .email(email)
+                            .providerId(providerId)
                             .nickname(name)
                             .authProvider(provider)
                             .isDeleted(false)
