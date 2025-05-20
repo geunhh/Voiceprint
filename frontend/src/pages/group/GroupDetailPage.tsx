@@ -51,6 +51,8 @@ export default function GroupDetailPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
 
@@ -115,6 +117,10 @@ export default function GroupDetailPage() {
         const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
         setGroup(res.data.data);
         console.log("그룹 데이터 확인: ", res.data.data);
+
+        if (res.data.data.role === "ADMIN") {
+          setIsAdmin(true);
+        }
       } catch (err) {
         console.error("그룹 데이터 불러오기 실패", err);
       } finally {
@@ -125,13 +131,15 @@ export default function GroupDetailPage() {
     fetchGroupData();
   }, [groupId]);
 
-  if (loading || !group) {
+  if (loading) {
     return (
       <p className="p-4 flex justify-center items-center">
         그룹 정보를 불러오는 중입니다...
       </p>
     );
   }
+
+  if (!group) return;
 
   // 초대 링크 생성
   const handleInviteClick = async () => {
@@ -213,12 +221,16 @@ export default function GroupDetailPage() {
           <p className="text-gray-500 text-lg font-semibold">
             {year}.{month}.{day} ~
           </p>
-          <img
-            src={settingIcon}
-            alt="수정"
-            className="w-6 h-6 cursor-pointer"
-            onClick={() => navigate(`/group/${group.groupId}/edit`)}
-          />
+
+          {/* 방장인 경우 수정 버튼 활성화 */}
+          {isAdmin && (
+            <img
+              src={settingIcon}
+              alt="수정"
+              className="w-6 h-6 cursor-pointer"
+              onClick={() => navigate(`/group/${group.groupId}/edit`)}
+            />
+          )}
         </div>
         {/* 그룹명 */}
         <div>
@@ -255,7 +267,7 @@ export default function GroupDetailPage() {
       )}
 
       {/* 디데이 */}
-      <div className="mb-5 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
+      <div className="mb-2 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
         {/* 텍스트 */}
         <div className="flex flex-col">
           <p className="text-gray-500 text-base font-semibold mb-1">
@@ -273,7 +285,25 @@ export default function GroupDetailPage() {
 
       {/* 그룹 메이트 */}
       <div className="mb-5">
-        {group.groupUserList.length > 1 ? (
+        {/* 초대 버튼 */}
+        <div className="flex items-center gap-4 bg-yellow-50 p-4 rounded-xl mb-2">
+          <img src={happyCharacter} className="w-20 h-auto" alt="캐릭터" />
+          <div
+            className="flex flex-col cursor-pointer"
+            onClick={handleInviteClick}
+          >
+            <p className="text-yellow-400 font-bold text-lg mb-1">
+              그룹 초대하기
+            </p>
+            <p className="text-gray-500 text-base">
+              초대 코드를 통해
+              <br />
+              일기 메이트를 초대할 수 있어요!
+            </p>
+          </div>
+        </div>
+        {/* 메이트 목록  */}
+        {group.groupUserList.length > 1 && (
           <>
             {/* 메이트 인원수 정보 */}
             <div className="flex mb-2">
@@ -302,23 +332,6 @@ export default function GroupDetailPage() {
               ))}
             </div>
           </>
-        ) : (
-          <div className="flex items-center gap-4 bg-yellow-50 p-4 rounded-xl">
-            <img src={happyCharacter} className="w-20 h-auto" alt="캐릭터" />
-            <div
-              className="flex flex-col cursor-pointer"
-              onClick={handleInviteClick}
-            >
-              <p className="text-yellow-400 font-bold text-lg mb-1">
-                그룹 초대하기
-              </p>
-              <p className="text-gray-500 text-base">
-                초대 코드를 통해
-                <br />
-                일기 메이트를 초대할 수 있어요!
-              </p>
-            </div>
-          </div>
         )}
       </div>
 
