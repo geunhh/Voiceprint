@@ -117,13 +117,13 @@ function ShareGroupModal({ onClose }: ShareGroupModalProps) {
             <p className="text-yellow-500 mb-3">공유할 그룹이 있어요!</p>
 
             {/* 검색 바 */}
-            <div className="w-full flex items-center gap-2 px-5 mb-4">
+            <div className="w-full flex justify-center gap-2 px-5 mb-4">
               <input
                 type="text"
                 placeholder="그룹 검색"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 py-2 pl-3 pr-10 rounded-full bg-gray-100 focus:bg-white focus:ring-1 focus:ring-yellow-400 outline-none"
+                className="w-full max-w-[300px] py-2 pl-3 pr-10 rounded-full bg-gray-100 focus:bg-white focus:ring-1 focus:ring-yellow-400 outline-none"
               />
               {/* 필요하면 검색 아이콘 배치 */}
             </div>
