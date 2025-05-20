@@ -33,6 +33,33 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Muruk";
+  src: url("/src/assets/fonts/Murukmuruk.ttf") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Omyu";
+  src: url("/src/assets/fonts/Omyu.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Gangwon";
+  src: url("/src/assets/fonts/Gangwon.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Hyemin";
+  src: url("/src/assets/fonts/Hyemin.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

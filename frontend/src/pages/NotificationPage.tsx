@@ -6,7 +6,7 @@ import NotificationFilterTabs from "../components/notification/notificationFilte
 import NotificationItem from "../components/notification/notificationItem";
 
 interface Notification {
-  type: "reminder" | "newComment" | "newDiary" | "newMember";
+  type: "reminder" | "newComment" | "newDiary" | "newMember" | "groupReminder";
   message: string;
   metadata: {
     groupId?: number;
@@ -96,11 +96,13 @@ export default function NotificationPage() {
       console.error("알림 읽음 처리 실패:", err);
     }
 
-    if (item.metadata.groupId && item.metadata.diaryId) {
+    if (item.type === "newComment" || item.type === "newDiary") {
       navigate(
         `/group/${item.metadata.groupId}/diary/${item.metadata.diaryId}`
       );
     } else if (item.type === "newMember") {
+      navigate(`/group/${item.metadata.groupId}`);
+    } else if (item.type === "groupReminder") {
       navigate(`/group/${item.metadata.groupId}`);
     } else {
       navigate("diary/setting/friend");
