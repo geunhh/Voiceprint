@@ -36,7 +36,7 @@ public class NotificationController {
      */
     @GetMapping(value = "/subscribe/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter testSubscribe() {
-        Integer testUserId = 2; // 임시 유저
+        Integer testUserId = 1; // 임시 유저
         return sseService.subscribe(testUserId);
     }
 
