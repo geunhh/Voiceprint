@@ -1,24 +1,14 @@
-import Add from "../../assets/icons/add.png";
-import ImageEdit from "../../assets/icons/edit.png";
-
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 import Button from "../../components/common/Button";
 import { DayPicker } from "../../components/group/DayPicker";
 import ImageUploader from "../../components/group/ImageUploader";
 import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
-import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
-import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
-import { RootState } from "../../store/store";
-
-// 초대 링크
-const inviteLink = "www.voice_print/group/1/invite/1234";
 
 export default function GroupCreatePage() {
-  const user = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
 
   const [groupName, setGroupName] = useState(""); // 그룹명
@@ -29,7 +19,6 @@ export default function GroupCreatePage() {
   const [showTimePicker, setShowTimePicker] = useState(false); // 알림
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
-  const [modalOpen, setModalOpen] = useState(false); // 초대 모달 표시 여부
 
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -96,9 +85,10 @@ export default function GroupCreatePage() {
     }
 
     try {
-      const { data } = await axiosInstance.post("/api/v1/group", formData);
-      // 성공 시 해당 그룹 상세 페이지로 이동
-      navigate(`/group/${data.data.groupId}`);
+      const res = await axiosInstance.post("/api/v1/group", formData);
+      const groupId = res.data.data.groupId;
+      console.log("그룹 생성 확인: ", res.data);
+      navigate(`/group/${groupId}`);
     } catch (err) {
       console.error(err);
       alert("그룹 생성에 실패했습니다.");
@@ -108,12 +98,8 @@ export default function GroupCreatePage() {
   return (
     <div className="p-4">
       {/* 페이지 안내 및 그룹 이미지 업로드 */}
-      <div className="flex items-center place-content-between mt-5">
+      <div className="flex items-center place-content-between my-5">
         <p className="font-bold text-2xl">그룹 만들기</p>
-        <ImageUploader
-          defaultImage={ImageEdit}
-          onImageChange={(file: File) => setGroupImageFile(file)}
-        />
       </div>
 
       {/* 그룹명 입력 */}
@@ -130,27 +116,13 @@ export default function GroupCreatePage() {
 
       <hr className="my-4 border-t border-gray-300" />
 
-      {/* 멤버 */}
+      {/* 그룹 이미지 */}
       <div className="mt-2 ">
-        <p className="text-darkmint text-lg font-semibold mb-2">멤버</p>
-        <div className="flex gap-3 items-center">
-          {/* 로그인한 유저 */}
-          <div className="flex flex-col items-center gap-2">
-            <img
-              src={user.imageUrl}
-              alt="유저 프로필"
-              className="w-20 rounded-full"
-            />
-            <p className="font-semibold text-gray-500">{user.nickname}</p>
-          </div>
-          {/* 초대하기 버튼 */}
-          <img
-            src={Add}
-            alt="초대하기"
-            className="w-12 h-12"
-            onClick={() => setModalOpen(true)}
-          />
-        </div>
+        <p className="text-darkmint text-lg font-semibold mb-2">그룹 이미지</p>
+        <ImageUploader
+          defaultImage=""
+          onImageChange={(file: File) => setGroupImageFile(file)}
+        />
       </div>
 
       <hr className="my-4 border-t border-gray-300" />
@@ -228,14 +200,6 @@ export default function GroupCreatePage() {
           onClick={handleCreateGroup}
         />
       </div>
-
-      {/* 그룹 초대 모달 */}
-      {modalOpen && (
-        <GroupInviteModal
-          link={inviteLink}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
     </div>
   );
 }

@@ -3,15 +3,13 @@ import { useNavigate, useParams } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
 
 import Add from "../../assets/icons/add.png";
+import questionCharacter from "../../assets/icons/questionCharacter.png";
 import Button from "../../components/common/Button";
 import { DayPicker } from "../../components/group/DayPicker";
 import ImageUploader from "../../components/group/ImageUploader";
 import OnOffToggleButton from "../../components/group/OnOffToggleButton";
 import TimePicker from "../../components/group/TimePicker";
 import GroupInviteModal from "../../components/modal/GroupInviteModal";
-
-// 초대 링크
-const inviteLink = "www.voice_print/group/1/invite/1234";
 
 interface GroupUser {
   id: number;
@@ -64,6 +62,8 @@ export default function GroupEditPage() {
   const [showDayPicker, setShowDayPicker] = useState(false);
   const dayPickerRef = useRef<HTMLDivElement>(null);
 
+  const [inviteLink, setInviteLink] = useState("");
+
   const getDayLabel = (selectedDays: string[]) => {
     const weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일"];
     const weekends = ["토요일", "일요일"];
@@ -114,6 +114,7 @@ export default function GroupEditPage() {
         setIsOn(d.enableAlarm);
         setSelectedTime(d.alarmTime?.slice(0, 5) ?? "12:00");
         setSelectedDays((d.alarmDays || []).map((e: string) => engToKor[e]));
+        console.log(d);
       } catch (err) {
         console.error(err);
       } finally {
@@ -144,6 +145,30 @@ export default function GroupEditPage() {
     }
   };
 
+  // 그룹 초대 코드 생성
+  const fetchInviteLink = async () => {
+    if (!groupId) return;
+
+    try {
+      // 초대 코드 생성
+      const inviteRes = await axiosInstance.post(
+        `/api/v1/group/${groupId}/invites`
+      );
+      const inviteCode = inviteRes.data.data.inviteCode;
+      // console.log("초대 코드 확인: ", inviteCode);
+
+      // 초대 링크 생성 - 배포용
+      const fullLink = `https://k12b106.p.ssafy.io/group/${groupId}/invite/${inviteCode}`;
+      // 초대 링크 생성 - 개발용
+      // const fullLink = `http://localhost:5173/group/${groupId}/invite/${inviteCode}`;
+      setInviteLink(fullLink);
+      setModalOpen(true);
+    } catch (err) {
+      console.error("초대 코드 생성 실패", err);
+      alert("초대 링크를 생성하는 데 실패했습니다.");
+    }
+  };
+
   const onImageChange = (file: File) => {
     setImageFile(file);
     setImageUrl(URL.createObjectURL(file));
@@ -156,9 +181,9 @@ export default function GroupEditPage() {
   return (
     <div className="p-4">
       {/* 페이지 안내 및 그룹 이미지 업로드 */}
-      <div className="flex items-center place-content-between mt-5">
+      <div className="flex items-center place-content-between mt-5 mb-5">
         <p className="font-bold text-2xl">그룹 수정</p>
-        <ImageUploader defaultImage={imageUrl} onImageChange={onImageChange} />
+        <img src={questionCharacter} alt="캐릭터" className="h-20" />
       </div>
 
       {/* 그룹명 입력 */}
@@ -171,6 +196,12 @@ export default function GroupEditPage() {
         />
       </div>
 
+      <hr className="my-4 border-t border-gray-300" />
+
+      <div className="mt-2 ">
+        <p className="text-darkmint text-lg font-semibold mb-2">그룹 이미지</p>
+        <ImageUploader defaultImage={imageUrl} onImageChange={onImageChange} />
+      </div>
       <hr className="my-4 border-t border-gray-300" />
 
       {/* 멤버 */}
@@ -196,8 +227,8 @@ export default function GroupEditPage() {
           <img
             src={Add}
             alt="초대하기"
-            className="w-12 h-12 shrink-0"
-            onClick={() => setModalOpen(true)}
+            className="w-16 h-16 shrink-0"
+            onClick={fetchInviteLink}
           />
         </div>
       </div>

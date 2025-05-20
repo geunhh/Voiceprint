@@ -1,18 +1,26 @@
 import { useCopyToClipboard } from "@uidotdev/usehooks";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import closeIcon from "../../assets/icons/close.png";
+import Button from "../common/Button";
 
 interface GroupInviteModalProps {
   link: string;
   onClose: () => void;
+  groupId?: string;
 }
 
-function GroupInviteModal({ link, onClose }: GroupInviteModalProps) {
+function GroupInviteModal({ link, onClose, groupId }: GroupInviteModalProps) {
   const [copiedText, copy] = useCopyToClipboard();
+  const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center text-center">
-      <div className="w-4/5 max-w-[320px] rounded-xl bg-white flex flex-col py-6 h-64 relative overflow-y-auto">
+      <div
+        className={`w-4/5 max-w-[320px] rounded-xl bg-white flex flex-col py-6 relative overflow-y-auto ${
+          groupId ? "h-80" : "h-64"
+        }`}
+      >
         {/* 닫기 버튼 */}
         <img
           src={closeIcon}
@@ -43,6 +51,19 @@ function GroupInviteModal({ link, onClose }: GroupInviteModalProps) {
             <p>복사</p>
           </button>
         </div>
+
+        {/* 그룹 이동 버튼 */}
+        {groupId && (
+          <div className="mt-6">
+            <Button
+              text="그룹으로 이동"
+              type="fill"
+              size="M"
+              color="mint"
+              onClick={() => navigate(`/group/${groupId}`)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

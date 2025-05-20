@@ -35,7 +35,6 @@ export default function MyPage() {
   const [selected, setSelected] = useState("리스트");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [diaries, setDiaries] = useState<Diary[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const user = useSelector((state: RootState) => state.user);
 
@@ -51,7 +50,7 @@ export default function MyPage() {
         params: cursor ? { cursor } : {},
       });
 
-      const newDiaries = res.data.data.diaries;
+      const newDiaries: Diary[] = res.data.data.diaries;
       setAllDiaries((prev) => {
         const existingIds = new Set(prev.map((d) => d.diaryId));
         const filtered = newDiaries.filter((d) => !existingIds.has(d.diaryId));
@@ -59,6 +58,7 @@ export default function MyPage() {
       });
       setNextCursor(res.data.data.nextCursor);
       setHasMore(res.data.data.nextCursor !== null);
+      // console.log("전체 일기 불러오기: ", res.data.data);
     } catch (e) {
       console.error("전체 일기 불러오기 실패", e);
     }
@@ -91,7 +91,6 @@ export default function MyPage() {
   // 월별 일기 불러오기
   useEffect(() => {
     const fetchDiaries = async () => {
-      setLoading(true);
       try {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth() + 1;
@@ -101,13 +100,13 @@ export default function MyPage() {
         setDiaries(res.data.data.diaries || []);
       } catch (error) {
         console.error("다이어리 불러오기 실패:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchDiaries();
   }, [currentMonth]);
+
+  if (!user.userId) return;
 
   return (
     <div className="mt-5 p-4">
