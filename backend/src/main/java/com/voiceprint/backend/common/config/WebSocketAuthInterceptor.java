@@ -3,6 +3,7 @@ package com.voiceprint.backend.common.config;
 //import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -13,6 +14,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import java.util.Map;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
@@ -20,38 +22,25 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                                   WebSocketHandler wsHandler, Map<String, Object> attributes) {
 
-        if (request instanceof ServletServerHttpRequest) {
-            ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
-
-            // 1. 헤더에서 토큰으로 인증
-            String authHeader = servletRequest.getServletRequest().getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-//                Long userId = 1L;
-                // backend 병합 후 주석 해제
-                Integer userId = authService.getUserIdFromAuthHeader(authHeader);
-                if (userId != null) {
-                    attributes.put("userId", userId);
-                    return true;
-                }
-            }
-
-            // 2. URL 쿼리 파라미터에서 토큰으로 인증 (WebSocket은 헤더 설정이 제한적일 수 있음)
+        if (request instanceof ServletServerHttpRequest servletRequest) {
+            // ✅ 쿼리 파라미터에서 token 추출
             String token = servletRequest.getServletRequest().getParameter("token");
+
             if (token != null) {
-//                Long userId = 1L;
                 Integer userId = authService.getUserIdFromToken(token);
                 if (userId != null) {
                     attributes.put("userId", userId);
+                    log.info("웹소켓 유저{} 인증 완료", userId);
                     return true;
                 }
             }
-
-            // 인증 실패
+            log.error("웹소켓 유저 인증 실패");
+            // ❌ token 없거나 인증 실패
             return false;
         }
-
+        log.error("요청 타입이 ServletServerHttpRequest 아닙니다.");
         return false;
     }
 
