@@ -5,16 +5,16 @@ import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.chat.ChatSessionStatus;
-import com.voiceprint.backend.domain.chat.Chatbot;
-import com.voiceprint.backend.domain.chat.ChatbotRepository;
-import com.voiceprint.backend.domain.diary.Diary;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
-import com.voiceprint.backend.domain.diary.Emotion;
-import com.voiceprint.backend.domain.diary.EmotionRepository;
-import com.voiceprint.backend.domain.thema.DiaryThema;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
+import com.voiceprint.backend.domain.Entity.Chatbot;
+import com.voiceprint.backend.domain.Repository.ChatbotRepository;
+import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Repository.DiaryRepository;
+import com.voiceprint.backend.domain.Entity.Emotion;
+import com.voiceprint.backend.domain.Repository.EmotionRepository;
+import com.voiceprint.backend.domain.Entity.DiaryThema;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static com.voiceprint.backend.domain.chat.ChatSessionStatus.DIARY_SAVED;
+import static com.voiceprint.backend.domain.Entity.ChatSessionStatus.DIARY_SAVED;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +55,7 @@ public class ChatSessionService {
      * 세션을 시작하는 메소드
      */
     @Transactional(readOnly = true)
-    public void startSession(Long userId, Long chatbotId) {
+    public void startSession(Integer userId, Byte chatbotId) {
         String sessionKey = session_key + ":" + userId;
         String messageKey = message_key + ":" + userId;
 
@@ -88,6 +88,7 @@ public class ChatSessionService {
             metadata.put("chatbotId", chatbotId);   //id
             metadata.put("chatPrompt", prompt);     //prompt
             metadata.put("status", ChatSessionStatus.IN_PROGRESS.name()); //status
+            metadata.put("total_token", 0);
             redisTemplate.opsForHash().putAll(sessionKey, metadata);
 
             // 첫 메시지 초기화
@@ -105,7 +106,7 @@ public class ChatSessionService {
 
     }
 
-    public ChatSessionStatus getSessionStatus(Long userId) {
+    public ChatSessionStatus getSessionStatus(Integer userId) {
         try {
             String key = session_key + ":" +userId;
             String statusData = (String) redisTemplate.opsForHash().get(key,"status");
@@ -176,7 +177,7 @@ public class ChatSessionService {
     /**
      * 채팅 종료 메서드
      */
-    public void endSession(Long userId) {
+    public void endSession(Integer userId) {
         // 채팅 관련 Redis 키.
         String sessionKey = session_key + ":" + userId;
 
@@ -203,7 +204,7 @@ public class ChatSessionService {
         CompletableFuture.runAsync(() -> {
             try {
                 // reqeustBody 초기화
-                Map<String, Long> requestBody = new HashMap<>();
+                Map<String, Integer> requestBody = new HashMap<>();
                 requestBody.put("user_id", userId);
 
                 Map<String, Object> fastApiResponse = fastApiWebClient.post()
@@ -255,7 +256,7 @@ public class ChatSessionService {
                 "평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.";
     }
 
-    public TempDiaryResponseDTO getTempDiary(Long userId) {
+    public TempDiaryResponseDTO getTempDiary(Integer userId) {
         String sessionKey = session_key + ":"+userId;
 
         // 현재 상태 확인
@@ -275,7 +276,7 @@ public class ChatSessionService {
     /**
      * 일기 생성 재시도 메서드
      */
-    public void retryTempDiaryGeneration(Long userId) {
+    public void retryTempDiaryGeneration(Integer userId) {
         String sessionKey = session_key + ":" + userId;
 
         // 1. 기존 임시 일기 관련 필드 삭제
@@ -288,7 +289,7 @@ public class ChatSessionService {
     /**
      * 임시 다이어리 수정 메소드
      */
-    public UpdateDiaryResult updateTempDiary(Long userId, TempDiaryUpdateRequestDTO request) {
+    public UpdateDiaryResult updateTempDiary(Integer userId, TempDiaryUpdateRequestDTO request) {
         String sessionKey = session_key + ":"+userId;
 
         Map<Object,Object> existing = redisTemplate.opsForHash().entries(sessionKey);
@@ -332,7 +333,7 @@ public class ChatSessionService {
     }
 
     @Transactional(readOnly = false)
-    public Long confirmDiary(Long userId) {
+    public Integer confirmDiary(Integer userId) {
         String sessionKey = session_key + ":"+userId;
         String messageKey = message_key + ":"+userId;
 
@@ -350,7 +351,6 @@ public class ChatSessionService {
         String emotionStr = (String) sessionData.get("emotion"); // null일 수 있음
         String prompt = (String) sessionData.get("chatPrompt");
 
-        emotionStr = "슬픔"; // TODO: 임시 데이터
 
         // 2. Redis 메시지 파싱
         List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);
@@ -370,9 +370,9 @@ public class ChatSessionService {
         );
 
         //5. 최근 사용 챗봇 정보 저장
-        Long chatbotId = chatbotIdObj instanceof Number
-                ? ((Number) chatbotIdObj).longValue()
-                : Long.parseLong(String.valueOf(chatbotIdObj));
+        Byte chatbotId = chatbotIdObj instanceof Number
+                ? ((Number) chatbotIdObj).byteValue()
+                : Byte.parseByte(String.valueOf(chatbotIdObj));
 
         Chatbot chatbot = chatbotRepository.findById(chatbotId)
                 .orElseThrow(() -> new RuntimeException("챗봇 정보 없음"));

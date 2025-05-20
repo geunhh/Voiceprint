@@ -3,10 +3,10 @@ package com.voiceprint.backend.service.chat;
 import com.voiceprint.backend.api.chat.dto.ChatbotListResponseDTO;
 import com.voiceprint.backend.api.chat.dto.ChatbotResponseDTO;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.chat.Chatbot;
-import com.voiceprint.backend.domain.chat.ChatbotRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.Chatbot;
+import com.voiceprint.backend.domain.Repository.ChatbotRepository;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +28,12 @@ public class ChatbotService {
     private final AuthService authService;
     public ChatbotListResponseDTO getChatbots(HttpServletRequest request) {
         //유저 정보 조회
-        Long userId = authService.getUserIdFromRequest(request);
+        Integer userId = authService.getUserIdFromRequest(request);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         // 최근 사용 챗봇
-        Long recentChatbotId = null;
+        Byte recentChatbotId = null;
         if (user.getLastChatbot() != null) {
             recentChatbotId = user.getLastChatbot().getId();
         }

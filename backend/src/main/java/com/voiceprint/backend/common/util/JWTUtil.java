@@ -16,20 +16,20 @@ import io.jsonwebtoken.Jwts;
 public class JWTUtil {
     private Key key;
 
-    private final long accessTokenValidity = 1000 * 60 * 10; // 10분
+    private final long accessTokenValidity = 1000 * 60 * 10000; // 10분
     private final long refreshTokenValidity = 1000 * 60 * 60 * 24 * 1; // 1일
 
     public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
         key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
-    public String getEmail(String token) {
+    public String getProviderId(String token) {
         return Jwts.parser()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("email", String.class);
+                .get("providerId", String.class);
     }
 
     public boolean isExpired(String token) {
@@ -44,13 +44,13 @@ public class JWTUtil {
 
     /**
      * 액세스 토큰 생성
-     * @param email 사용자 이메일
+     * @param providerId 사용자 oauth2 제공사 id
      * @return 생성된 액세스 토큰
      */
-    public String createAccessToken(String email) {
+    public String createAccessToken(String providerId) {
         return Jwts.builder()
                 .setSubject("access")
-                .claim("email", email)
+                .claim("providerId", providerId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity))
                 .signWith(key)
@@ -62,7 +62,7 @@ public class JWTUtil {
      * @param userId 사용자 ID
      * @return 생성된 리프레시 토큰
      */
-    public String createRefreshToken(Long userId) {
+    public String createRefreshToken(Integer userId) {
         return Jwts.builder()
                 .setId(userId.toString()) // Redis 키로 사용할 ID 설정
                 .setSubject("refresh")
@@ -86,13 +86,13 @@ public class JWTUtil {
     /**
      * 토큰의 유효성을 검증
      * 1. 만료 여부 확인
-     * 2. 이메일 존재 여부 확인 (액세스 토큰인 경우)
+     * 2. providerId 존재 여부 확인 (액세스 토큰인 경우)
      */
     public boolean validateToken(String token) {
         try {
             Claims claims = getAllClaims(token);
             return !isExpired(token) &&
-                    (claims.getSubject().equals("refresh") || claims.get("email") != null);
+                    (claims.getSubject().equals("refresh") || claims.get("providerId") != null);
         } catch (Exception e) {
             return false;
         }
@@ -112,11 +112,11 @@ public class JWTUtil {
     /**
      * 토큰에서 사용자 ID를 추출합니다. (리프레시 토큰용)
      */
-    public Long getUserIdFromToken(String token) {
+    public Integer getUserIdFromToken(String token) {
         try {
             Claims claims = getAllClaims(token);
             String id = claims.getId();
-            return id != null ? Long.parseLong(id) : null;
+            return id != null ? Integer.parseInt(id) : null;
         } catch (Exception e) {
             return null;
         }

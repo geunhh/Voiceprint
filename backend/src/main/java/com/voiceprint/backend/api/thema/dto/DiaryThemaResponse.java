@@ -1,13 +1,13 @@
 package com.voiceprint.backend.api.thema.dto;
 
-import com.voiceprint.backend.domain.thema.DiaryThema;
+import com.voiceprint.backend.domain.Entity.DiaryThema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public class DiaryThemaResponse {
-    private Long id;
+    private Integer id;
     private String title;
     private String description;
     private String example;
