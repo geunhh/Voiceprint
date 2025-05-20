@@ -92,7 +92,7 @@ public class ChatSessionService {
             redisTemplate.opsForHash().putAll(sessionKey, metadata);
 
             // 첫 메시지 초기화
-            String todayMessage = "오늘은 어떤일이 있었나요 >_< 꺄르륵 꺄르륵????";
+            String todayMessage = chatbot.getInitMent();
             redisTemplate.delete(messageKey);
             redisTemplate.opsForList().rightPush(messageKey,
                     new ChatMessage("assistant", todayMessage));

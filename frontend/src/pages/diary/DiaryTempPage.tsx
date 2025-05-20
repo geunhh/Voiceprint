@@ -139,7 +139,7 @@ export default function DiaryTempPage() {
   const renderEmptyState = () => {
     const icon = alert?.type === "success" ? happyIcon : questionIcon;
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-center px-4 bg-white">
+      <div className="flex flex-col items-center justify-center min-h-[100vh] text-center px-4 bg-white">
         <img src={icon} alt="알림" className="w-28 h-32 mb-4" />
         <h2 className="text-gray-800 text-lg font-semibold whitespace-pre-line mb-6">
           {alert?.message}

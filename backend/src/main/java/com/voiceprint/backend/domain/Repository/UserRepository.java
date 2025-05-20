@@ -31,5 +31,15 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     """)
     List<User> findAlarmEnabledUsersByGroup(
             @Param("group") Group group);
+
+    @Query("""
+        select u from User u
+        join fetch u.usingThema
+        where u.id = :userId
+    """)
+    Optional<User> findUserWithUsingThema(
+            @Param("userId") Integer userId);
+
+
 }
 

@@ -80,6 +80,7 @@ export default function ThemaList() {
               ]
             : custom_themas;
         setThemas({ default_themas, custom_themas: customWithFallback });
+        // console.log("테마 목록 조회: ", res.data.data);
       } catch (err) {
         console.error("테마 목록 조회 실패:", err);
         setAlert({ message: "테마 목록을 불러오지 못했습니다.", type: "fail" });

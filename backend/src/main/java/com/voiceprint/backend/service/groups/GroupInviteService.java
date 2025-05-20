@@ -69,18 +69,17 @@ public class GroupInviteService {
      */
     public InviteInfoReponseDTO getInviteInfo(String code, Integer userId) {
         // 초대 정보 확인
-        GroupInvite invite = groupInviteRepository.findByInviteCode(code)
+        GroupInvite invite = groupInviteRepository.findByInviteCodeWithGroup(code)
                 .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
 
         // 유효성 검사
         if (!invite.isUsable()) {
             throw new InviteExpiredException("초대 코드가 만료되었거나 더 이상 유효하지 않습니다.");
         }
-
+        log.debug("이미 등록된 유저인가??");
         // 이미 등록된 유저인가??
         boolean alreadyJoined = groupUserRepository
-                .findByGroupIdAndUserId(invite.getGroup().getId(), userId)
-                .isPresent();
+                .existsByUserIdAndGroupId(userId, invite.getGroup().getId());
 
 
         return new InviteInfoReponseDTO(
@@ -98,7 +97,7 @@ public class GroupInviteService {
     public InviteAcceptResponseDTO acceptInvite(String code, Integer userId) {
 
         // 초대 코드 확인
-        GroupInvite invite = groupInviteRepository.findByInviteCode(code)
+        GroupInvite invite = groupInviteRepository.findByInviteCodeWithGroup(code)
                 .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
 
         if (invite.isExpired()) {
@@ -107,13 +106,13 @@ public class GroupInviteService {
 
         // 그룹 조회
         Group group = invite.getGroup();
-        log.info("group : {} and groupId :{}",group,group.getId());
+        log.info("group : {} and groupId :{}",group, group.getId());
 
         // 유저 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
 
-        boolean alreadyMember = groupUserRepository.existsByGroupAndUser(group,user);
+        boolean alreadyMember = groupUserRepository.existsByUserIdAndGroupId(userId, group.getId());
 
         if (alreadyMember) {
             log.debug("이미 참여중인 사용자입니다. alreadyMember : {}", alreadyMember);

@@ -35,7 +35,7 @@ function NotificationModal({ onUpdate }: NotificationModalProps) {
         {/* 안내 */}
         <div className="text-gray-700 mb-7">
           <p>알림을 허용하시겠습니까?</p>
-          <p>기본 일기 알림은 20시로 설정됩니다.</p>
+          <p>기본 일기 알림은 21시로 설정됩니다.</p>
         </div>
 
         {/* 버튼 */}

@@ -1,11 +1,19 @@
-import React, { useEffect } from "react";
-import kakaoIcon from "../assets/icons/kakao.png";
-import googleIcon from "../assets/icons/google.png";
-import bg from "../assets/icons/bg.png";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import bg from "../assets/icons/bg.png";
+import googleIcon from "../assets/icons/google.png";
+import kakaoIcon from "../assets/icons/kakao.png";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const token = localStorage.getItem("Authorization");
+
+  // 로그인한 사용자 접근 제한
+  useEffect(() => {
+    if (token) {
+      navigate("/main", { replace: true });
+    }
+  }, [token, navigate]);
 
   //  로그인 성공 후 access 토큰이 쿼리로 들어왔을 때 처리
   useEffect(() => {
@@ -15,9 +23,16 @@ export default function HomePage() {
     if (accessToken) {
       localStorage.setItem("Authorization", accessToken);
 
+      const redirectPath = localStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        localStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath, { replace: true });
+      } else {
+        navigate("/main");
+      }
+
       // URL 정리 (access 파라미터 제거) 후 /main 이동
       window.history.replaceState({}, "", "/");
-      navigate("/main");
     }
   }, [navigate]);
 
