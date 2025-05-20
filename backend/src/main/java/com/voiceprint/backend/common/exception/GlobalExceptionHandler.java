@@ -7,6 +7,8 @@ import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsExceptio
 import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
 import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.common.exception.diary.*;
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
+import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.common.exception.group.*;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
@@ -178,6 +180,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CommentNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleCommentNotFoundException(CommentNotFoundException e) { return e.getMessage();}
+
     // 공통 응답 생성메서드
 
 }
