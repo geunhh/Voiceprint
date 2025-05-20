@@ -2,22 +2,28 @@ package com.voiceprint.backend.service.groups;
 
 
 import com.voiceprint.backend.api.groups.dto.*;
+import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
-import com.voiceprint.backend.domain.*;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.diary.Diary;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Entity.Group;
+import com.voiceprint.backend.domain.Entity.GroupUser;
+import com.voiceprint.backend.domain.Entity.GroupUserId;
+import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
+import com.voiceprint.backend.domain.Repository.GroupRepository;
+import com.voiceprint.backend.domain.Repository.GroupUserRepository;
 import com.voiceprint.backend.service.S3Service;
+import com.voiceprint.backend.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
-import java.time.DayOfWeek;
 import java.util.List;
 import java.util.stream.Collectors;
-
+@Slf4j
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class GroupService {
@@ -27,17 +33,19 @@ public class GroupService {
     private final GroupUserRepository groupUserRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
+    private final AuthService authService;
 
     @Transactional
-    public GroupCreateResponse createGroup(Long userId, GroupCreateRequest request) {
+    public GroupCreateResponse createGroup(Integer userId, GroupCreateRequest request) {
         // 유저 조회
         User createUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));;
         // 이미지 업로드
-        String imageUrl = null;
-        if (request.getGroupImage() != null && !request.getGroupImage().isEmpty()) {
-            imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+        if (request.getGroupImage() == null || request.getGroupImage().isEmpty()) {
+            throw new GroupNotFoundException("그룹 이미지가 없습니다.");
         }
+        String imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+
         // 그룹 엔티티 생성
         Group group = Group.builder()
                 .name(request.getName())
@@ -71,7 +79,7 @@ public class GroupService {
                 group.getAlarmDays() != null ? group.getAlarmDays().toString() : null);
     }
 
-    public GroupUpdateResponse updateGroup(Long groupId, Long userId, GroupUpdateRequest updateRequest) {
+    public GroupUpdateResponse updateGroup(Integer groupId, Integer userId, GroupUpdateRequest updateRequest) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
 
@@ -104,7 +112,7 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public GroupMainPageResponse getGroupMainPage(Long groupId, Long userId) {
+    public GroupMainPageResponse getGroupMainPage(Integer groupId, Integer userId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
 
@@ -116,7 +124,11 @@ public class GroupService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹에 참여하지 않았습니다."));
 
         // 그룹에 속한 유저들
-        List<UserInfoDTO> groupUserList = groupUserRepository.findUserInfoByGroupId(groupId);
+        List<UserInfoDTO> groupUserList = groupUserRepository
+                .findUserInfoByGroupId(groupId).stream()
+                .map(opt -> opt.orElseThrow(() ->
+                        new GroupUserNotFoundException("그룹 내 유저가 없습니다.")))
+                .collect(Collectors.toList());
 
 
         return new GroupMainPageResponse(
@@ -128,7 +140,31 @@ public class GroupService {
                 group.getAlarmTime(),
                 group.getCreatedAt(),
                 groupUserList,
-                groupUser.getJoinedAt()
+                groupUser.getJoinedAt(),
+                group.getGroupImage(),
+                groupUser.getRole()
         );
+    }
+    @Transactional(readOnly = true)
+    public List<MyGroupResponse> getMyGroups(Integer userId) {
+        List<Group> groups = groupRepository.findAllByUserId(userId);
+
+        return groups.stream().map(group -> {
+            List<GroupUser> groupUsers = groupUserRepository.findAllByGroupId(group.getId());
+            int memberCount = groupUsers.size();
+            List<String> profileImages = groupUsers.stream()
+                    .limit(3)
+                    .map(gu -> gu.getUser().getProfileImage().getImageUrl())
+                    .collect(Collectors.toList());
+
+            return new MyGroupResponse(
+                    group.getId(),
+                    group.getName(),
+                    group.getGroupImage(),
+                    memberCount,
+                    profileImages,
+                    group.getCreatedAt()
+            );
+        }).collect(Collectors.toList());
     }
 }

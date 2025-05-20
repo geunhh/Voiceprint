@@ -5,12 +5,13 @@ import com.voiceprint.backend.api.auth.dto.*;
 import com.voiceprint.backend.common.exception.user.NicknameConflictException;
 import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.common.util.JWTUtil;
-import com.voiceprint.backend.domain.auth.*;
+import com.voiceprint.backend.domain.Entity.ProfileImage;
+import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.auth.RefreshTokenRepository;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
-import com.voiceprint.backend.domain.diary.DiaryRepository;
+import com.voiceprint.backend.domain.Repository.RefreshTokenRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -35,7 +37,8 @@ public class AuthService {
     private final ProfileImageRepository profileImageRepository;
     private final DiaryRepository diaryRepository;
 
-    public ProfileResponse getProfile(Long userId) {
+    @Transactional(readOnly = true)
+    public ProfileResponse getProfile(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
 
@@ -72,12 +75,12 @@ public class AuthService {
 
         // 클레임으로부터 이메일을 가져오거나, 토큰 자체를 Redis 키로 사용하는 로직이 필요
         // 여기서는 jwtId를 키로 사용하는 방식으로 가정
-        Long jwtId = Long.parseLong(claims.getId());
+        Integer jwtId = Integer.parseInt(claims.getId());
         if (jwtId == null) {
             throw new RuntimeException("토큰에 ID 정보가 없습니다.");
         }
 
-        System.out.printf("email="+jwtId);
+        System.out.printf("jwtId="+jwtId);
         // 3. Redis에 저장된 리프레시 토큰 조회
         String storedToken = refreshTokenRepository.findRefreshToken(jwtId);
         if (storedToken == null || !storedToken.equals(refreshToken)) {
@@ -85,7 +88,7 @@ public class AuthService {
         }
 
         // 4. 토큰에 해당하는 사용자 조회 (jwtId가 userId)
-        Long userId = jwtId;
+        Integer userId = jwtId;
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자 정보를 찾을 수 없습니다.");
@@ -93,7 +96,7 @@ public class AuthService {
         User user = userOptional.get();
 
         // 5. 새로운 액세스 토큰과 리프레시 토큰 생성
-        String newAccessToken = jwtUtil.createAccessToken(user.getEmail());
+        String newAccessToken = jwtUtil.createAccessToken(user.getProviderId());
         String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
         // 6. Redis에 새로운 리프레시 토큰 저장
@@ -119,7 +122,7 @@ public class AuthService {
         try {
             // 클레임에서 jwtId (userId) 추출
             Claims claims = jwtUtil.getAllClaims(refreshToken);
-            Long jwtId = Long.parseLong(claims.getId());
+            Integer jwtId = Integer.parseInt(claims.getId());
 
             if (jwtId != null) {
                 // Redis에서 리프레시 토큰 삭제
@@ -131,7 +134,7 @@ public class AuthService {
         }
     }
     @Transactional(readOnly = true)
-    public Long getUserIdFromRequest(HttpServletRequest request){
+    public Integer getUserIdFromRequest(HttpServletRequest request){
 
         return getUserIdFromAuthHeader(request.getHeader("Authorization"));
     }
@@ -140,10 +143,10 @@ public class AuthService {
      * Authorization 헤더에서 토큰을 추출하고, 토큰 유효성을 검증한 후 사용자 ID를 반환합니다.
      *
      * @param authorizationHeader Bearer 토큰이 포함된 Authorization 헤더 값
-     * @return 유효한 토큰이고 해당 이메일의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
+     * @return 유효한 토큰이고 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
      */
     @Transactional(readOnly = true)
-    public Long getUserIdFromAuthHeader(String authorizationHeader) {
+    public Integer getUserIdFromAuthHeader(String authorizationHeader) {
         // 헤더가 null이거나 Bearer로 시작하지 않으면 null 반환
         String token = jwtUtil.extractTokenFromHeader(authorizationHeader);
 
@@ -153,29 +156,29 @@ public class AuthService {
             return null;
         }
 
-        // 토큰에서 이메일 추출
-        String email = jwtUtil.getEmail(token);
-        if (email == null) {
-            log.error("이메일 null 출력");
+        // 토큰에서 providerId 추출
+        String providerId = jwtUtil.getProviderId(token);
+        if (providerId == null) {
+            log.error("providerId null");
             return null;
         }
-        log.info("email이 정상적으로 추출 : {}",email);
+        log.info("providerId이 정상적으로 추출 : {}",providerId);
 
-        // 이메일로 사용자 조회
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        // providerId로 사용자 조회
+        Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
     }
 
     /**
-     * 토큰에서 이메일을 추출하고 해당 이메일의 사용자 ID를 반환합니다.
+     * 토큰에서 providerId을 추출하고 해당 providerId의 사용자 ID를 반환합니다.
      *
      * @param token JWT 토큰
-     * @return 유효한 토큰이고 해당 이메일의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
+     * @return 유효한 토큰이고 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
      */
     @Transactional(readOnly = true)
-    public Long getUserIdFromToken(String token) {
+    public Integer getUserIdFromToken(String token) {
         // 토큰이 null이면 null 반환
         if (token == null) {
             return null;
@@ -187,14 +190,14 @@ public class AuthService {
                 return null;
             }
 
-            // 토큰에서 이메일 추출
-            String email = jwtUtil.getEmail(token);
-            if (email == null) {
+            // 토큰에서 providerId 추출
+            String providerId = jwtUtil.getProviderId(token);
+            if (providerId == null) {
                 return null;
             }
 
-            // 이메일로 사용자 조회
-            Optional<User> userOptional = userRepository.findByEmail(email);
+            // providerId로 사용자 조회
+            Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
             // 사용자가 존재하면 ID 반환, 없으면 null 반환
             return userOptional.map(User::getId).orElse(null);
@@ -205,25 +208,26 @@ public class AuthService {
     }
 
     /**
-     * 이메일로 사용자 ID를 조회합니다.
+     * providerId로 사용자 ID를 조회합니다.
      *
-     * @param email 사용자 이메일
-     * @return 해당 이메일의 사용자가 존재하면 사용자 ID 반환, 없으면 null 반환
+     * @param providerId 사용자 providerId
+     * @return 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 없으면 null 반환
      */
     @Transactional(readOnly = true)
-    public Long getUserIdByEmail(String email) {
-        // 이메일이 null이면 null 반환
-        if (email == null) {
+    public Integer getUserIdByProviderId(String providerId) {
+        // providerId이 null이면 null 반환
+        if (providerId == null) {
             return null;
         }
 
-        // 이메일로 사용자 조회
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        // providerId로 사용자 조회
+        Optional<User> userOptional = userRepository.findByProviderId(providerId);
 
         // 사용자가 존재하면 ID 반환, 없으면 null 반환
         return userOptional.map(User::getId).orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public List<ProfileImageResponse> getProfileImages() {
         // DB에서 모든 프로필 이미지 정보를 조회
         List<ProfileImage> images = profileImageRepository.findAll();
@@ -237,7 +241,7 @@ public class AuthService {
                 .collect(Collectors.toList());
     }
 
-    public ProfileUpdateResponse updateProfile(Long userId, ProfileUpdateRequest request) {
+    public ProfileUpdateResponse updateProfile(Integer userId, ProfileUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
@@ -263,22 +267,27 @@ public class AuthService {
         return new ProfileUpdateResponse(user.getId(), user.getNickname(), user.getProfileImage().getId());
     }
     // 닉네임 중복 체크 메서드
-    private boolean isNicknameDuplicate(String nickname, Long userId) {
+    private boolean isNicknameDuplicate(String nickname, Integer userId) {
         return userRepository.existsByNicknameAndIdNot(nickname, userId);
     }
 
+    @Transactional(readOnly = true)
     // 유저 알림 여부 확인 메서드
-    public Boolean isReminderEnabled(Long userId) {
+    public AlarmSettingsResponseDTO isReminderEnabled(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
+        if (user.getEnableAlarm()!=null) {
+            return new AlarmSettingsResponseDTO(user.getEnableAlarm().toString(), user.getAlarmTime());
+        } else {
+            return new AlarmSettingsResponseDTO(null, user.getAlarmTime());
+        }
 
-        return user.getEnableAlarm();
     }
 
     /**
      * 유저 알람 T/F 수정 메서드
      */
-    public Boolean updateReminderSetting(Boolean enableAlarms, Long userId) {
+    public Boolean updateReminderSetting(Boolean enableAlarms, Integer userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
@@ -294,7 +303,7 @@ public class AuthService {
     /**
      * 유저 알람 시간 수정 메서드
      */
-    public String updateReminderTime(String alarmTime, Long userId) {
+    public String updateReminderTime(String alarmTime, Integer userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));

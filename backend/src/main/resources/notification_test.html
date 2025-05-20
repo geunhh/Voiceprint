@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>SSE 테스트 클라이언트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f8;
+            padding: 30px;
+            color: #333;
+        }
+
+        h1 {
+            color: #222;
+        }
+
+        p {
+            font-size: 16px;
+        }
+
+        ul#log {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        ul#log li {
+            background: white;
+            border-left: 4px solid #0078D4;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        ul#log li[data-type="reminder"] {
+            border-color: #f39c12;
+        }
+
+        ul#log li[data-type="new_comment"] {
+            border-color: #27ae60;
+        }
+
+        ul#log li[data-type="post"] {
+            border-color: #e74c3c;
+        }
+
+        ul#log li[data-type="error"] {
+            border-color: #c0392b;
+            background: #ffe6e6;
+        }
+    </style>
+</head>
+<body>
+<h1>SSE 테스트 페이지</h1>
+<p><strong>유저 ID: 1 (임시)</strong>로 SSE 구독 중</p>
+<ul id="log"></ul>
+
+<script>
+    const log = document.getElementById("log");
+
+    // SSE 연결
+    const eventSource = new EventSource("http://localhost:8080/api/notifications/subscribe/test");
+
+    // 기본 메시지 (서버에서 타입 지정 안한 경우)
+    eventSource.onmessage = (event) => {
+        const li = document.createElement("li");
+        li.textContent = `[기본] ${event.data}`;
+        log.appendChild(li);
+    };
+
+    // 알림 타입별 이벤트 리스너
+    const addLog = (label, data, type) => {
+        const li = document.createElement("li");
+        li.textContent = `[${label}] ${data}`;
+        li.setAttribute("data-type", type);
+        log.appendChild(li);
+    };
+
+    eventSource.addEventListener("reminder", (event) => {
+        addLog("리마인더", event.data, "reminder");
+    });
+
+    eventSource.addEventListener("new_comment", (event) => {
+        addLog("댓글 알림", event.data, "new_comment");
+    });
+
+    eventSource.addEventListener("newDiary", (event) => {
+        addLog("게시글 알림", event.data, "post");
+    });
+
+    // 에러 처리
+    eventSource.onerror = (err) => {
+        console.error("SSE 연결 오류", err);
+        addLog("오류", "연결 종료", "error");
+        eventSource.close();
+    };
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupCreateResponse {
-    private Long groupId;
+    private Integer groupId;
     private String name;
     private String description;
     private String groupImage;

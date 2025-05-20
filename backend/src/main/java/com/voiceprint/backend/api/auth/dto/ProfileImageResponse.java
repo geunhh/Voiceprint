@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ProfileImageResponse {
-    private Long id;
+    private Byte id;
     private String title;
     private String imageUrl;
 }

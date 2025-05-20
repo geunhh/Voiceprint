@@ -1,17 +1,15 @@
 package com.voiceprint.backend.common.filter;
 
 import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
-import com.voiceprint.backend.common.exception.user.ExpiredJwtTokenException;
 import com.voiceprint.backend.common.util.JWTUtil;
-import com.voiceprint.backend.domain.auth.User;
-import com.voiceprint.backend.domain.auth.UserRepository;
+import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -47,13 +45,13 @@ public class JWTFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String email = jwtUtil.getEmail(token);
-            if (email == null) {
+            String providerId = jwtUtil.getProviderId(token);
+            if (providerId == null) {
                 setJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
                 return;
             }
 
-            User user = userRepository.findByEmail(email)
+            User user = userRepository.findByProviderId(providerId)
                     .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));
 
             CustomOAuth2User customUser = new CustomOAuth2User(user);

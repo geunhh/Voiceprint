@@ -1,19 +1,22 @@
 package com.voiceprint.backend.common.exception;
 
+import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.chat.SessionAlreadyExistsException;
+import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
+import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.common.exception.diary.*;
+import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.common.exception.group.*;
 import com.voiceprint.backend.common.exception.s3.InvalidFileException;
 import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
-import com.voiceprint.backend.common.exception.user.ExpiredJwtTokenException;
-import com.voiceprint.backend.common.exception.user.NicknameConflictException;
-import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.common.exception.user.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -125,6 +128,58 @@ public class GlobalExceptionHandler {
     public String handleUnauthorizedDiary(UnauthorizedDiaryException e) {
         return e.getMessage();
     }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNotificationNotFound(NotificationNotFoundException e) {
+        return e.getMessage();
+    }
+
+
+    @ExceptionHandler(UnauthorizedNotificationException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedNotification(UnauthorizedNotificationException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(GroupNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleGroupNotFound(GroupNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(GroupUserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleGroupUserNotFound(GroupUserNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(InviteNotFoundException.class)
+    public ResponseEntity<CommonResponse<Void>> handleInviteNotFound(InviteNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new CommonResponse<>(404,e.getMessage(),null));
+    }
+
+    @ExceptionHandler(InviteExpiredException.class)
+    public ResponseEntity<CommonResponse<Void>> handleInviteExpired(InviteExpiredException e) {
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(new CommonResponse<>(410, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(AlreadyJoinedGroupException.class)
+    public ResponseEntity<CommonResponse<Void>> handleAlreadyJoined(AlreadyJoinedGroupException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new CommonResponse<>(409, e.getMessage(), null));
+    }
+
+
+    @ExceptionHandler(UnauthorizedCommentAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleUnauthorizedComment(UnauthorizedCommentAccessException e) { return e.getMessage();}
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleCommentNotFoundException(CommentNotFoundException e) { return e.getMessage();}
 
     // 공통 응답 생성메서드
 

@@ -1,5 +1,6 @@
 package com.voiceprint.backend.common.config;
 
+import com.voiceprint.backend.api.alarm.RedisSubscriber;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,9 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -20,13 +24,13 @@ public class RedisConfig {
     private String redisHost;
 
     @Value("${spring.data.redis.port}")
-    private int redisPort;
+    private Integer redisPort;
 
     @Value("${spring.data.redis.password}")
     private String redisPassword;
 
-    @Value("${spring.data.redis.ssl.enabled}")
-    private boolean sslEnabled;
+//    @Value("${spring.data.redis.ssl.enabled}")
+//    private boolean sslEnabled;
 
     @PostConstruct
     public void printRedisHost() {
@@ -45,7 +49,7 @@ public class RedisConfig {
         config.setPassword(redisPassword);
 
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                .useSsl() // Upstash Redis는 SSL 사용
+//                .useSsl() // Upstash Redis는 SSL 사용
                 .build();
         return new LettuceConnectionFactory(config, clientConfig);
     }
@@ -67,5 +71,35 @@ public class RedisConfig {
 
         return template;
     }
+
+    /**
+     * Redis에서 수신한 메시지를 우리가 만든 RedisSubscriber 객체의 onMessage()로 연결
+     * Redis 메시지 -> Java 객체 -> 전달
+     * 내부적으로 JSON 파싱, 메시지 변환 등 수행..
+     *
+     * RedisSubscriber의 implements MessageListener와 연결됨.
+     */
+    @Bean
+    public MessageListenerAdapter messageListenerAdapter(RedisSubscriber subscriber) {
+        return new MessageListenerAdapter(subscriber);
+    }
+
+    /**
+     * Redis Pub/Sub 채널을 지속적으로 구독하는 리스터 루프 역할.
+     * "notifiaction-channel"
+     * 메시지를 받으면, 등록된 MessageListenerAdapter로 전달
+     *
+     * redis의 특정 채널을 지속적으로 구독하며, MessageListenerAdapter로 연결하여
+     * 비동기 스레드 풀로 동작함.
+     */
+    @Bean
+    public RedisMessageListenerContainer redisContainer(
+            RedisConnectionFactory factory, MessageListenerAdapter adapter) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(factory);
+        container.addMessageListener(adapter, new PatternTopic("notification-channel"));
+        return container;
+    }
+
 
 }
