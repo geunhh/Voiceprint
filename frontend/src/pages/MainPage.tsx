@@ -11,11 +11,11 @@ import NotificationModal from "../components/modal/NotificationModal";
 import { RootState } from "../store/store";
 import { setUser } from "../store/userSlice";
 
-import QuestionCharacter from "../assets/icons/questionCharacter.png";
+// import QuestionCharacter from "../assets/icons/questionCharacter.png";
 import robotCharacter from "../assets/icons/robotCharacter.png";
 
-import chatAi from "../assets/intro/chatAI.png";
-import chatUser from "../assets/intro/chatUser.png";
+// import chatAi from "../assets/intro/chatAI.png";
+// import chatUser from "../assets/intro/chatUser.png";
 
 interface Diary {
   groupId: number;
@@ -204,77 +204,77 @@ export default function MainPage() {
 
   if (!user || !user.userId) return null;
 
-  // 작성한 일기가 없는 사용자인 경우 소개 렌딩
-  if (hasWrittenDiary === false) {
-    return (
-      <div className="p-4">
-        {/* 유저 정보 */}
-        <div className="flex items-center justify-between my-3 ">
-          {/* 유저 정보 */}
-          <div className="flex items-center gap-3">
-            <img
-              src={user.imageUrl}
-              className="rounded-full w-14 h-14 object-cover"
-              alt="프로필"
-            />
-            <div className="flex flex-col">
-              <div className="flex items-baseline">
-                <p className="text-xl font-semibold text-gray-700">
-                  {user.nickname}
-                </p>
-                <p className="ml-1 text-gray-700">님</p>
-              </div>
-              <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
-            </div>
-          </div>
+  // 작성한 일기와 최근 말자국 모두 없는 사용자인 경우 소개 렌딩
+  // if (hasWrittenDiary === false && diaries.length === 0) {
+  //   return (
+  //     <div className="p-4">
+  //       {/* 유저 정보 */}
+  //       <div className="flex items-center justify-between my-3 ">
+  //         {/* 유저 정보 */}
+  //         <div className="flex items-center gap-3">
+  //           <img
+  //             src={user.imageUrl}
+  //             className="rounded-full w-14 h-14 object-cover"
+  //             alt="프로필"
+  //           />
+  //           <div className="flex flex-col">
+  //             <div className="flex items-baseline">
+  //               <p className="text-xl font-semibold text-gray-700">
+  //                 {user.nickname}
+  //               </p>
+  //               <p className="ml-1 text-gray-700">님</p>
+  //             </div>
+  //             <p className="text-gray-700">오늘 하루를 기록해 보세요!</p>
+  //           </div>
+  //         </div>
 
-          {/* 알림 버튼 */}
-          <button onClick={() => navigate("/notification")}>
-            <img src={notificationIcon} alt="알림" className="w-6 h-6" />
-          </button>
-        </div>
+  //         {/* 알림 버튼 */}
+  //         <button onClick={() => navigate("/notification")}>
+  //           <img src={notificationIcon} alt="알림" className="w-6 h-6" />
+  //         </button>
+  //       </div>
 
-        {/* 말자국 소개 */}
-        <div className="relative w-full h-32 max-w-md mx-auto bg-yellow-50 rounded-2xl px-6 py-4 overflow-hidden my-2">
-          <img
-            src={QuestionCharacter}
-            alt="말자국 캐릭터"
-            className="absolute right-4 top-3 w-16 h-auto"
-          />
-          <div className="flex flex-col h-full justify-center">
-            <p className="text-yellow-400 font-semibold text-xl mb-1">말자국</p>
-            <p className="text-gray-500 font-medium leading-relaxed mt-1">
-              말 한마디로 완성되는 일기,
-              <br />
-              대화를 통해 감정과 일기를 기록해 보세요
-            </p>
-          </div>
-        </div>
+  //       {/* 말자국 소개 */}
+  //       <div className="relative w-full h-32 max-w-md mx-auto bg-yellow-50 rounded-2xl px-6 py-4 overflow-hidden my-2">
+  //         <img
+  //           src={QuestionCharacter}
+  //           alt="말자국 캐릭터"
+  //           className="absolute right-4 top-3 w-16 h-auto"
+  //         />
+  //         <div className="flex flex-col h-full justify-center">
+  //           <p className="text-yellow-400 font-semibold text-xl mb-1">말자국</p>
+  //           <p className="text-gray-500 font-medium leading-relaxed mt-1">
+  //             말 한마디로 완성되는 일기,
+  //             <br />
+  //             대화를 통해 감정과 일기를 기록해 보세요
+  //           </p>
+  //         </div>
+  //       </div>
 
-        {/* 말자국 남기기 */}
-        <div className="mb-5">
-          <p className=" text-yellow-400 font-semibold mb-1">이번 주 기록</p>
-          <p className=" text-gray-500 font-medium mb-2">
-            대화를 통해 기록하는 오늘 내 하루 일기
-          </p>
-          <div className="flex flex-col gap-2">
-            <img src={chatAi} alt="AI" />
-            <img src={chatUser} alt="USER" />
-          </div>
-        </div>
+  //       {/* 말자국 남기기 */}
+  //       <div className="mb-5">
+  //         <p className=" text-yellow-400 font-semibold mb-1">이번 주 기록</p>
+  //         <p className=" text-gray-500 font-medium mb-2">
+  //           대화를 통해 기록하는 오늘 내 하루 일기
+  //         </p>
+  //         <div className="flex flex-col gap-2">
+  //           <img src={chatAi} alt="AI" />
+  //           <img src={chatUser} alt="USER" />
+  //         </div>
+  //       </div>
 
-        {/* 실시간 알림 */}
-        <div className="mb-5">
-          <p className=" text-mint font-semibold mb-1 text-end">
-            실시간 알림 서비스
-          </p>
-          <p className=" text-gray-500 font-medium mb-2 text-end">
-            친구들의 활동을 알림 받고 소통할 수 있어요
-          </p>
-        </div>
-      </div>
-    );
-  }
+  //       {/* 실시간 알림 */}
+  //       <div className="mb-5">
+  //         <p className=" text-mint font-semibold mb-1 text-end">
+  //           실시간 알림 서비스
+  //         </p>
+  //         <p className=" text-gray-500 font-medium mb-2 text-end">
+  //           친구들의 활동을 알림 받고 소통할 수 있어요
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="p-4">
