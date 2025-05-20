@@ -2,11 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
 
+import Add from "../../assets/icons/add.png";
 import calendarIcon from "../../assets/icons/calendar.png";
 import clockIcon from "../../assets/icons/clock.png";
+import happyCharacter from "../../assets/icons/happyCharacter.png";
 import QuestionCharacter from "../../assets/icons/lovelyCharacter.png";
+import robotCharacter from "../../assets/icons/robotCharacter.png";
 import settingIcon from "../../assets/icons/setting.png";
 import GroupDiaryPreview from "../../components/group/GroupDiaryPreview";
+import GroupInviteModal from "../../components/modal/GroupInviteModal";
 
 interface GroupUser {
   id: number;
@@ -47,6 +51,11 @@ export default function GroupDetailPage() {
   const [groupDiaries, setGroupDiaries] = useState<GroupDiary[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
 
   // 그룹 다이어리 목록 불러오기
   const fetchGroupDiaries = useCallback(async (cursor?: string) => {
@@ -108,6 +117,11 @@ export default function GroupDetailPage() {
       try {
         const res = await axiosInstance.get(`/api/v1/group/${groupId}`);
         setGroup(res.data.data);
+        console.log("그룹 데이터 확인: ", res.data.data);
+
+        if (res.data.data.role === "ADMIN") {
+          setIsAdmin(true);
+        }
       } catch (err) {
         console.error("그룹 데이터 불러오기 실패", err);
       } finally {
@@ -118,13 +132,34 @@ export default function GroupDetailPage() {
     fetchGroupData();
   }, [groupId]);
 
-  if (loading || !group) {
+  if (loading) {
     return (
       <p className="p-4 flex justify-center items-center">
         그룹 정보를 불러오는 중입니다...
       </p>
     );
   }
+
+  if (!group) return;
+
+  // 초대 링크 생성
+  const handleInviteClick = async () => {
+    try {
+      const res = await axiosInstance.post(
+        `/api/v1/group/${group.groupId}/invites`
+      );
+      const inviteCode = res.data.data.inviteCode;
+
+      // 초대 링크 생성 - 배포용
+      const fullLink = `https://k12b106.p.ssafy.io/group/${group.groupId}/invite/${inviteCode}`;
+      // 초대 링크 생성 - 개발용
+      // const fullLink = `http://localhost:5173/group/${group.groupId}/invite/${inviteCode}`; // 배포 시 도메인 변경
+      setInviteLink(fullLink);
+      setIsInviteModalOpen(true);
+    } catch (err) {
+      console.error("초대 링크 생성 실패", err);
+    }
+  };
 
   const date = new Date(group.createdAt);
   const year = date.getFullYear();
@@ -187,12 +222,16 @@ export default function GroupDetailPage() {
           <p className="text-gray-500 text-lg font-semibold">
             {year}.{month}.{day} ~
           </p>
-          <img
-            src={settingIcon}
-            alt="수정"
-            className="w-6 h-6 cursor-pointer"
-            onClick={() => navigate(`/group/${group.groupId}/edit`)}
-          />
+
+          {/* 방장인 경우 수정 버튼 활성화 */}
+          {isAdmin && (
+            <img
+              src={settingIcon}
+              alt="수정"
+              className="w-6 h-6 cursor-pointer"
+              onClick={() => navigate(`/group/${group.groupId}/edit`)}
+            />
+          )}
         </div>
         {/* 그룹명 */}
         <div>
@@ -229,7 +268,7 @@ export default function GroupDetailPage() {
       )}
 
       {/* 디데이 */}
-      <div className="mb-3 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
+      <div className="mb-2 w-full rounded-xl bg-lightmint flex items-center justify-between p-4">
         {/* 텍스트 */}
         <div className="flex flex-col">
           <p className="text-gray-500 text-base font-semibold mb-1">
@@ -246,50 +285,95 @@ export default function GroupDetailPage() {
       </div>
 
       {/* 그룹 메이트 */}
-      <div className="mb-3">
-        {/* 메이트 인원수 정보 */}
-        <div className="flex mb-2">
-          <p className="text-darkmint font-semibold">
-            {group.groupUserList.length}명
-          </p>
-          <p className="font-semibold text-gray-700">의 일기 메이트</p>
-        </div>
-        {/* 메이트 프로필 이미지 */}
-        <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
-          {group.groupUserList.map((user) => (
+      <div className="mb-5">
+        {group.groupUserList.length === 1 ? (
+          <div className="flex items-center gap-4 bg-yellow-50 p-4 rounded-xl mb-2">
+            <img src={happyCharacter} className="w-20 h-auto" alt="캐릭터" />
             <div
-              key={user.id}
-              className="flex flex-col items-center gap-2 shrink-0"
+              className="flex flex-col cursor-pointer"
+              onClick={handleInviteClick}
             >
-              <img
-                src={user.profileImageUrl}
-                alt="유저 프로필"
-                className="w-20 h-20 rounded-full"
-              />
-              <p className="font-semibold text-gray-500 whitespace-nowrap">
-                {user.nickname}
+              <p className="text-yellow-400 font-bold text-lg mb-1">
+                그룹 초대하기
+              </p>
+              <p className="text-gray-500 text-base">
+                초대 코드를 통해
+                <br />
+                일기 메이트를 초대할 수 있어요!
               </p>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex mb-2">
+              <p className="text-darkmint font-semibold">
+                {group.groupUserList.length}명
+              </p>
+              <p className="font-semibold text-gray-700">의 일기 메이트</p>
+            </div>
+
+            <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
+              {group.groupUserList.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex flex-col items-center gap-2 shrink-0"
+                >
+                  <img
+                    src={user.profileImageUrl}
+                    alt="유저 프로필"
+                    className="w-20 h-20 rounded-full"
+                  />
+                  <p className="font-semibold text-gray-500 whitespace-nowrap">
+                    {user.nickname}
+                  </p>
+                </div>
+              ))}
+              {/* 초대 버튼 */}
+              <img
+                src={Add}
+                alt="초대하기"
+                className="w-16 h-16 shrink-0 cursor-pointer"
+                onClick={handleInviteClick}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* 우리들의 발자국 */}
       <div>
-        <p className="text-darkmint font-semibold mb-2">우리들의 발자국</p>
         <div className="pb-20">
-          {groupDiaries.map((diary) => (
-            // <div key={diary.diaryId} className="mb-3">
-            // 개발용.... 중복된 다이어리가 있어서... key 임시 설정...
-            <div key={`${diary.diaryId}-${diary.createdAt}`} className="mb-3">
-              <GroupDiaryPreview {...diary} />
+          {groupDiaries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[40vh]">
+              <img src={robotCharacter} alt="캐릭터" className="h-32" />
+              <p className="text-sm text-gray-400 mt-4 text-center">
+                공유된 일기가 없어요! <br /> 그룹에 일기를 공유해 보세요
+              </p>
             </div>
-          ))}
-          {isFetching && (
-            <p className="text-center text-gray-500 mt-4">불러오는 중...</p>
+          ) : (
+            <>
+              <p className="text-darkmint font-semibold mb-2">
+                우리들의 발자국
+              </p>
+              {groupDiaries.map((diary) => (
+                <div key={diary.diaryId} className="mb-3">
+                  <GroupDiaryPreview {...diary} />
+                </div>
+              ))}
+              {isFetching && (
+                <p className="text-center text-gray-500 mt-4">불러오는 중...</p>
+              )}
+            </>
           )}
         </div>
       </div>
+
+      {isInviteModalOpen && (
+        <GroupInviteModal
+          link={inviteLink}
+          onClose={() => setIsInviteModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
