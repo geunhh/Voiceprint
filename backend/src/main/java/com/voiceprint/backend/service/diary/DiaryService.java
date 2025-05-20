@@ -41,10 +41,8 @@ public class DiaryService {
         // 유저 정보 추출 및 확인
         Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
 
-        Diary diary = diaryRepository.findById(diaryId)
+        Diary diary = diaryRepository.findDetailById(diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("다이어리 정보가 없습니다."));
 
         // 일기의 user FK와 비교
@@ -67,9 +65,6 @@ public class DiaryService {
         // 유저 정보 추출 및 확인
         Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
-
 
         // 2. size + 1 개 조회 (다음 커서 존재 여부 확인용)
         PageRequest page = PageRequest.of(0,size+1); // (page Num, page Size)
@@ -105,7 +100,8 @@ public class DiaryService {
 
     public DiaryMontlyListDTO getMonthlyDiaries(HttpServletRequest request, int year, int month) {
         // 유저 정보 추출 및 확인
-        Integer userId = authService.getUserIdFromRequest(request);
+//        Integer userId = authService.getUserIdFromRequest(request);
+        Integer userId = 1;
         log.debug("userId : {}",userId);
 
 
