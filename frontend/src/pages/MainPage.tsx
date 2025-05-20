@@ -353,7 +353,6 @@ export default function MainPage() {
             </div>
           </>
         )}
-        그룹
       </div>
 
       {showModal && (

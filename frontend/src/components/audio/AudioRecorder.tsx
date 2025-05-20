@@ -5,10 +5,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaMicrophone, FaStop } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import { setCharacter } from "../../store/characterSlice";
-import { useNavigate } from "react-router-dom";
+import { RootState } from "../../store/store";
 
 import Button from "../common/Button";
 import ProgressBar from "../common/ProgressBar";
@@ -150,7 +150,7 @@ const AudioRecorder: React.FC = () => {
   useEffect(() => {
     // 웹소켓 서버 URL - 실제 서버 URL로 변경 필요
     // const wsUrl = "wss://mdia4kmn4s6kmw-8000.proxy.runpod.net/ws";
-    let ws: WebSocket | null = null;
+    const ws: WebSocket | null = null;
     let wsUrl: string;
 
     // 1) 실제 WebSocket 연결 함수
@@ -363,11 +363,11 @@ const AudioRecorder: React.FC = () => {
 
     // 하이패스 필터 추가 - 낮은 주파수의 배경 소음 제거
     const highpassFilter = audioContext.createBiquadFilter();
-    highpassFilter.type = 'highpass';
+    highpassFilter.type = "highpass";
     highpassFilter.frequency.value = 85; // 사람 목소리의 주요 주파수보다 약간 낮게 설정
     // 로우패스 필터 추가 - 높은 주파수의 비명이나 고주파 소음 제거
     const lowpassFilter = audioContext.createBiquadFilter();
-    lowpassFilter.type = 'lowpass';
+    lowpassFilter.type = "lowpass";
     lowpassFilter.frequency.value = 4000; // 사람 목소리의 주요 주파수 범위 내로 설정
     // 필터 연결
     microphone.connect(highpassFilter);
@@ -458,16 +458,16 @@ const AudioRecorder: React.FC = () => {
       }
 
       // 여기가 수정된 부분: 노이즈 억제 및 에코 취소 활성화
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           channelCount: 1,
           sampleRate: 16000,
-        } 
+        },
       });
-      
+
       const options: MediaRecorderOptions = {
         mimeType: "audio/webm",
         audioBitsPerSecond: 16000,
@@ -555,7 +555,6 @@ const AudioRecorder: React.FC = () => {
               })
             );
             setStatus("idle");
-
           } catch (err) {
             console.error("오디오 데이터 전송 중 오류:", err);
             setStatus("error");
@@ -781,7 +780,7 @@ const AudioRecorder: React.FC = () => {
       <div className="flex flex-col items-center gap-8">
         {/* 진행바 */}
         <div className="w-full max-w-[320px]">
-          <ProgressBar label="" progress={30} />
+          <ProgressBar label="" progress={limit} />
         </div>
 
         {/* 캐릭터 애니메이션 */}
@@ -858,7 +857,7 @@ const AudioRecorder: React.FC = () => {
       )}
 
       {/* 종료 버튼 */}
-      <div className="fixed bottom-[20vh] left-1/2 -translate-x-1/2 w-[90vw] max-w-[320px] flex justify-center">
+      <div className="w-[90vw] max-w-[320px] flex justify-center">
         <Button
           text="일기 생성하기"
           type="fill"
