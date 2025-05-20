@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -66,6 +67,7 @@ public class User {
 
     // 현재 사용중인 테마 (단방향 연관)
     @ManyToOne(fetch = FetchType.LAZY)
+//    @JsonIgnore
     @JoinColumn(name = "using_thema_id", unique = false)
     private DiaryThema usingThema;
 
@@ -82,6 +84,7 @@ public class User {
 
     // 알람 시간 21:00 기본.
     @Column(columnDefinition = "TIME DEFAULT '21:00'")
+    @Builder.Default    // builder 사용에 있어 초기화 되지 않는 문제를 해결
     private LocalTime alarmTime = LocalTime.of(21,0);
 
     // 알림 목록
