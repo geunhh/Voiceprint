@@ -155,6 +155,8 @@ export default function MainPage() {
     checkHasWrittenDiary();
   }, []);
 
+  console.log("### 현재 시간:", new Date());
+
   // 최근 말자국 목록 불러오기
   const fetchRecentDiaries = async (cursor?: number) => {
     try {
@@ -171,6 +173,7 @@ export default function MainPage() {
 
       setNextCursor(res.data.data.nextCursor);
       setHasMore(res.data.data.nextCursor !== null);
+      console.log("### 최근 말자국 정보: ", newDiaries);
     } catch (e) {
       console.error("최근 말자국 불러오기 실패", e);
     }
