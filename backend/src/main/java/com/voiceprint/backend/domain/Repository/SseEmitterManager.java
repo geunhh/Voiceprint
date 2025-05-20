@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.Repository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component // DB를 다루는 게 아니라, Emitter들을 Map에 보관하고 관리하는 역할이라 범용적인 Component가 맞음.
 public class SseEmitterManager {
 
@@ -45,6 +47,8 @@ public class SseEmitterManager {
                         .data(data));       // 보낼 메시지 내용
             } catch (IOException e) {
                 emitters.remove(userId); // 오류 발생 시 emitter 제거
+                log.debug("[SSE] 전송 실패로 emitter 제거: userId=" + userId + ", error=" + e.getMessage());
+
             }
         }
     }
@@ -56,5 +60,9 @@ public class SseEmitterManager {
 
     public Set<Integer> getSubscribedUserIds() {
         return emitters.keySet();
+    }
+
+    public String getAllEmitterIds() {
+        return emitters.keySet().toString();
     }
 }
