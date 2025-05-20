@@ -68,6 +68,9 @@ public class GroupDiaryService {
 
             log.debug("공유 대상 그룹 : {} - {} ", group, group.getName());
 
+            boolean isExist = groupRepository.existsByGroupIdAndDiaryId(groupId,diaryId);
+            if (isExist) continue;
+
             groupDiaries.add(new GroupDiary(null, diary, group, LocalDateTime.now()));
 
             // 1. 그룹 유저 조회
