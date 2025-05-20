@@ -165,7 +165,7 @@ public class DiaryThemaService {
      */
     @Transactional(readOnly = true)
     public UsingDiaryThemaResponseDTO getUsingThema(Integer userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findUserWithUsingThema(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         DiaryThema thema = user.getUsingThema();
