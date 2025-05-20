@@ -28,7 +28,7 @@ public class AlarmService {
     /**
      * 정해진 시간이 되면 redis Server에 저장된 세션 및 채팅 데이터 전체 삭제.
      */
-    @Scheduled(cron = "0 0 12 * * *") // 초, 분, 시, 일, 월, 요일,
+    @Scheduled(cron = "0 0 8 * * *") // 초, 분, 시, 일, 월, 요일,
     public void deleteAllSession() {
         log.debug("[스케쥴러] 자정 스케쥴러 실행: Redis 세션 삭제 시작");
 
