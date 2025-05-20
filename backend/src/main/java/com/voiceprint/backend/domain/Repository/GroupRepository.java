@@ -16,5 +16,7 @@ public interface GroupRepository extends JpaRepository<Group, Integer> {
 
     List<Group> findByAlarmTimeAndEnableAlarmTrue(
             @Param("alarmTime") LocalTime now);
+
+    boolean existsByGroupIdAndDiaryId(Integer groupId, Integer diaryId);
 }
 
