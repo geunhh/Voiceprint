@@ -171,7 +171,7 @@ export default function MainPage() {
 
       setNextCursor(res.data.data.nextCursor);
       setHasMore(res.data.data.nextCursor !== null);
-      console.log("최근 말자국 정보: ", newDiaries);
+      // console.log("최근 말자국 정보: ", newDiaries);
     } catch (e) {
       console.error("최근 말자국 불러오기 실패", e);
     }
@@ -337,7 +337,7 @@ export default function MainPage() {
       <div>
         <p className=" text-yellow-400 font-semibold mb-2">최근 말자국</p>
         {diaries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] mb-10">
+          <div className="flex flex-col items-center justify-center min-h-[40vh] mb-16">
             <img src={robotCharacter} alt="캐릭터" className="h-32" />
             <p className="text-sm text-gray-400 mt-4 text-center">
               최근 공유된 일기가 없어요! <br /> 가정 먼저 일기를 공유해 보세요

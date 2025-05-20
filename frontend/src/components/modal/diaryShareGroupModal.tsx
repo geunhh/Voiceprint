@@ -97,13 +97,13 @@ function DiaryShareGroupModal({ onClose, diaryId }: DiaryShareGroupModalProps) {
           <>
             <p className="text-yellow-500 mb-3">공유할 그룹을 선택해주세요!</p>
 
-            <div className="w-full flex items-center gap-2 px-5 mb-4">
+            <div className="w-full flex justify-center gap-2 px-5 mb-4">
               <input
                 type="text"
                 placeholder="그룹 검색"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 py-2 pl-3 pr-10 rounded-full bg-gray-100 focus:bg-white focus:ring-1 focus:ring-yellow-400 outline-none"
+                className="w-full max-w-[300px] py-2 pl-3 pr-10 rounded-full bg-gray-100 focus:bg-white focus:ring-1 focus:ring-yellow-400 outline-none"
               />
             </div>
 
@@ -140,8 +140,10 @@ function DiaryShareGroupModal({ onClose, diaryId }: DiaryShareGroupModalProps) {
           </>
         ) : (
           <div className="flex flex-col items-center gap-1 my-8">
-            <p className="text-yellow-500 font-medium">공유할 그룹은 없네요!</p>
-            <p className="text-sm text-gray-500">일단 저장만 진행할게요.</p>
+            <p className="text-yellow-500 font-medium">가입한 그룹이 없어요</p>
+            <p className="text-sm text-gray-500">
+              그룹에 참여하고 친구들에게 공유해 보세요.
+            </p>
           </div>
         )}
 
