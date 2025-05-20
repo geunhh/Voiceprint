@@ -8,15 +8,8 @@ function useTimeAgo(date: string | Date) {
     const parseDate = (input: string | Date) => {
       if (typeof input === "string") {
         const trimmed = input.split(".")[0]; // 마이크로초 제거
-        const date = new Date(trimmed); // Z 안 붙임 → 브라우저의 지역시간 기준으로 해석
-
-        // 브라우저가 UTC 기준이면 → UTC로 온 걸로 간주하고 +9시간 보정
-        const isBrowserInUTC = new Date().getTimezoneOffset() === 0;
-        if (isBrowserInUTC) {
-          return new Date(date.getTime() + 9 * 60 * 60 * 1000); // UTC → KST
-        } else {
-          return date; // KST인 경우 추가 보정 없이 사용
-        }
+        const date = new Date(trimmed + "Z"); // UTC로 강제 해석
+        return new Date(date.getTime() + 9 * 60 * 60 * 1000); // KST 보정
       }
 
       return input;
