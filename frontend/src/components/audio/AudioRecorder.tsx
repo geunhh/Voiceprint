@@ -23,6 +23,9 @@ import chatPink from "../../assets/icons/chatPink.png";
 import chatRed from "../../assets/icons/chatRed.png";
 import chatYellow from "../../assets/icons/chatYellow.png";
 
+// 재생할 음성 파일 
+import hello from "../../assets/audio/hello.mp3";
+
 const localIcons: Record<string, string> = {
   따분이: chatBlack,
   맑음이: chatBlue,
@@ -101,7 +104,16 @@ const AudioRecorder: React.FC = () => {
   // ────────────────────────────────────────────────────────────────
   useEffect(() => {
     // 이미 Redux에 캐릭터(id)가 있으면 그대로 사용
-    if (character.id) return;
+    if (character.id){
+
+      // 캐릭터 정보를 가져온 후 음성 파일 재생
+      const audio = new Audio(hello);
+      audio.play().catch(err => console.error("인사 음성 재생 실패:", err));
+      // 여기까지 음성 파일 재생 코드
+
+      return;
+    } 
+      
 
     const fetchRecent = async () => {
       try {
@@ -112,6 +124,12 @@ const AudioRecorder: React.FC = () => {
         const img = bot.imageUrl || localIcons[bot.name] || "";
         const tag = bot.description.split(",").join(" ");
         dispatch(setCharacter({ id: bot.id, img, name: bot.name, tag }));
+        
+        // 캐릭터 정보를 가져온 후 음성 파일 재생
+        const audio = new Audio(hello);
+        audio.play().catch(err => console.error("인사 음성 재생 실패:", err));
+        // 여기까지 음성 재생 코드
+
       } catch (err) {
         console.error("챗봇 정보 실패", err);
       }
