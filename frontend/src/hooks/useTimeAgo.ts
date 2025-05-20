@@ -4,14 +4,11 @@ function useTimeAgo(date: string | Date) {
   const [timeAgo, setTimeAgo] = useState("");
 
   useEffect(() => {
-    // 브라우저 환경에 따라 날짜 보정
     const parseDate = (input: string | Date) => {
       if (typeof input === "string") {
-        const trimmed = input.split(".")[0]; // 마이크로초 제거
-        const date = new Date(trimmed + "Z"); // UTC로 강제 해석
-        return new Date(date.getTime() + 9 * 60 * 60 * 1000); // KST 보정
+        const trimmed = input.split(".")[0];
+        return new Date(trimmed);
       }
-
       return input;
     };
 
