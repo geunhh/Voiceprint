@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
 
 import Add from "../../assets/icons/add.png";
+import questionCharacter from "../../assets/icons/questionCharacter.png";
 import Button from "../../components/common/Button";
 import { DayPicker } from "../../components/group/DayPicker";
 import ImageUploader from "../../components/group/ImageUploader";
@@ -180,9 +181,9 @@ export default function GroupEditPage() {
   return (
     <div className="p-4">
       {/* 페이지 안내 및 그룹 이미지 업로드 */}
-      <div className="flex items-center place-content-between mt-5">
+      <div className="flex items-center place-content-between mt-5 mb-5">
         <p className="font-bold text-2xl">그룹 수정</p>
-        <ImageUploader defaultImage={imageUrl} onImageChange={onImageChange} />
+        <img src={questionCharacter} alt="캐릭터" className="h-20" />
       </div>
 
       {/* 그룹명 입력 */}
@@ -195,6 +196,12 @@ export default function GroupEditPage() {
         />
       </div>
 
+      <hr className="my-4 border-t border-gray-300" />
+
+      <div className="mt-2 ">
+        <p className="text-darkmint text-lg font-semibold mb-2">그룹 이미지</p>
+        <ImageUploader defaultImage={imageUrl} onImageChange={onImageChange} />
+      </div>
       <hr className="my-4 border-t border-gray-300" />
 
       {/* 멤버 */}
@@ -220,7 +227,7 @@ export default function GroupEditPage() {
           <img
             src={Add}
             alt="초대하기"
-            className="w-12 h-12 shrink-0"
+            className="w-16 h-16 shrink-0"
             onClick={fetchInviteLink}
           />
         </div>

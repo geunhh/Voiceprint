@@ -58,6 +58,7 @@ export default function MyPage() {
       });
       setNextCursor(res.data.data.nextCursor);
       setHasMore(res.data.data.nextCursor !== null);
+      // console.log("전체 일기 불러오기: ", res.data.data);
     } catch (e) {
       console.error("전체 일기 불러오기 실패", e);
     }
