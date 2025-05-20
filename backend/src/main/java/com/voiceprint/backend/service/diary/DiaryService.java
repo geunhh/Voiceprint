@@ -100,8 +100,8 @@ public class DiaryService {
 
     public DiaryMontlyListDTO getMonthlyDiaries(HttpServletRequest request, int year, int month) {
         // 유저 정보 추출 및 확인
-//        Integer userId = authService.getUserIdFromRequest(request);
-        Integer userId = 1;
+        Integer userId = authService.getUserIdFromRequest(request);
+
         log.debug("userId : {}",userId);
 
 
