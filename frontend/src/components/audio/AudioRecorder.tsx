@@ -556,13 +556,6 @@ const AudioRecorder: React.FC = () => {
             );
             setStatus("idle");
 
-            // 여기서부터 테스트 코드
-            const url = URL.createObjectURL(audioBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `녹음-${new Date().getTime()}.webm`;
-            a.click();
-
           } catch (err) {
             console.error("오디오 데이터 전송 중 오류:", err);
             setStatus("error");
