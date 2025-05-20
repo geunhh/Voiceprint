@@ -71,7 +71,7 @@ public class VoiceChatService {
             // 5. 메시지 리스트가 없다면 초기 메시지 추가 (없으면 처음 접속이므로)
             Boolean messageExists = redisTemplate.hasKey(messageKey);
             if (Boolean.FALSE.equals(messageExists)) {
-                String todayMessage = "오늘은 어떤일이 있었나요 >_< 꺄르륵 꺄르륵????";
+                String todayMessage = chatbot.getInitMent();
                 redisTemplate.opsForList().rightPush(messageKey,
                         new ChatMessage("assistant", todayMessage));
             }

@@ -3,6 +3,7 @@ package com.voiceprint.backend.api.chat.voice;
 import com.voiceprint.backend.api.chat.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.api.chat.voice.dto.VoiceSessionResponseDto;
 //import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.common.util.JWTUtil;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.chat.ChatSessionService;
@@ -10,12 +11,14 @@ import com.voiceprint.backend.service.chat.voice.VoiceChatService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/voice")
 @RequiredArgsConstructor
@@ -32,16 +35,19 @@ public class VoiceController {
     public ResponseEntity<VoiceSessionResponseDto> getVoiceSession(HttpServletRequest HttpRequest,
                                                                    @RequestParam("chatbotId") Byte chatbotId) {
         String token = jwtUtil.extractTokenFromHeader(HttpRequest.getHeader("Authorization"));
-
+        log.info("챗봇 id!!!= "+chatbotId);
 
         if (token == null) {
-            return ResponseEntity.status(401).body(null);
+            throw new UserNotFoundException("토큰이 없습니다.");
         }
 
         Integer userId = authService.getUserIdFromRequest(HttpRequest);
 
         if (userId == null) {
-            return ResponseEntity.status(401).body(null);
+            throw new  UserNotFoundException("해당 유저가 없습니다.");
+        }
+        if (chatbotId == null) {
+            throw new  UserNotFoundException("설정한 챗봇이 없습니다.");
         }
 
         // 웹소켓 연결 정보 생성
@@ -50,7 +56,7 @@ public class VoiceController {
                 .userId(userId)
                 .build();
         System.out.printf("######wsUrl= "+"ws://localhost:8080/ws?token=" + token);
-        voiceChatService.startSession(userId, (chatbotId != null)? chatbotId : 1);
+        voiceChatService.startSession(userId, chatbotId);
         return ResponseEntity.ok(responseDto);
     }
 }
