@@ -7,7 +7,8 @@ module.exports = {
         sans: ["Pretendard", "ui-sans-serif", "system-ui"],
         onemobile: ["ONEMobilePOP", "sans-serif"],
         muruk: ["Muruk", "sans-serif"],
-        uhbee: ["Uhbee", "sans-serif"],
+        omyu: ["Omyu", "sans-serif"],
+        hyemin: ["Hyemin", "sans-serif"],
       },
       colors: {
         mint: "#B5E6E2", // 민트색
