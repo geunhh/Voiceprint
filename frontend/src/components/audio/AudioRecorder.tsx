@@ -5,10 +5,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaMicrophone, FaStop } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 import { setCharacter } from "../../store/characterSlice";
-import { useNavigate } from "react-router-dom";
+import { RootState } from "../../store/store";
 
 import Button from "../common/Button";
 import ProgressBar from "../common/ProgressBar";
@@ -92,6 +92,10 @@ const AudioRecorder: React.FC = () => {
   const microphoneStreamRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
 
+  // 대화 진행 상황
+  const [limit, setLimit] = useState<number>(0);
+  const [totalToken, setTotalToken] = useState<number>(100); // 전체 토큰 수
+
   // ────────────────────────────────────────────────────────────────
   // 1. 최근 챗봇 정보 로드 (+fallback)
   // ────────────────────────────────────────────────────────────────
@@ -161,6 +165,14 @@ const AudioRecorder: React.FC = () => {
             const data = JSON.parse(event.data);
             if (data.transcription) {
               setTranscription(data.transcription as string);
+            }
+
+            if (typeof data.limit === "number") {
+              setLimit(data.limit);
+            }
+
+            if (typeof data.totalToken === "number") {
+              setTotalToken(data.totalToken);
             }
           } catch (error) {
             console.error("메시지 파싱 에러:", error);
@@ -701,7 +713,7 @@ const AudioRecorder: React.FC = () => {
       <div className="flex flex-col items-center gap-8">
         {/* 진행바 */}
         <div className="w-full max-w-[320px]">
-          <ProgressBar label="" progress={30} />
+          <ProgressBar label="" progress={limit} />
         </div>
 
         {/* 캐릭터 애니메이션 */}
@@ -774,7 +786,7 @@ const AudioRecorder: React.FC = () => {
       )}
 
       {/* 종료 버튼 */}
-      <div className="fixed bottom-[20vh] left-1/2 -translate-x-1/2 w-[90vw] max-w-[320px] flex justify-center">
+      <div className="w-[90vw] max-w-[320px] flex justify-center">
         <Button
           text="일기 생성하기"
           type="fill"
