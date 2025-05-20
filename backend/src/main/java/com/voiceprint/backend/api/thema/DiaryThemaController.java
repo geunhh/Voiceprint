@@ -88,6 +88,7 @@ public class DiaryThemaController {
     ) {
         log.info("### UsingThema 조회 API 호출");
         Integer userId = authService.getUserIdFromRequest(request);
+//        Integer userId = 1;
         UsingDiaryThemaResponseDTO response = diaryThemaService.getUsingThema(userId);
 
         return ResponseEntity.ok(new CommonResponse<>(
