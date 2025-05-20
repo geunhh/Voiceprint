@@ -50,7 +50,6 @@ public class NotificationController {
             @RequestParam(defaultValue = "10") Integer size
     ) {
         Integer userId = authService.getUserIdFromRequest(request);
-//        Long userId = 1L;
         log.info("userid : {}, 알림 조회 ",userId);
         NotificationListWithCursorDTO response = notificationService.getUnreadNotifications(userId,cursor, size);
 
@@ -68,7 +67,7 @@ public class NotificationController {
             @PathVariable Long notificationId
     ) {
         Integer userId = authService.getUserIdFromRequest(request);
-//        Long userId = 1L;
+
         notificationService.markNotification(userId, notificationId);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "알림 읽음 처리 완료", null
