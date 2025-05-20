@@ -70,13 +70,14 @@ public class RedisSubscriber implements MessageListener {
         }
 
         Integer userId = notification.getUser().getId();
+        log.debug("현재 접속중인 emitter : {} ",emitterManager.getAllEmitterIds());
 
         if (emitterManager.hasEmitter(userId)) {
-            emitterManager.sendTo(userId,dto.getType(),dto); // SSE 전송
+            emitterManager.sendTo(userId, dto.getType(), dto); // SSE 전송
             log.info("[RedisSubscriber] 실시간 알림 전송 완료: userId={}, type={}", userId, dto.getType());
         }
         else {
-            log.info("알림을 전달할 구독자가 접속중이 아닙니다.");
+            log.info("알림을 전달할 구독자가 접속중이 아닙니다. {}",userId);
         }
     }
 }
