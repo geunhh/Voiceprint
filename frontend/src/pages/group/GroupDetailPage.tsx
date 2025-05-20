@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import axiosInstance from "../../api/axiosInstance";
 
+import Add from "../../assets/icons/add.png";
 import calendarIcon from "../../assets/icons/calendar.png";
 import clockIcon from "../../assets/icons/clock.png";
 import happyCharacter from "../../assets/icons/happyCharacter.png";
@@ -285,27 +286,25 @@ export default function GroupDetailPage() {
 
       {/* 그룹 메이트 */}
       <div className="mb-5">
-        {/* 초대 버튼 */}
-        <div className="flex items-center gap-4 bg-yellow-50 p-4 rounded-xl mb-2">
-          <img src={happyCharacter} className="w-20 h-auto" alt="캐릭터" />
-          <div
-            className="flex flex-col cursor-pointer"
-            onClick={handleInviteClick}
-          >
-            <p className="text-yellow-400 font-bold text-lg mb-1">
-              그룹 초대하기
-            </p>
-            <p className="text-gray-500 text-base">
-              초대 코드를 통해
-              <br />
-              일기 메이트를 초대할 수 있어요!
-            </p>
+        {group.groupUserList.length === 1 ? (
+          <div className="flex items-center gap-4 bg-yellow-50 p-4 rounded-xl mb-2">
+            <img src={happyCharacter} className="w-20 h-auto" alt="캐릭터" />
+            <div
+              className="flex flex-col cursor-pointer"
+              onClick={handleInviteClick}
+            >
+              <p className="text-yellow-400 font-bold text-lg mb-1">
+                그룹 초대하기
+              </p>
+              <p className="text-gray-500 text-base">
+                초대 코드를 통해
+                <br />
+                일기 메이트를 초대할 수 있어요!
+              </p>
+            </div>
           </div>
-        </div>
-        {/* 메이트 목록  */}
-        {group.groupUserList.length > 1 && (
+        ) : (
           <>
-            {/* 메이트 인원수 정보 */}
             <div className="flex mb-2">
               <p className="text-darkmint font-semibold">
                 {group.groupUserList.length}명
@@ -313,7 +312,6 @@ export default function GroupDetailPage() {
               <p className="font-semibold text-gray-700">의 일기 메이트</p>
             </div>
 
-            {/* 메이트 프로필 이미지 */}
             <div className="flex gap-3 items-center overflow-x-auto scrollbar-hide w-full">
               {group.groupUserList.map((user) => (
                 <div
@@ -330,6 +328,13 @@ export default function GroupDetailPage() {
                   </p>
                 </div>
               ))}
+              {/* 초대 버튼 */}
+              <img
+                src={Add}
+                alt="초대하기"
+                className="w-16 h-16 shrink-0 cursor-pointer"
+                onClick={handleInviteClick}
+              />
             </div>
           </>
         )}

@@ -116,7 +116,7 @@ export default function GroupCreatePage() {
 
       <hr className="my-4 border-t border-gray-300" />
 
-      {/* 멤버 */}
+      {/* 그룹 이미지 */}
       <div className="mt-2 ">
         <p className="text-darkmint text-lg font-semibold mb-2">그룹 이미지</p>
         <ImageUploader
