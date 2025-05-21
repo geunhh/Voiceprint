@@ -66,12 +66,12 @@ function Calendar({ currentMonth, diaries }: CalendarProps) {
       let icon = null;
       let onClick: (() => void) | null = null;
 
-      if (isTodayDate) {
-        icon = add;
-        onClick = () => navigate("/diary/setting/friend");
-      } else if (diary) {
+      if (diary) {
         icon = emotionIcons[diary.emotion];
         onClick = () => navigate(`/diary/${diary.diaryId}`);
+      } else if (isTodayDate) {
+        icon = add;
+        onClick = () => navigate("/diary/setting/friend");
       } else {
         icon = emotion6;
         onClick = null;
