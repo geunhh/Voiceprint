@@ -81,13 +81,18 @@
         addLog("리마인더", event.data, "reminder");
     });
 
-    eventSource.addEventListener("new_comment", (event) => {
-        addLog("댓글 알림", event.data, "new_comment");
+    eventSource.addEventListener("newComment", (event) => {
+        addLog("댓글 알림", event.data, "newComment");
     });
 
     eventSource.addEventListener("newDiary", (event) => {
-        addLog("게시글 알림", event.data, "post");
+        addLog("게시글 알림", event.data, "newDiary");
     });
+
+    eventSource.addEventListener("newMember", (event) => {
+        addLog("게시글 알림", event.data, "newMember");
+    });
+
 
     // 에러 처리
     eventSource.onerror = (err) => {

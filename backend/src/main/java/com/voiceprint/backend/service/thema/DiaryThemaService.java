@@ -140,14 +140,27 @@ public class DiaryThemaService {
 
         //3. 프롬프트 추출
         String prompt = diary.getPrompt();
+
         if (prompt == null || prompt.isBlank() || prompt.isEmpty()) {
             throw new InvalidPromptException("유효하지않은 프롬프트입니다,");
         }
 
+        log.debug("customPrompt : {}", prompt);
+
         //4. 내 커스텀 테마 조회
-        DiaryThema thema = diaryThemaRepository.findByUserId(userId)
-                .orElseThrow(() -> new DiaryThemaNotFoundException("일기 테마를 찾을 수 없습니다."));
-        System.out.println("내 커스텀 테마:"+thema.getId()+ ", user:" +thema.getUser().getId());
+        DiaryThema thema = diaryThemaRepository.findByUserId(userId).orElseGet(() -> {
+                User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
+                return DiaryThema.creatDiaryThema(
+                        user,
+                        "내 커스텀 테마",
+                        "일기를 기반으로 생성된 커스텀 테마입니다.",
+                        prompt,
+                        diary.getContent() // 예시로 넣은 내용입니다. 필요에 맞게 수정하세요.
+
+                );
+        });
+        log.debug("내 커스텀 테마: {}, user: {} ",thema.getId(), thema.getUser().getId());
+
         //5. 프롬프트 갱신
         thema.setPrompt(prompt);
         diaryThemaRepository.save(thema);
