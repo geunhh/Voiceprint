@@ -7,7 +7,8 @@ function useTimeAgo(date: string | Date) {
     const parseDate = (input: string | Date) => {
       if (typeof input === "string") {
         const trimmed = input.split(".")[0];
-        return new Date(trimmed);
+        const modified = trimmed.replace("T", " ");
+        return new Date(modified);
       }
       return input;
     };
