@@ -43,7 +43,7 @@ public class NotificationController {
     /**
      * 알림 목록 조회 API
      */
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<CommonResponse<NotificationListWithCursorDTO>> getUnreadNotifications(
             HttpServletRequest request,
             @RequestParam(required = false) Long cursor,
