@@ -31,7 +31,7 @@ public class Notification {
     private String type;
 
     // 표시할 메시지
-    @Column(length = 50, nullable = false)
+    @Column(length = 100, nullable = false)
     private String message;
 
     // 추가 데이터 (예: groupId, diaryId)

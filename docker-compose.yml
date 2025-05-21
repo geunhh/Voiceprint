@@ -6,6 +6,10 @@ services:
       - "81:80"
     env_file:
       - ./frontend.env
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - voiceprint-network
   proxy:
@@ -26,6 +30,10 @@ services:
     image: jokiheum/voiceprint-backend:latest
     env_file:
       - ./backend.env
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       mysql:
         condition: service_healthy

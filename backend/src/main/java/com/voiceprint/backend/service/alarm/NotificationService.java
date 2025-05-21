@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,12 +30,11 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final RedisPublisher redisPublisher;      // Redis Pub/sub관리
-    private final SseEmitterManager sseEmitterManager;  // 현재 접속 유저 관리
 
     /**
      * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
      */
-    public Long sendAndSave(User user, NotificationDTO dto) {
+    public void sendAndSave(User user, NotificationDTO dto) {
         // 1.DB 저장
         Notification notification = Notification.create(
                 user,
@@ -41,17 +42,24 @@ public class NotificationService {
                 dto.getMessage(),
                 dto.getMetadata()
         );
-        notificationRepository.saveAndFlush(notification); // save를 하면,
-
+        notificationRepository.save(notification); //
         // 2. Redis 전송
-        NotificationDTO inputDto = new NotificationDTO(
-                dto.getType(),
-                dto.getMessage(),
-                Map.of("notificationId", notification.getId())
-        );
-        redisPublisher.publishNotification(inputDto);
 
-        return notification.getId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                NotificationDTO inputDto = new NotificationDTO(
+                        dto.getType(),
+                        dto.getMessage(),
+                        Map.of(
+                                "notificationId", notification.getId(),
+                                "userId", user.getId()
+                        )
+                );
+                redisPublisher.publishNotification(inputDto);
+            }
+        });
+
     }
 
 
@@ -109,16 +117,19 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public void publishAllNotifications(List<Notification> notification) {
+        log.debug("알림 전송하기");
         for (Notification n : notification) {
-            log.debug("notification : {}",notification);
+            log.debug("notification : {}",n.getMessage());
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("notificationId", n.getId());
+            metadata.put("groupId", n.getMetadata().getOrDefault("groupId", null));
+            metadata.put("diaryId", n.getMetadata().getOrDefault("diaryId", null));
+
             NotificationDTO dto = new NotificationDTO(
                     n.getType(),
                     n.getMessage(),
-                    Map.of(
-                            "notificationId",n.getId(),
-                            "groupId",n.getMetadata().get("groupId"),
-                            "diaryId",n.getMetadata().get("diaryId"))
-                );
+                    metadata
+            );
             log.debug("notiDTO : {}",dto);
             log.debug("notiDTO meta : {}",dto.getMetadata());
             redisPublisher.publishNotification(dto);
