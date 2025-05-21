@@ -6,7 +6,13 @@ import questionCharacter from "../../assets/icons/questionCharacter.png";
 import robotCharacter from "../../assets/icons/robotCharacter.png";
 
 interface NotificationItemProps {
-  type: "reminder" | "newComment" | "newDiary" | "newMember" | "groupReminder";
+  type:
+    | "reminder"
+    | "newComment"
+    | "newDiary"
+    | "newMember"
+    | "groupReminder"
+    | "diaryComplete";
   groupId?: number;
   diaryId?: number;
   message: string;
@@ -20,6 +26,7 @@ const notificationImageMap: Record<NotificationItemProps["type"], string> = {
   newDiary: questionCharacter,
   newMember: robotCharacter,
   groupReminder: angryCharacter,
+  diaryComplete: lovelyCharacter,
 };
 
 const notificationTitleMap: Record<NotificationItemProps["type"], string> = {
@@ -28,6 +35,7 @@ const notificationTitleMap: Record<NotificationItemProps["type"], string> = {
   newDiary: "새로운 일기",
   newMember: "새로운 멤버",
   groupReminder: "그룹 일기 알림",
+  diaryComplete: "일기 완성 알림",
 };
 
 function NotificationItem({
@@ -54,6 +62,9 @@ function NotificationItem({
     } else if (type === "groupReminder") {
       // groupReminder 알림의 경우 해당 그룹 상세 페이지로 이동
       navigate(`/group/${groupId}`);
+    } else if (type === "diaryComplete") {
+      // 일기 작성이 완료되면 일기 임시 페이지로 이동
+      navigate("/diary/temp");
     } else {
       // 일기 작성 reminder 알림의 경우 일기 작성 페이지로 이동
       navigate("diary/setting/friend");

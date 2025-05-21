@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axiosInstance from "../../api/axiosInstance";
 import sendIcon from "../../assets/icons/send.png";
 
 interface ThemaItemProps {
@@ -30,11 +31,25 @@ function ThemaItem({
     onSelect(id);
   };
 
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      onExampleSubmit?.(id, inputValue.trim());
-      //   setInputValue("");
+  const handleSend = async () => {
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+
+    onExampleSubmit?.(id, trimmed);
+
+    try {
+      if (isCustom) {
+        // 항상 새 커스텀 테마 생성
+        const res = await axiosInstance.post("/api/thema/create", {
+          exampleDiary: trimmed,
+        });
+        console.log("커스텀 테마 생성 성공:", res.data);
+      }
+    } catch (error) {
+      console.error("커스텀 테마 생성 실패:", error);
     }
+
+    // setInputValue(""); // 필요하면 입력창 초기화
   };
 
   return (
@@ -80,7 +95,10 @@ function ThemaItem({
                 onChange={(e) => setInputValue(e.target.value)}
               />
               <button
-                onClick={handleSend}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSend();
+                }}
                 className="ml-2 w-9 h-9 rounded-lg bg-yellow-400 flex items-center justify-center"
               >
                 <img
