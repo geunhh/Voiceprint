@@ -68,7 +68,7 @@ public class DiaryController {
     @GetMapping("/me/all")
     public ResponseEntity<CommonResponse<DiaryListWithCursorDTO>> getMyDiaries(
             @RequestParam(required = false) Integer cursor,
-            @RequestParam(defaultValue = "7") Integer size,
+            @RequestParam(defaultValue = "9") Integer size,
             HttpServletRequest request
     ) {
 
