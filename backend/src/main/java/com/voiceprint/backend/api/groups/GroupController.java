@@ -93,8 +93,8 @@ public class GroupController {
             @RequestParam(defaultValue = "7") int size,
             HttpServletRequest request
     ) {
-        GroupDiaryListWithCursorDTO result = groupDiaryService.getAllGroupDiaries(request, cursor, size);
-        return ResponseEntity.ok(new CommonResponse<>(200, "모든 그룹의 공유일기 조회 성공", result));
+        CommonResponse<GroupDiaryListWithCursorDTO> result = groupDiaryService.getAllGroupDiaries(request, cursor, size);
+        return ResponseEntity.ok(result);
     }
 
 

@@ -349,7 +349,7 @@ public class ChatSessionService {
         String content = (String) sessionData.get("tempDiary");
         Object chatbotIdObj = sessionData.get("chatbotId");
         String emotionStr = (String) sessionData.get("emotion"); // null일 수 있음
-        String prompt = (String) sessionData.get("themePrompt");
+        String prompt = (String) sessionData.get("chatPrompt");
 
 
         // 2. Redis 메시지 파싱
