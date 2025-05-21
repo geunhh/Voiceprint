@@ -38,7 +38,7 @@ public class ChatServcie {
         log.info("requestBody : {}",requestBody);
 
         // 변수 초기화
-        int limit_token = 700;  // 글자수 제한
+        int limit_token = 2000;  // 글자수 제한
         String botResponse = "오류가 발생했습니다.";    // 챗봇 답변
         int total_token = 0;    // 현재 글자수
 
