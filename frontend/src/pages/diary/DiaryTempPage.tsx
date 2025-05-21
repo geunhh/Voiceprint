@@ -181,7 +181,7 @@ export default function DiaryTempPage() {
             </button>
           </div>
 
-          <div className="mt-6 flex flex-row justify-center items-center gap-4">
+          <div className="mt-6 flex flex-row justify-center items-center gap-4 mb-28">
             <Button
               text="수정"
               type="line"
