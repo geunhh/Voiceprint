@@ -6,7 +6,13 @@ import NotificationFilterTabs from "../components/notification/notificationFilte
 import NotificationItem from "../components/notification/notificationItem";
 
 interface Notification {
-  type: "reminder" | "newComment" | "newDiary" | "newMember" | "groupReminder";
+  type:
+    | "reminder"
+    | "newComment"
+    | "newDiary"
+    | "newMember"
+    | "groupReminder"
+    | "diaryComplete";
   message: string;
   metadata: {
     groupId?: number;
@@ -104,6 +110,8 @@ export default function NotificationPage() {
       navigate(`/group/${item.metadata.groupId}`);
     } else if (item.type === "groupReminder") {
       navigate(`/group/${item.metadata.groupId}`);
+    } else if (item.type === "diaryComplete") {
+      navigate("/diary/temp");
     } else {
       navigate("diary/setting/friend");
     }
