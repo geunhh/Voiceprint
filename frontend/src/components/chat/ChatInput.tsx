@@ -24,7 +24,7 @@ export default function ChatInput({
         onKeyDown={(e) => e.key === "Enter" && onSend()}
       />
       <Button
-        text={loading ? "전송중..." : "완료"}
+        text={loading ? "전송중..." : "전송"}
         type="fill"
         size="M"
         onClick={onSend}
