@@ -221,10 +221,10 @@ const AudioRecorder: React.FC = () => {
               setLimit(data.limit);
               // console.log("limit=", data.limit);
             }
-            if (typeof data.totalToken === "number")
+            if (typeof data.totalToken === "number"){
               console.log("total_token 수는 ", totalToken);
-            setTotalToken(data.totalToken);
-
+              setTotalToken(data.totalToken);
+            }
             // ✅ 오디오 전송 완료 시점 → 재생
             if (data.audioDone === true || data.audioDone === "true") {
               console.log("🎯 audioDone 수신됨, 조립 대기 시작");
@@ -961,7 +961,6 @@ const AudioRecorder: React.FC = () => {
       {/* 음성 인식 결과 */}
       {transcription && (
         <div className="w-full max-w-xl p-4 border rounded bg-white shadow">
-          <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <p>{transcription}</p>
         </div>
