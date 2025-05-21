@@ -190,7 +190,6 @@ const AudioRecorder: React.FC = () => {
     // 웹소켓 서버 URL - 실제 서버 URL로 변경 필요
     // const wsUrl = "wss://mdia4kmn4s6kmw-8000.proxy.runpod.net/ws";
     const ws: WebSocket | null = null;
-    console.log("websocket url", ws);
     let wsUrl: string;
 
     // 1) 실제 WebSocket 연결 함수
@@ -872,7 +871,6 @@ const AudioRecorder: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-12 pb-36">
       <div className="flex flex-col items-center gap-8">
-
         {/* 안내 멘트 */}
         {limit >= 80 ? (
           <div className="text-center text-black text-sm mt-2 font-medium">
@@ -963,6 +961,7 @@ const AudioRecorder: React.FC = () => {
       {/* 음성 인식 결과 */}
       {transcription && (
         <div className="w-full max-w-xl p-4 border rounded bg-white shadow">
+          <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <p>{transcription}</p>
         </div>
