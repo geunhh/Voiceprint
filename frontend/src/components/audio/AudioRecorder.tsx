@@ -96,6 +96,10 @@ const AudioRecorder: React.FC = () => {
   const websocketRef = useRef<WebSocket | null>(null);
   const audioChunks = useRef<Blob[]>([]);
 
+  // 30퍼센트까지 도달하기 위해 남은 글자 수 계산
+  const remainingFor30 =
+    limit >= 30 ? 0 : Math.round(((30 - limit) / 100) * totalToken) || 0;
+
   // ────────────────────────────────────────────────────────────────
   // 1. 최근 챗봇 정보 로드 (+fallback)
   // ────────────────────────────────────────────────────────────────
@@ -776,8 +780,25 @@ const AudioRecorder: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-36 pb-36">
+    <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-12 pb-36">
       <div className="flex flex-col items-center gap-8">
+        {/* 안내 멘트 */}
+        {limit >= 80 ? (
+          <div className="text-center text-black text-sm mt-2 font-medium">
+            충분한 이야기가 모였어요! 일기를 만들어보세요.
+          </div>
+        ) : limit >= 30 ? (
+          <div className="text-center text-gray-500 text-sm mt-2 font-medium">
+            이제 곧 일기를 만들어갈 수 있어요!
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm mt-2 font-medium">
+            일기를 만들기까지{" "}
+            <span className="font-semibold text-black">{remainingFor30}자</span>{" "}
+            남았어요!
+          </div>
+        )}
+
         {/* 진행바 */}
         <div className="w-full max-w-[320px]">
           <ProgressBar label="" progress={limit} />
@@ -822,6 +843,7 @@ const AudioRecorder: React.FC = () => {
           )}
         </div>
       </div>
+
       {/* 상태 표시 (스피너 + 텍스트) */}
       {status !== "idle" && (
         <div className="flex items-center gap-2">
@@ -847,12 +869,12 @@ const AudioRecorder: React.FC = () => {
       {/* 음성 인식 결과 */}
       {transcription && (
         <div className="w-full max-w-xl p-4 border rounded bg-white shadow">
-          <h2 className="font-semibold mb-2">음성 인식 결과:</h2>
+          <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <p>{transcription}</p>
-          <div>진행률: {limit}%</div>
+          {/* <div>진행률: {limit}%</div>
           <div>
             토큰 사용량: {limit} / {totalToken}
-          </div>
+          </div> */}
         </div>
       )}
 
