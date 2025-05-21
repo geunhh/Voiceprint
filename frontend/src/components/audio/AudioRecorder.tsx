@@ -23,7 +23,7 @@ import chatPink from "../../assets/icons/chatPink.png";
 import chatRed from "../../assets/icons/chatRed.png";
 import chatYellow from "../../assets/icons/chatYellow.png";
 
-// 재생할 음성 파일
+// 재생할 음성 파일 
 import hello_1 from "../../assets/audio/hello_1.mp3";
 import hello_2 from "../../assets/audio/hello_2.mp3";
 import hello_3 from "../../assets/audio/hello_3.mp3";
