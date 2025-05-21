@@ -1,6 +1,7 @@
 package com.voiceprint.backend.service.chat;
 
 import com.nimbusds.jose.shaded.gson.Gson;
+import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
 import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
@@ -15,6 +16,7 @@ import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import com.voiceprint.backend.domain.Entity.Emotion;
 import com.voiceprint.backend.domain.Repository.EmotionRepository;
 import com.voiceprint.backend.domain.Entity.DiaryThema;
+import com.voiceprint.backend.service.alarm.NotificationService;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +46,7 @@ public class ChatSessionService {
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
     private final WebClient fastApiWebClient;
+    private final NotificationService notificationService;
 
     @Value("${session.key}")
     private String session_key;
@@ -133,7 +136,7 @@ public class ChatSessionService {
             String messageKey = message_key + ":" + userId;
             String sessionKey = session_key + ":" + userId;
 
-            int maxToken = 700;
+            int maxToken = 2000;
 
             // 1. 채팅 로그 조회
             List<Object> rawMessages = redisTemplate.opsForList().range(messageKey, 0, -1);
@@ -162,7 +165,7 @@ public class ChatSessionService {
 
             // 3-2. 글자수 토큰이 0이 아닌 경우 퍼센테이지 return
 
-            int limit_token = 700;  // 글자수 제한
+            int limit_token = 2000;  // 글자수 제한
             int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
             return new ChatMessageListWithTokenDTO(result, usageRate, maxToken) ;
@@ -234,6 +237,20 @@ public class ChatSessionService {
                 // status 변경
                 redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_DONE.name());
                 log.info("일기 생성이 완료되었습니다.");
+
+                // 알림 전송
+                NotificationDTO dto = new NotificationDTO(
+                        "diaryComplete",
+                        "오늘의 일기가 생성이 완료되었습니다. 확인해보세요!!",
+                        null
+                );
+
+                try {
+                    notificationService.sendAndSave(user, dto);
+                    log.info("[일기 생성 알림 전송] userId={}", user.getId());
+                } catch (Exception e) {
+                    log.error("[일기 생성 알림 실패] userId={}, err={}", user.getId(), e.getMessage());
+                }
             }
             catch (Exception e) {
                 log.error("일기 생성 중 에러발생 : {}",e.getMessage());

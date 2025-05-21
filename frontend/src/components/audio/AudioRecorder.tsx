@@ -1,7 +1,4 @@
-// AudioRecorder.tsx
-// 기존 AudioRecorder.jsx를 TypeScript로 변환 (주석 유지)
-
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaMicrophone, FaStop } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
@@ -81,6 +78,9 @@ const AudioRecorder: React.FC = () => {
     totalAudioTime: 0,
   });
 
+  // 챗봇 인사 관련 상태 관리
+  const [isHello, setIsHello] = useState(false);
+
   // 고정된 VAD 설정값
   const silenceTimeout = 1500; // 말소리가 없을 때 타임아웃(ms)
   const volumeThreshold = 25; // 볼륨 임계값(dB)
@@ -112,15 +112,6 @@ const AudioRecorder: React.FC = () => {
     5: hello_5,
   };
 
-  // 챗봇 음성 정보 관련 참조
-  const characterSounds: Record<number, string> = {
-    1: hello_1,
-    2: hello_2,
-    3: hello_3,
-    4: hello_4,
-    5: hello_5,
-  };
-
   // 30퍼센트까지 도달하기 위해 남은 글자 수 계산
   const remainingFor30 =
     limit >= 30 ? 0 : Math.round(((30 - limit) / 100) * totalToken) || 0;
@@ -136,6 +127,11 @@ const AudioRecorder: React.FC = () => {
       if (sound) {
         const audio = new Audio(sound);
         audio.play().catch((err) => console.error("인사 음성 재생 실패:", err));
+
+        // 음성 재생이 끝나면 isHello를 true로 설정
+        audio.addEventListener("ended", () => {
+          setIsHello(true);
+        });
       }
       // 여기까지 음성 파일 재생 코드
       return;
@@ -199,6 +195,7 @@ const AudioRecorder: React.FC = () => {
     // 웹소켓 서버 URL - 실제 서버 URL로 변경 필요
     // const wsUrl = "wss://mdia4kmn4s6kmw-8000.proxy.runpod.net/ws";
     const ws: WebSocket | null = null;
+    console.log("websocket url", ws);
     let wsUrl: string;
 
     // 1) 실제 WebSocket 연결 함수
@@ -231,7 +228,8 @@ const AudioRecorder: React.FC = () => {
               // console.log("limit=", data.limit);
             }
             if (typeof data.totalToken === "number")
-              setTotalToken(data.totalToken);
+              console.log("total_token 수는 ", totalToken);
+            setTotalToken(data.totalToken);
 
             // ✅ 오디오 전송 완료 시점 → 재생
             if (data.audioDone === true || data.audioDone === "true") {
@@ -275,6 +273,15 @@ const AudioRecorder: React.FC = () => {
       ws.onclose = () => {
         console.log("WebSocket 연결 종료");
         setIsConnected(false);
+
+        // 웹소켓 연결종료 시 남아있던 오디오 초기화
+        if (audioElementRef.current) {
+          audioElementRef.current.pause();
+          audioElementRef.current.src = "";
+        }
+        // 오디오 청크 초기화
+        audioChunks.current = [];
+
         // 재연결 시도
         setTimeout(connectWebSocket, 3000);
       };
@@ -282,6 +289,13 @@ const AudioRecorder: React.FC = () => {
       ws.onerror = (error) => {
         console.error("WebSocket 에러:", error);
         setIsConnected(false);
+        // 웹소켓 에러 시 오디오 재생 중지 및 데이터 초기화
+        if (audioElementRef.current) {
+          audioElementRef.current.pause();
+          audioElementRef.current.src = "";
+        }
+        // 오디오 청크 초기화
+        audioChunks.current = [];
       };
 
       websocketRef.current = ws;
@@ -305,14 +319,32 @@ const AudioRecorder: React.FC = () => {
 
     // 컴포넌트 언마운트 시 웹소켓 연결 종료
     return () => {
-      websocketRef.current?.close();
+      // 페이지를 벗어날 때(컴포넌트 언마운트) 오디오 재생 중지 및 데이터 초기화
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current.src = "";
+      }
+
+      // 오디오 청크 초기화
+      audioChunks.current = [];
+
+      // 웹소켓 연결 종료
+      if (websocketRef.current) {
+        websocketRef.current.close();
+      }
     };
   }, []);
 
-  // WebSocket이 열리면 자동으로 녹음 시작
+  // WebSocket이 열리면 자동으로 녹음 시작 (1초 딜레이 추가)
   useEffect(() => {
-    if (isConnected && !isRecordingRef.current) startRecording();
-  }, [isConnected]);
+    if (isConnected && isHello && !isRecordingRef.current) {
+      const timeout = setTimeout(() => {
+        startRecording();
+      }, 1000); // 1초 = 1000ms
+
+      return () => clearTimeout(timeout); // 언마운트 시 정리
+    }
+  }, [isConnected, isHello]);
 
   // 오디오 응답 처리 - 즉시 재생
   const handleAudioResponse = async (audioBlob: Blob) => {
@@ -843,6 +875,23 @@ const AudioRecorder: React.FC = () => {
           </div>
         )}
 
+        {/* 안내 멘트 */}
+        {limit >= 80 ? (
+          <div className="text-center text-black text-sm mt-2 font-medium">
+            충분한 이야기가 모였어요! 일기를 만들어보세요.
+          </div>
+        ) : limit >= 30 ? (
+          <div className="text-center text-gray-500 text-sm mt-2 font-medium">
+            이제 곧 일기를 만들어갈 수 있어요!
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm mt-2 font-medium">
+            일기를 만들기까지{" "}
+            <span className="font-semibold text-black">{remainingFor30}자</span>{" "}
+            남았어요!
+          </div>
+        )}
+
         {/* 진행바 */}
         <div className="w-full max-w-[320px]">
           <ProgressBar label="" progress={limit} />
@@ -871,7 +920,10 @@ const AudioRecorder: React.FC = () => {
             <button
               onClick={startRecording}
               disabled={
-                !isConnected || status === "loading" || status === "전송 중..."
+                !isConnected ||
+                !isHello ||
+                status === "loading" ||
+                status === "전송 중..."
               }
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
             >
@@ -914,11 +966,8 @@ const AudioRecorder: React.FC = () => {
       {transcription && (
         <div className="w-full max-w-xl p-4 border rounded bg-white shadow">
           <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
+          <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <p>{transcription}</p>
-          {/* <div>진행률: {limit}%</div>
-          <div>
-            토큰 사용량: {limit} / {totalToken}
-          </div> */}
         </div>
       )}
 
