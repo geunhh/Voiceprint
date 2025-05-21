@@ -70,7 +70,7 @@ public class CommentService {
             Notification notification = Notification.create(
                     target,
                     "newComment",
-                    user.getNickname() + "님이 " + group.getName() + " 그룹의 내 일기에 댓글을 남겼습니다. 확인해보세요!!",
+                    user.getNickname() + "님이 " + group.getName() + " 그룹의 공유된 일기에 댓글을 남겼습니다. 확인해보세요!!",
                     metadata
             );
             notifications.add(notification);
