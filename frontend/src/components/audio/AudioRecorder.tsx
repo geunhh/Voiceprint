@@ -24,7 +24,11 @@ import chatRed from "../../assets/icons/chatRed.png";
 import chatYellow from "../../assets/icons/chatYellow.png";
 
 // 재생할 음성 파일 
-import hello from "../../assets/audio/hello.mp3";
+import hello_1 from "../../assets/audio/hello_1.mp3";
+import hello_2 from "../../assets/audio/hello_2.mp3";
+import hello_3 from "../../assets/audio/hello_3.mp3";
+import hello_4 from "../../assets/audio/hello_4.mp3";
+import hello_5 from "../../assets/audio/hello_5.mp3";
 
 const localIcons: Record<string, string> = {
   따분이: chatBlack,
@@ -99,6 +103,15 @@ const AudioRecorder: React.FC = () => {
   const websocketRef = useRef<WebSocket | null>(null);
   const audioChunks = useRef<Blob[]>([]);
 
+  // 챗봇 음성 정보 관련 참조 
+  const characterSounds: Record<number, string> = {
+    1: hello_1,
+    2: hello_2,
+    3: hello_3,
+    4: hello_4,
+    5: hello_5,
+  };
+
   // ────────────────────────────────────────────────────────────────
   // 1. 최근 챗봇 정보 로드 (+fallback)
   // ────────────────────────────────────────────────────────────────
@@ -107,10 +120,12 @@ const AudioRecorder: React.FC = () => {
     if (character.id){
 
       // 캐릭터 정보를 가져온 후 음성 파일 재생
-      const audio = new Audio(hello);
-      audio.play().catch(err => console.error("인사 음성 재생 실패:", err));
+      const sound = characterSounds[character.id];
+      if (sound) {
+        const audio = new Audio(sound);
+        audio.play().catch(err => console.error("인사 음성 재생 실패:", err));
+      }
       // 여기까지 음성 파일 재생 코드
-
       return;
     } 
       
@@ -125,9 +140,12 @@ const AudioRecorder: React.FC = () => {
         const tag = bot.description.split(",").join(" ");
         dispatch(setCharacter({ id: bot.id, img, name: bot.name, tag }));
         
-        // 캐릭터 정보를 가져온 후 음성 파일 재생
-        const audio = new Audio(hello);
-        audio.play().catch(err => console.error("인사 음성 재생 실패:", err));
+        // 캐릭터 ID에 맞는 음성 파일 재생
+        const sound = characterSounds[bot.id];
+        if (sound) {
+          const audio = new Audio(sound);
+          audio.play().catch(err => console.error("인사 음성 재생 실패:", err));
+        }
         // 여기까지 음성 재생 코드
 
       } catch (err) {
