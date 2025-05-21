@@ -23,6 +23,13 @@ import chatPink from "../../assets/icons/chatPink.png";
 import chatRed from "../../assets/icons/chatRed.png";
 import chatYellow from "../../assets/icons/chatYellow.png";
 
+// 재생할 음성 파일
+import hello_1 from "../../assets/audio/hello_1.mp3";
+import hello_2 from "../../assets/audio/hello_2.mp3";
+import hello_3 from "../../assets/audio/hello_3.mp3";
+import hello_4 from "../../assets/audio/hello_4.mp3";
+import hello_5 from "../../assets/audio/hello_5.mp3";
+
 const localIcons: Record<string, string> = {
   따분이: chatBlack,
   맑음이: chatBlue,
@@ -96,12 +103,43 @@ const AudioRecorder: React.FC = () => {
   const websocketRef = useRef<WebSocket | null>(null);
   const audioChunks = useRef<Blob[]>([]);
 
+  // 챗봇 음성 정보 관련 참조
+  const characterSounds: Record<number, string> = {
+    1: hello_1,
+    2: hello_2,
+    3: hello_3,
+    4: hello_4,
+    5: hello_5,
+  };
+
+  // 챗봇 음성 정보 관련 참조
+  const characterSounds: Record<number, string> = {
+    1: hello_1,
+    2: hello_2,
+    3: hello_3,
+    4: hello_4,
+    5: hello_5,
+  };
+
+  // 30퍼센트까지 도달하기 위해 남은 글자 수 계산
+  const remainingFor30 =
+    limit >= 30 ? 0 : Math.round(((30 - limit) / 100) * totalToken) || 0;
+
   // ────────────────────────────────────────────────────────────────
   // 1. 최근 챗봇 정보 로드 (+fallback)
   // ────────────────────────────────────────────────────────────────
   useEffect(() => {
     // 이미 Redux에 캐릭터(id)가 있으면 그대로 사용
-    if (character.id) return;
+    if (character.id) {
+      // 캐릭터 정보를 가져온 후 음성 파일 재생
+      const sound = characterSounds[character.id];
+      if (sound) {
+        const audio = new Audio(sound);
+        audio.play().catch((err) => console.error("인사 음성 재생 실패:", err));
+      }
+      // 여기까지 음성 파일 재생 코드
+      return;
+    }
 
     const fetchRecent = async () => {
       try {
@@ -112,6 +150,16 @@ const AudioRecorder: React.FC = () => {
         const img = bot.imageUrl || localIcons[bot.name] || "";
         const tag = bot.description.split(",").join(" ");
         dispatch(setCharacter({ id: bot.id, img, name: bot.name, tag }));
+
+        // 캐릭터 ID에 맞는 음성 파일 재생
+        const sound = characterSounds[bot.id];
+        if (sound) {
+          const audio = new Audio(sound);
+          audio
+            .play()
+            .catch((err) => console.error("인사 음성 재생 실패:", err));
+        }
+        // 여기까지 음성 재생 코드
       } catch (err) {
         console.error("챗봇 정보 실패", err);
       }
@@ -776,8 +824,25 @@ const AudioRecorder: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-36 pb-36">
+    <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-12 pb-36">
       <div className="flex flex-col items-center gap-8">
+        {/* 안내 멘트 */}
+        {limit >= 80 ? (
+          <div className="text-center text-black text-sm mt-2 font-medium">
+            충분한 이야기가 모였어요! 일기를 만들어보세요.
+          </div>
+        ) : limit >= 30 ? (
+          <div className="text-center text-gray-500 text-sm mt-2 font-medium">
+            이제 곧 일기를 만들어갈 수 있어요!
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm mt-2 font-medium">
+            일기를 만들기까지{" "}
+            <span className="font-semibold text-black">{remainingFor30}자</span>{" "}
+            남았어요!
+          </div>
+        )}
+
         {/* 진행바 */}
         <div className="w-full max-w-[320px]">
           <ProgressBar label="" progress={limit} />
@@ -822,6 +887,7 @@ const AudioRecorder: React.FC = () => {
           )}
         </div>
       </div>
+
       {/* 상태 표시 (스피너 + 텍스트) */}
       {status !== "idle" && (
         <div className="flex items-center gap-2">
@@ -847,12 +913,12 @@ const AudioRecorder: React.FC = () => {
       {/* 음성 인식 결과 */}
       {transcription && (
         <div className="w-full max-w-xl p-4 border rounded bg-white shadow">
-          <h2 className="font-semibold mb-2">음성 인식 결과:</h2>
+          <h2 className="font-semibold mb-2">챗봇의 대답:</h2>
           <p>{transcription}</p>
-          <div>진행률: {limit}%</div>
+          {/* <div>진행률: {limit}%</div>
           <div>
             토큰 사용량: {limit} / {totalToken}
-          </div>
+          </div> */}
         </div>
       )}
 

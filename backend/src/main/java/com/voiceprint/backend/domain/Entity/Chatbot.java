@@ -25,6 +25,9 @@ public class Chatbot {
     @Column(length = 512)
     private String imageUrl;
 
+    @Column(length = 100, name = "init_ment")
+    private String initMent;
+
     @Lob
     @Column(columnDefinition = "TEXT")
     private String prompt;

@@ -38,4 +38,6 @@ public interface GroupDiaryRepository extends JpaRepository<GroupDiary, Integer>
             @Param("cursor") LocalDateTime cursor,
             @Param("userId") Integer userId, Pageable pageable);
     Optional<GroupDiary> findByGroupIdAndDiaryId(Integer groupId, Integer diaryId);
+
+    boolean existsByGroupIdAndDiaryId(Integer groupId, Integer diaryId);
 }
