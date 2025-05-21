@@ -32,7 +32,7 @@ interface Diary {
 }
 
 export default function MyPage() {
-  const [selected, setSelected] = useState("리스트");
+  const [selected, setSelected] = useState("달력");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [diaries, setDiaries] = useState<Diary[]>([]);
 

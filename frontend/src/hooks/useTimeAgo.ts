@@ -4,15 +4,18 @@ function useTimeAgo(date: string | Date) {
   const [timeAgo, setTimeAgo] = useState("");
 
   useEffect(() => {
-    const parseDate = (input: string | Date) => {
-      if (typeof input === "string") {
-        const trimmed = input.split(".")[0];
-        return new Date(trimmed);
-      }
-      return input;
-    };
+    const targetDate = typeof date === "string" ? new Date(date) : date;
 
-    const targetDate = parseDate(date);
+    // const parseDate = (input: string | Date) => {
+    //   if (typeof input === "string") {
+    //     const trimmed = input.split(".")[0];
+    //     const modified = trimmed.replace("T", " ");
+    //     return new Date(modified);
+    //   }
+    //   return input;
+    // };
+
+    // const targetDate = parseDate(date);
 
     const updateTimeAgo = () => {
       const now = new Date();
