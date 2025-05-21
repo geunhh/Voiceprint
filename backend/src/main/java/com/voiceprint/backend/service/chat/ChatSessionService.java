@@ -133,7 +133,7 @@ public class ChatSessionService {
             String messageKey = message_key + ":" + userId;
             String sessionKey = session_key + ":" + userId;
 
-            int maxToken = 700;
+            int maxToken = 2000;
 
             // 1. 채팅 로그 조회
             List<Object> rawMessages = redisTemplate.opsForList().range(messageKey, 0, -1);
@@ -162,7 +162,7 @@ public class ChatSessionService {
 
             // 3-2. 글자수 토큰이 0이 아닌 경우 퍼센테이지 return
 
-            int limit_token = 700;  // 글자수 제한
+            int limit_token = 2000;  // 글자수 제한
             int usageRate = (int) Math.round((double) total_token / limit_token * 100);
 
             return new ChatMessageListWithTokenDTO(result, usageRate, maxToken) ;
@@ -349,7 +349,7 @@ public class ChatSessionService {
         String content = (String) sessionData.get("tempDiary");
         Object chatbotIdObj = sessionData.get("chatbotId");
         String emotionStr = (String) sessionData.get("emotion"); // null일 수 있음
-        String prompt = (String) sessionData.get("themePrompt");
+        String prompt = (String) sessionData.get("chatPrompt");
 
 
         // 2. Redis 메시지 파싱

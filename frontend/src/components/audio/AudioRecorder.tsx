@@ -106,6 +106,15 @@ const AudioRecorder: React.FC = () => {
   const websocketRef = useRef<WebSocket | null>(null);
   const audioChunks = useRef<Blob[]>([]);
 
+  // 챗봇 음성 정보 관련 참조 
+  const characterSounds: Record<number, string> = {
+    1: hello_1,
+    2: hello_2,
+    3: hello_3,
+    4: hello_4,
+    5: hello_5,
+  };
+
   // 챗봇 음성 정보 관련 참조
   const characterSounds: Record<number, string> = {
     1: hello_1,
