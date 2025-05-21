@@ -79,11 +79,11 @@ const AudioRecorder: React.FC = () => {
   });
 
   // 챗봇 인사 관련 상태 관리
-  const [isHello, setIsHello] = useState(false);
+  // const [isHello, setIsHello] = useState(false);
 
   // 고정된 VAD 설정값
   const silenceTimeout = 1500; // 말소리가 없을 때 타임아웃(ms)
-  const volumeThreshold = 25; // 볼륨 임계값(dB)
+  const volumeThreshold = 25; // 볼륨 임계값(dB) 25-> 35
 
   const mediaRecorderRef = useRef<ExtendedMediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -128,9 +128,14 @@ const AudioRecorder: React.FC = () => {
         const audio = new Audio(sound);
         audio.play().catch((err) => console.error("인사 음성 재생 실패:", err));
 
-        // 음성 재생이 끝나면 isHello를 true로 설정
+        // ✅ 2. onended 내에서 1초 딜레이 후 녹음 시작
         audio.addEventListener("ended", () => {
-          setIsHello(true);
+          console.log("🎵 인사 음성 재생 완료 → 1초 후 녹음 시작");
+          setTimeout(() => {
+            if (!isRecordingRef.current) {
+              startRecording(); // ✅ 바로 호출
+            }
+          }, 1000);
         });
       }
       // 여기까지 음성 파일 재생 코드
@@ -146,16 +151,6 @@ const AudioRecorder: React.FC = () => {
         const img = bot.imageUrl || localIcons[bot.name] || "";
         const tag = bot.description.split(",").join(" ");
         dispatch(setCharacter({ id: bot.id, img, name: bot.name, tag }));
-
-        // 캐릭터 ID에 맞는 음성 파일 재생
-        const sound = characterSounds[bot.id];
-        if (sound) {
-          const audio = new Audio(sound);
-          audio
-            .play()
-            .catch((err) => console.error("인사 음성 재생 실패:", err));
-        }
-        // 여기까지 음성 재생 코드
       } catch (err) {
         console.error("챗봇 정보 실패", err);
       }
@@ -195,7 +190,6 @@ const AudioRecorder: React.FC = () => {
     // 웹소켓 서버 URL - 실제 서버 URL로 변경 필요
     // const wsUrl = "wss://mdia4kmn4s6kmw-8000.proxy.runpod.net/ws";
     const ws: WebSocket | null = null;
-    console.log("websocket url", ws);
     let wsUrl: string;
 
     // 1) 실제 WebSocket 연결 함수
@@ -336,15 +330,16 @@ const AudioRecorder: React.FC = () => {
   }, []);
 
   // WebSocket이 열리면 자동으로 녹음 시작 (1초 딜레이 추가)
-  useEffect(() => {
-    if (isConnected && isHello && !isRecordingRef.current) {
-      const timeout = setTimeout(() => {
-        startRecording();
-      }, 1000); // 1초 = 1000ms
+  // useEffect(() => {
+  //   if (isConnected && isHello && !isRecordingRef.current) {
+  //     const timeout = setTimeout(() => {
+  //       startRecording();
+  //     }, 1000); // 1초 = 1000ms
 
-      return () => clearTimeout(timeout); // 언마운트 시 정리
-    }
-  }, [isConnected, isHello]);
+  //     return () => clearTimeout(timeout); // 언마운트 시 정리
+  //   }
+  // }, [isConnected, isHello]);
+  // ✅ 수정된 인사 음성 종료 → 녹음 시작
 
   // 오디오 응답 처리 - 즉시 재생
   const handleAudioResponse = async (audioBlob: Blob) => {
@@ -407,8 +402,8 @@ const AudioRecorder: React.FC = () => {
       vadTimeoutRef.current = null;
     }
 
-    // 중요: 여기서 ref 값을 사용하여 상태 확인
-    if (isRecordingRef.current && !isSpeakingRef.current) {
+    // 녹음 중인 경우에만 타이머 설정 (말하기 상태 확인 조건 제거)
+    if (isRecordingRef.current) {
       console.log(`침묵 감지, ${silenceTimeout}ms 후 녹음 중지 예정`);
       vadTimeoutRef.current = window.setTimeout(() => {
         console.log(`침묵이 ${silenceTimeout}ms 동안 지속됨, 녹음 중지`);
@@ -444,11 +439,11 @@ const AudioRecorder: React.FC = () => {
     // 하이패스 필터 추가 - 낮은 주파수의 배경 소음 제거
     const highpassFilter = audioContext.createBiquadFilter();
     highpassFilter.type = "highpass";
-    highpassFilter.frequency.value = 85; // 사람 목소리의 주요 주파수보다 약간 낮게 설정
+    highpassFilter.frequency.value = 150; // 사람 목소리의 주요 주파수보다 약간 낮게 설정 85-> 150
     // 로우패스 필터 추가 - 높은 주파수의 비명이나 고주파 소음 제거
     const lowpassFilter = audioContext.createBiquadFilter();
     lowpassFilter.type = "lowpass";
-    lowpassFilter.frequency.value = 4000; // 사람 목소리의 주요 주파수 범위 내로 설정
+    lowpassFilter.frequency.value = 3500; // 사람 목소리의 주요 주파수 범위 내로 설정 4000 -> 3500
     // 필터 연결
     microphone.connect(highpassFilter);
     highpassFilter.connect(lowpassFilter);
@@ -473,6 +468,11 @@ const AudioRecorder: React.FC = () => {
       analyser.getByteFrequencyData(dataArray);
       const volume = calculateVolume(dataArray);
       const speaking = volume > -volumeThreshold;
+      
+      // 말하는 중이면 마지막 음성 감지 시간 업데이트
+      if (speaking) {
+        lastSpeechTimeRef.current = Date.now();
+      }
 
       // 말하기 상태가 변경됐을 때만 상태 업데이트 및 로깅
       if (speaking !== isSpeakingRef.current) {
@@ -480,7 +480,7 @@ const AudioRecorder: React.FC = () => {
           `음성 상태 변경: ${speaking ? "말하는 중" : "침묵 중"}, 볼륨: ${volume.toFixed(2)}dB`
         );
 
-        // 중요: React 상태와 ref 모두 업데이트
+        // React 상태와 ref 모두 업데이트
         const prevSpeaking = isSpeakingRef.current;
         isSpeakingRef.current = speaking;
         setIsSpeaking(speaking);
@@ -498,6 +498,17 @@ const AudioRecorder: React.FC = () => {
           // 이전에 말하고 있었다면
           console.log("말하기 종료 감지됨");
           // 말하기 끝나면 침묵 감지 시작
+          checkSilence();
+        }
+      } else if (!speaking) {
+        // 상태 변화가 없더라도 지속적인 침묵 상태인 경우 확인
+        const now = Date.now();
+        const lastSpeech = lastSpeechTimeRef.current || now;
+        const silentDuration = now - lastSpeech;
+        
+        // 일정 시간 이상 침묵 상태이고 타이머가 아직 설정되지 않은 경우
+        if (silentDuration > silenceTimeout / 2 && !vadTimeoutRef.current && isRecordingRef.current) {
+          console.log(`지속적인 침묵 감지: ${silentDuration}ms, 침묵 타이머 시작`);
           checkSilence();
         }
       }
@@ -672,6 +683,7 @@ const AudioRecorder: React.FC = () => {
           analyserRef.current = null;
         }
 
+        // 미디어 스트림 정리
         // 미디어 스트림 정리
         if (mediaRecorderRef.current && mediaRecorderRef.current.stream) {
           mediaRecorderRef.current.stream
@@ -854,27 +866,11 @@ const AudioRecorder: React.FC = () => {
     setCreatingModalOpen(false);
     navigate("/diary/temp");
   };
+        
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen px-4 pt-12 pb-36">
       <div className="flex flex-col items-center gap-8">
-        {/* 안내 멘트 */}
-        {limit >= 80 ? (
-          <div className="text-center text-black text-sm mt-2 font-medium">
-            충분한 이야기가 모였어요! 일기를 만들어보세요.
-          </div>
-        ) : limit >= 30 ? (
-          <div className="text-center text-gray-500 text-sm mt-2 font-medium">
-            이제 곧 일기를 만들어갈 수 있어요!
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 text-sm mt-2 font-medium">
-            일기를 만들기까지{" "}
-            <span className="font-semibold text-black">{remainingFor30}자</span>{" "}
-            남았어요!
-          </div>
-        )}
-
         {/* 안내 멘트 */}
         {limit >= 80 ? (
           <div className="text-center text-black text-sm mt-2 font-medium">
@@ -921,7 +917,7 @@ const AudioRecorder: React.FC = () => {
               onClick={startRecording}
               disabled={
                 !isConnected ||
-                !isHello ||
+                // !isHello ||
                 status === "loading" ||
                 status === "전송 중..."
               }
