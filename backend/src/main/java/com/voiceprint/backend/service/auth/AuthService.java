@@ -162,7 +162,7 @@ public class AuthService {
             log.error("providerId null");
             return null;
         }
-        log.info("providerId이 정상적으로 추출 : {}",providerId);
+//        log.debug("providerId이 정상적으로 추출 : {}",providerId);
 
         // providerId로 사용자 조회
         Optional<User> userOptional = userRepository.findByProviderId(providerId);
