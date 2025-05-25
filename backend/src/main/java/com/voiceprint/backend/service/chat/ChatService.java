@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ChatServcie {
+public class ChatService {
     private final WebClient fastApiWebClient;
     private final RedisTemplate<String, Object> redisTemplate;
 
