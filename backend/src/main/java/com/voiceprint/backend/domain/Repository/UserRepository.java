@@ -2,6 +2,7 @@ package com.voiceprint.backend.domain.Repository;
 
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,12 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
+    @EntityGraph(attributePaths = {"customThema"})
     Optional<User> findByProviderId(String providerId);
+
+    @EntityGraph(attributePaths = {"customThema"})
+    Optional<User> findById(Integer id);
 
 //    Optional<User> findByEmail(String email);
 
