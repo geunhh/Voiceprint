@@ -1,16 +1,17 @@
 package com.voiceprint.backend.api;
 
+import com.voiceprint.backend.service.alarm.DiaryReminderScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.swing.text.html.parser.Entity;
+import java.time.LocalTime;
 import java.util.Set;
 
 @RestController
@@ -26,7 +27,22 @@ public class testController {
     private String messageKey;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final DiaryReminderScheduler diaryReminderScheduler;
 
+    /**
+     * 스케쥴러 테스트 API
+     */
+    @PostMapping("/scheduler/trigger")
+    public ResponseEntity<String> triggerReminder() {
+        LocalTime fakeNow = LocalTime.of(21,0); //00:00 rhwjd
+        log.debug("fake now : {}",fakeNow);
+        diaryReminderScheduler.checkAndNotifyTest(fakeNow);
+        return ResponseEntity.ok("✅ 스케줄러 수동 실행 완료!");
+    }
+
+    /**
+     * REdis 세션 초기화 API
+     */
     @GetMapping("/reset")
     public ResponseEntity<?> deleteAllSession() {
 
