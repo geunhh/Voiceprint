@@ -37,18 +37,20 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    /**
+     * 단일 일기 상세 조회
+     */
     public DiaryDetailResponseDTO getDiaryDetail(HttpServletRequest request, Integer diaryId) {
         // 유저 정보 추출 및 확인
-        Integer userId = authService.getUserIdFromRequest(request);
-        log.debug("userId : {}",userId);
+        Integer userId = extractUserId(request);
 
         Diary diary = diaryRepository.findDetailById(diaryId)
-                .orElseThrow(() -> new DiaryNotFoundException("다이어리 정보가 없습니다."));
+                .orElseThrow(() -> new DiaryNotFoundException("일기를 찾을 수 없습니다."));
 
         // 일기의 user FK와 비교
-        if (!diary.getUser().getId().equals(userId)) {
-            throw new UnauthorizedDiaryAccessException("다이어리의 userId와 일치하지 않습니다.");
-        }
+        validateOwnership(userId, diary.getUser().getId());
 
         return new DiaryDetailResponseDTO(
                 diary.getId(),
@@ -61,25 +63,25 @@ public class DiaryService {
         );
     }
 
+    /**
+     * 무한 스크롤 기반 일기 목록 조회
+     */
     public DiaryListWithCursorDTO getUserDiaries(HttpServletRequest request, Integer cursor, Integer size) {
         // 유저 정보 추출 및 확인
-        Integer userId = authService.getUserIdFromRequest(request);
-        log.debug("userId : {}",userId);
+        Integer userId = extractUserId(request);
 
         // 2. size + 1 개 조회 (다음 커서 존재 여부 확인용)
         PageRequest page = PageRequest.of(0,size+1); // (page Num, page Size)
 
         List<Diary> diaries = diaryRepository.findMyDiaries(userId, cursor, page);
-
-        // 다음 페이지가 있다면?? : size보다 크면 있음.
-        boolean hasNext = diaries.size() > size;
+        boolean hasNext = diaries.size() > size; // 다음 페이지가 있다면?? : size보다 크면 있음.
 
         // 실제 반환할 목록은 size 개
         if (hasNext) {
-            diaries = diaries.subList(0,size);
-            log.info("다음 게시물이 존재합니다.");
+            diaries = diaries.subList(0, size);
+            log.debug("다음 페이지 있음");
         } else {
-            log.info("마지막 게시물입니다.");
+            log.debug("마지막 페이지입니다.");
         }
 
         //nextCursor 설정 : 없으면 null
@@ -98,23 +100,25 @@ public class DiaryService {
         return new DiaryListWithCursorDTO(response, nextCursor);
     }
 
+
+    /**
+     * 월별 일기 목록 조회
+     */
     public DiaryMontlyListDTO getMonthlyDiaries(HttpServletRequest request, int year, int month) {
         // 유저 정보 추출 및 확인
-        Integer userId = authService.getUserIdFromRequest(request);
-
-        log.debug("userId : {}",userId);
-
+        Integer userId = extractUserId(request);
 
         // 날짜 초기화
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        log.debug("startDate : {}, endDate : {}",startDate,endDate);
+        log.debug("startDate : {}, endDate : {}",startDate, endDate);
 
         List<Diary> diaries = diaryRepository.findByUserIdAndDateRange(
                 userId,
                 startDate.atStartOfDay(),
-                endDate.atTime(LocalTime.MAX) );
+                endDate.atTime(LocalTime.MAX)
+        );
 
         log.debug("diaries : {}",diaries);
 
@@ -131,37 +135,41 @@ public class DiaryService {
         return new DiaryMontlyListDTO(result);
     }
 
+    /**
+     * 일기에 포함된 채팅 메시지 조회
+     */
     public List<ChatMessageResponseDTO> getChatRecordFromDiary(HttpServletRequest request, Integer diaryId) {
         // 유저 정보 조회
-        Integer userId = authService.getUserIdFromRequest(request);
-        log.debug("userId : {}",userId);
+        Integer userId = extractUserId(request);
 
         // 일기 정보 조회
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("해당 Id의 Diary를 찾을 수 없습니다."));
 
-        // 일기의 유저id와 사용자의 id가 일치하는가??
-        if (!diary.getUser().getId().equals(userId)) {
-            log.debug("유저 id : {} 와 일기의 유저 id : {} 가 일치하지 않습니다.",userId, diary.getUser().getId());
-            throw new UnauthorizedDiaryAccessException("diary에 권한이 없습니다.");
-        }
-        log.debug("일기의 userID와 일치합니다. {}",diary.getUser().getId());
+        validateOwnership(userId, diary.getUser().getId());
+        return parseMessages(diary.getMessages());
+    }
 
-        // messsages -> List로 매핑하기.
-        String messagesJson = diary.getMessages();
-        System.out.println("messages : "+messagesJson);
-
-        ObjectMapper mapper = new ObjectMapper();
-        List<ChatMessageResponseDTO> result;
-
+    private List<ChatMessageResponseDTO> parseMessages(String messagesJson) {
         try {
-            result = mapper.readValue(messagesJson, new TypeReference<List<ChatMessageResponseDTO>>() {
-            });
+            return  objectMapper.readValue(messagesJson, new TypeReference<>() {});
         }catch (JsonProcessingException e ) {
             log.error("메시지 json 파싱 실패. {}",e.getMessage());
             throw new RuntimeException("채팅 메시지 파싱 실패",e);
         }
 
-        return result;
+    }
+
+    // == 헬퍼 메서드
+    private void validateOwnership(Integer requestUserId, Integer diaryOwnerId) {
+        if (!requestUserId.equals(diaryOwnerId)) {
+            throw new UnauthorizedDiaryAccessException("다이어리에 접근할 권한이 없습니다.");
+        }
+    }
+
+    private Integer extractUserId(HttpServletRequest request) {
+        Integer userId = authService.getUserIdFromRequest(request);
+        log.debug("userId : {}",userId);
+        return userId;
     }
 }

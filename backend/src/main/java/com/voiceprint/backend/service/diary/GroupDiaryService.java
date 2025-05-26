@@ -50,10 +50,12 @@ public class GroupDiaryService {
     public List<Notification> saveSharedDiary(Integer diaryId, Integer userId, List<Integer> groupIds) {
         // Diary 찾기.
         Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow();
+                .orElseThrow(() -> new DiaryNotFoundException("해당 다이어리를 찾을 수 없습니다."));
+
 
         User user = userRepository.findById(userId)
-                .orElseThrow();
+                .orElseThrow(() -> new UserNotFoundException("해당 사용자를 찾을 수 없습니다."));
+
         if (!diary.getUser().getId().equals(userId)) {
             throw new UnauthorizedDiaryException("해당 일기에 권한이 없습니다.");
         }
@@ -61,52 +63,43 @@ public class GroupDiaryService {
         List<GroupDiary> groupDiaries = new ArrayList<>();
         List<Notification> toSaveNotifications = new ArrayList<>();
 
-        log.debug("###권한 검사 통과 & 그룹별 알람 생성 시작");
-
         for (Integer groupId : groupIds) {
             Group group = groupRepository.findById(groupId)
-                    .orElseThrow();
+                    .orElseThrow(() -> new GroupNotFoundException("해당 그룹이 존재하지 않습니다."));
 
             log.debug("공유 대상 그룹 : {} - {} ", group, group.getName());
 
-            boolean isExist = groupDiaryRepository.existsByGroupIdAndDiaryId(groupId,diaryId);
-            if (isExist) continue;
+            if (groupDiaryRepository.existsByGroupIdAndDiaryId(groupId,diaryId)) continue;
 
             groupDiaries.add(new GroupDiary(null, diary, group, LocalDateTime.now()));
 
             // 1. 그룹 유저 조회
-            List<User> users = groupUserRepository.findUsersByGroupId(groupId);
+            List<User> members = groupUserRepository.findUsersByGroupId(groupId).stream()
+                    .filter(member -> !member.getId().equals(userId)) // 작성자 제외
+                    .toList();
 
             // 2. 알림 생성 및 전송
-            for (User member : users) {
-                if (member.getId().equals(userId)) continue; //작성자 제외
-
-                //메타 데이터 구성
+            for (User member : members) {
                 Map<String, Object> metadata = Map.of(
                         "groupId", group.getId(),
                         "diaryId", diary.getId()
                 );
-
                 String message = user.getNickname() + "님이 " + group.getName() + " 그룹에 일기를 공유했어요!";
-
                 // 알림 Entity 직접 생성
-                Notification notification = Notification.create(
-                        member,
-                        "newDiary",
-                        message,
-                        metadata
-                );
-                toSaveNotifications.add(notification);
+                toSaveNotifications.add(Notification.create(
+                        member,"newDiary", message, metadata
+                ));
             }
-
-            //1. 그룹 일기 저장
-            groupDiaryRepository.saveAll(groupDiaries);
+            log.debug("✅ 공유 대상 그룹: {} ({}명 알림 대상)", group.getName(), members.size());
 
 
-            //2. 알림 저장 & flush
-            notificationRepository.saveAll(toSaveNotifications);
-            notificationRepository.flush();
-            log.debug("## 그룹일기 및 Notificaiton 저장 완료");
+        //1. 그룹 일기 저장
+        groupDiaryRepository.saveAll(groupDiaries);
+
+        //2. 알림 저장 & flush
+        notificationRepository.saveAll(toSaveNotifications);
+        notificationRepository.flush();
+        log.debug("## 그룹일기 및 Notificaiton 저장 완료");
 
         }
         return toSaveNotifications;
