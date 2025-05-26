@@ -3,7 +3,7 @@ package com.voiceprint.backend.api.chat;
 import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.chat.ChatServcie;
+import com.voiceprint.backend.service.chat.ChatService;
 import com.voiceprint.backend.service.chat.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -21,7 +21,7 @@ import java.util.Map;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    private final ChatServcie chatServcie;
+    private final ChatService chatService;
     private final ChatSessionService chatSessionService;
     private final AuthService authService;
     /**
@@ -33,9 +33,9 @@ public class ChatController {
             HttpServletRequest httprequest
             ){
         Integer userId = authService.getUserIdFromRequest(httprequest);
-        log.info("## 채팅 / userid : {}",userId);
-        ChatTextResponseDTO response = chatServcie.processChat(userId, request.getMessage());
-        log.info("답변 : {}",response.getResponse());
+        log.debug("## 채팅 / userid : {}",userId);
+        ChatTextResponseDTO response = chatService.processChat(userId, request.getMessage());
+        log.debug("답변 : {}",response.getResponse());
 
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "성공", response
@@ -79,7 +79,7 @@ public class ChatController {
     ) {
 
         Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 임시 일기 재생성 / userid : {}",userId);
+        log.debug("## 임시 일기 재생성 / userid : {}",userId);
         chatSessionService.retryTempDiaryGeneration(userId);
 
         return ResponseEntity

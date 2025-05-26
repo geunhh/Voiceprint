@@ -36,34 +36,31 @@ public class DiaryController {
     public ResponseEntity<CommonResponse<DiaryDetailResponseDTO>> getDiaryDetail(
             @PathVariable Integer diaryId,
             HttpServletRequest request    ){
+
         log.info("다이어리 상세보기 호출 diaryId: {}",diaryId);
-
         DiaryDetailResponseDTO response = diaryService.getDiaryDetail(request, diaryId);
-
-        return ResponseEntity.ok(new CommonResponse<>(
-                200, "조회 성공", response
-        ));
+        return ResponseEntity.ok(new CommonResponse<>(200, "조회 성공", response));
     }
 
+    /**
+     * 일기에 포함된 채팅 기록 조회
+     * @param diaryId 대상 일기 ID
+     */
     @GetMapping("/diary/{diaryId}/chat")
     public ResponseEntity<CommonResponse<List<ChatMessageResponseDTO>>> getDiaryChat(
             @PathVariable Integer diaryId,
             HttpServletRequest request    ) {
+
         log.info("id:{ }  다이어리 채팅 내역 조회 API 호출");
-
         List<ChatMessageResponseDTO>resposne = diaryService.getChatRecordFromDiary(request,diaryId);
-
-        return ResponseEntity.ok(new CommonResponse<>(
-                200, "채팅 내역 조회 성공", resposne
+        return ResponseEntity.ok(new CommonResponse<>(200, "채팅 내역 조회 성공", resposne
         ));
-
-
     }
 
     /**
-     * 내가 작성한 일기를 조회하는 API
-     * @param size
-     * @param request
+     * 사용자가 작성한 모든 일기를 커서 기반으로 조회
+     * @param cursor 커서 (nullable)
+     * @param size 한 페이지 크기 (default = 9)
      */
     @GetMapping("/me/all")
     public ResponseEntity<CommonResponse<DiaryListWithCursorDTO>> getMyDiaries(
@@ -73,9 +70,12 @@ public class DiaryController {
     ) {
 
         DiaryListWithCursorDTO result = diaryService.getUserDiaries(request, cursor, size);
-        return ResponseEntity.ok(new CommonResponse<>(200, "성공", result));
+        return ResponseEntity.ok(new CommonResponse<>(200, "내 일기 목록 조회 성공", result));
     }
 
+    /**
+     * 연도, 월을 기준으로 월별 일기 목록 조회
+     */
     @GetMapping("/monthly")
     public ResponseEntity<CommonResponse<DiaryMontlyListDTO>> getMonthlyDiaries(
             @RequestParam Integer year,
@@ -85,12 +85,13 @@ public class DiaryController {
 
         DiaryMontlyListDTO response = diaryService.getMonthlyDiaries(request, year, month);
         return ResponseEntity.ok(new CommonResponse<>(
-                200, "조회 성공", response
-        ));
+                200, "조회 성공", response ));
     }
 
     /**
-     * 일기를 그룹에 공유하고 해당 그룹의 유저들에게 알림을 보내는 API
+     * 일기를 그룹에 공유하고 알림 발송
+     * @param diaryId 공유할 일기 ID
+     * @param request 포함된 그룹 ID 목록
      */
     @PostMapping("/shared/{diaryId}")
     public ResponseEntity<CommonResponse<String>> shareDiary(
@@ -99,7 +100,6 @@ public class DiaryController {
             HttpServletRequest httpRequest) {
 
         Integer userId = authService.getUserIdFromRequest(httpRequest);
-//        Long userId = 1L;
         List<Notification> notifications = groupDiaryService.saveSharedDiary(diaryId, userId, request.getGroupIds());
 
         notificationService.publishAllNotifications(notifications);

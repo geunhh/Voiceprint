@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -26,38 +27,22 @@ import java.util.Map;
 public class EmotionService {
 
     private final DiaryRepository diaryRepository;
+    private static final List<String> EMOTIONS = List.of("행복", "설렘", "피로", "짜증", "우울");
 
+    /**
+     * 사용자의 이번 주 감정을 요일별로 조회합니다.
+     */
     public WeeklyEmotionResponseDTO getWeeklyEmotions(Integer userId) {
 
-        // 1. 이번주 시작(일요일)과 끝(토요일) 계산
-        LocalDate today = LocalDate.now(); // 오늘 날짜
-
-        LocalDate startDate;
-        // 1-1. 오늘이 일요일인 경우
-        if (today.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            log.debug("today is SUNDAY");
-            startDate = today;
-        // 1-2. 오늘이 일요일이 아닌 경우
-        } else {
-            log.debug("today is not SUNDAY");
-            startDate = today.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY));
-        }
-
-        LocalDate endDate = startDate.plusDays(6);
-
-        log.debug("today : {}",today);
-        log.debug("startDate : {}",startDate.atStartOfDay());
-        log.debug("endDate : {}",endDate.atTime(LocalTime.MAX));
+        DateRange range = getCurrentWeekRange();
+        log.debug("주간 범위: {} ~ {}", range.start(), range.end());
 
         // 2. 감정 정보 가져오기
         List<String> emotionList = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             emotionList.add(null);
-        }
-
-        // 3. 감정 배열 생성
-        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(userId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
-        log.info("diaries : {}",diaries);
+        }        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(userId, range.start(), range.end());
+        log.debug("diaries 조회 : {}",diaries);
 
         for (Diary diary : diaries) {
             if (diary.getEmotion() == null) continue;
@@ -69,41 +54,56 @@ public class EmotionService {
         return new WeeklyEmotionResponseDTO(emotionList);
     }
 
+    /**
+     * 사용자의 이번 달 감정을 통계로 조회합니다.
+     */
     public MonthlyEmotionResponseDTO getMonthlyEmotions(Integer userId) {
-
-        // 1. 이번달 시작과 끝 계산
-        LocalDate today = LocalDate.now(); // 오늘 날짜
-        log.debug("today : {}",today);
-        LocalDate startDate = today.withDayOfMonth(1);
-        LocalDate endDate = today.withDayOfMonth(today.lengthOfMonth());
-        log.debug("date range : {} ~ {}",startDate,endDate);
+        DateRange range = getCurrentMonthRange();
+        log.debug("월간 범위: {} ~ {}", range.start(), range.end());
 
         // 2. 일기 목록 조회
         List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(
-                userId, startDate.atStartOfDay(),endDate.atTime(LocalTime.MAX)
+                userId, range.start(), range.end()
         );
-        log.debug("diaries : {} ",diaries);
-
-        //행복 설렘 피로 짜증 우울
-        // 3. 감정 리스트 정의
-        List<String> emotionList = List.of("행복","설렘","피로","짜증","우울");
+        log.debug("diaries 조회 : {} ",diaries);
 
         // 3. 감정 통계 조회
         Map<String, Integer> emotionMap = new HashMap<>();
         for (Diary diary : diaries) {
             log.debug("id:{}, emotion:{}",diary.getId(),diary.getEmotion().getName());
-            if (diary.getEmotion() == null) continue;
 
+            if (diary.getEmotion() == null) continue;
             String name = diary.getEmotion().getName();
             emotionMap.put(name, emotionMap.getOrDefault(name,0)+1);
         }
 
-        List<EmotionCountDTO> result = new ArrayList<>();
-        for (String emo : emotionList) {
-            result.add(new EmotionCountDTO(emo,emotionMap.getOrDefault(emo,0)));
-
-        }
+        List<EmotionCountDTO> result = EMOTIONS.stream()
+                .map(emotion -> new EmotionCountDTO(emotion,emotionMap.getOrDefault(emotion,0)))
+                .toList();
 
         return new MonthlyEmotionResponseDTO(result);
     }
+
+    // ========== 날짜 계산 유틸 ========== //
+
+    private DateRange getCurrentWeekRange() {
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.getDayOfWeek() == DayOfWeek.SUNDAY
+                ? today
+                : today.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY));
+        LocalDate end = start.plusDays(6);
+        return new DateRange(start.atStartOfDay(),end.atTime(LocalTime.MAX));
+    }
+
+    private DateRange getCurrentMonthRange() {
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.withDayOfMonth(1);
+        LocalDate end = today.withDayOfMonth(today.lengthOfMonth());
+        return new DateRange(start.atStartOfDay(), end.atTime(LocalTime.MAX));
+    }
+
+    /**
+     * 날짜 범위를 나타내는 내부 레코드
+     */
+    private record DateRange(LocalDateTime start, LocalDateTime end){}
 }

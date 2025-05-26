@@ -32,26 +32,17 @@ public class ChatbotService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
-        // 최근 사용 챗봇
-        Byte recentChatbotId = null;
-        if (user.getLastChatbot() != null) {
-            recentChatbotId = user.getLastChatbot().getId();
-        }
+        // 최근 사용 챗봇 조회
+        Byte recentChatbotId = user.getLastChatbot() != null
+                ? user.getLastChatbot().getId() : null;
 
-        // 챗봇 전체 목록 조회
-        List<Chatbot> chatbots = chatbotRepository.findAll();
-        List<ChatbotResponseDTO> result = new ArrayList<>();
+        // 챗봇 전체 목록 조회 및 변환
+        List<ChatbotResponseDTO> result = chatbotRepository.findAll()
+                .stream()
+                .peek(chatbot -> log.debug("Loaded chatbot : {}",chatbot)) // 디버깅용 메서드
+                .map(ChatbotResponseDTO::from)
+                .toList();
 
-        for (Chatbot chatbot : chatbots) {
-            log.info("chatbot : {}",chatbot);
-
-            ChatbotResponseDTO dto = new ChatbotResponseDTO();
-            dto.setId(chatbot.getId());
-            dto.setName(chatbot.getName());
-            dto.setDescription(chatbot.getDescription());
-            dto.setImageUrl(chatbot.getImageUrl());
-            result.add(dto);
-        }
 
         return new ChatbotListResponseDTO(recentChatbotId, result);
 

@@ -4,14 +4,15 @@ import com.voiceprint.backend.api.alarm.RedisPublisher;
 import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
 import com.voiceprint.backend.api.alarm.dto.NotificationListWithCursorDTO;
 import com.voiceprint.backend.common.exception.user.NotificationNotFoundException;
-import com.voiceprint.backend.common.exception.user.UnauthorizedNotificationException;
 import com.voiceprint.backend.domain.Entity.Notification;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.NotificationRepository;
-import com.voiceprint.backend.domain.Repository.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -142,5 +143,50 @@ public class NotificationService {
     public void updateNotificationMetadata(List<Notification> notifications) {
         notificationRepository.saveAll(notifications);
     }
+
+    /**
+     * Unread 알림 개수 조회 메서드
+     */
+    @Transactional(readOnly = true)
+    public Long getUnreadNotificationCount(Integer userId) {
+        return notificationRepository.countByUserIdAndIsReadFalse(userId);
+    }
+
+    //==============  알림 API Locust 성능 테스트용 메서드 =======//
+
+    @Transactional(readOnly = true)
+    public List<NotificationDTO> getPagedNotifications(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Notification> notifications = notificationRepository.findAll(pageable);
+
+        return notifications.stream()
+                .map(n -> new NotificationDTO(n.getType(),n.getMessage(),n.getMetadata()))
+                .toList();
+
+    }
+
+    @Transactional(readOnly = true)
+    public NotificationListWithCursorDTO getAllNotifications(Integer userId) {
+        List<Notification> notifications = notificationRepository.findAllByUserId(userId);
+
+        List<NotificationDTO> response = notifications.stream()
+                .map(n -> {
+                    Map<String, Object> metadata = new HashMap<>();
+                    metadata.put("notificationId", n.getId());
+
+                    if (n.getMetadata().get("groupId") != null)
+                        metadata.put("groupId", n.getMetadata().get("groupId"));
+                    if (n.getMetadata().get("diaryId") != null)
+                        metadata.put("diaryId", n.getMetadata().get("diaryId"));
+                    if (n.getMetadata().get("status") != null)
+                        metadata.put("status", n.getMetadata().get("status"));
+
+                    return new NotificationDTO(n.getType(), n.getMessage(), metadata);
+                })
+                .toList();
+
+        return new NotificationListWithCursorDTO(response, null); // nextCursor 없음
+    }
+
 
 }

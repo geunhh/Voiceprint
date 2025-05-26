@@ -15,6 +15,11 @@ import java.util.Optional;
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Integer> {
 
+    /**
+     * 사용자의 작성 일기를 최신순으로 조회하며,
+     * 커서 기반 무한 스크롤을 위해 ID < cursor 조건 사용
+     * - 감정(emotion) 정보를 fetch join으로 미리 로딩
+     */
     @Query("""
              SELECT d from Diary d
              LEFT join fetch d.emotion
@@ -24,6 +29,10 @@ public interface DiaryRepository extends JpaRepository<Diary, Integer> {
              """)
     List<Diary> findMyDiaries(@Param("userId") Integer userId,@Param("cursor") Integer cursor, Pageable pageable);
 
+    /**
+     * 사용자의 특정 기간 동안 작성한 일기들을 조회합니다.
+     * - 감정 정보(emotion)를 fetch join으로 함께 로딩
+     */
     @Query("""
             select d from Diary d
             LEFT join fetch d.emotion
@@ -36,8 +45,15 @@ public interface DiaryRepository extends JpaRepository<Diary, Integer> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
+    /**
+     * 사용자의 최신 5개의 일기를 조회합니다.
+     */
     List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Integer userId);
 
+    /**
+     * 사용자의 특정 기간 동안 작성한 일기들을 조회합니다.
+     * - 감정 정보(emotion)를 fetch join
+     */
     @Query("""
             select d from Diary d
             join fetch d.emotion
@@ -49,6 +65,10 @@ public interface DiaryRepository extends JpaRepository<Diary, Integer> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 
+    /**
+     * 특정 일기의 상세 정보를 조회합니다.
+     * - 감정 정보(emotion) 및 작성자(user)를 fetch join으로 함께 조회
+     */
     @Query("""
         select d from Diary d
         join fetch d.emotion
