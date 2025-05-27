@@ -1,4 +1,179 @@
-# 깃 컨벤션
+# <span style="color:#457b9d;">말자국</span> 🎙️📝
+
+> AI 음성 대화 기반 자동 일기 생성 서비스
+
+---
+
+# 목차
+
+[서비스](#서비스) <br>
+[팀원](#-팀원) <br>
+[기술](#-기술-스택) <br>
+[화면](#-화면) <br>
+[기술적 특징](#-기술적-특징) <br>
+[깃 컨벤션](#-깃-컨벤션) <br>
+
+---
+
+# 서비스
+
+### [음성 기반 대화로 기록을 남기고 일기를 자동 생성해주는 AI 일기 웹앱]
+
+<aside>
+1. 실시간 음성 채팅을 통해 AI와 대화<br>
+2. STT(음성 → 텍스트), LLM(대화 응답 및 일기 생성), TTS(텍스트 → 음성) 처리<br>
+3. 생성된 대화를 기반으로 자동 일기 작성<br>
+4. 개인 일기, 그룹 공유 일기 제공<br>
+</aside>
+
+---
+
+# 👨‍👩‍👧‍👦 팀원
+
+<table>
+ <th>Backend</th>
+ <tr>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
+  
+  </tr>
+  <tr>
+    <td align="center"><b>TAEHONG96</b></td>
+    <td align="center"><b>TAEHONG96</b></td>
+  </tr>
+ <tr>
+    <td align="center"><b>민태홍</b> [팀장]</td>
+    <td align="center"><b>김근휘</b></td>
+ </tr>
+</table>
+
+<table>
+ <th>Frontend</th>
+ <tr>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
+  
+  </tr>
+  <tr>
+    <td align="center"><b>TAEHONG96</b></td>
+    <td align="center"><b>TAEHONG96</b></td>
+  </tr>
+ <tr>
+    <td align="center"><b>김혜민</b></td>
+    <td align="center"><b>정다인</b></td>
+ </tr>
+</table>
+
+<table>
+ <th>AI</th>
+ <tr>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>  
+  </tr>
+  <tr>
+    <td align="center"><b>TAEHONG96</b></td>
+  </tr>
+ <tr>
+    <td align="center"><b>이지은</b></td>
+ </tr>
+</table>
+
+<table>
+ <th>Infra</th>
+ <tr>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>  
+  </tr>
+  <tr>
+    <td align="center"><b>TAEHONG96</b></td>
+  </tr>
+ <tr>
+    <td align="center"><b>조기흠</b></td>
+ </tr>
+</table>
+
+---
+
+# 🛠 기술 스택
+
+## 🎨 FrontEnd
+
+
+<div>
+  <img src="https://img.shields.io/badge/react 19-61DAFB?style=for-the-badge&logo=react&logoColor=black">
+  <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white">
+  <img src="https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
+  <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+
+</div>
+
+## 🖥️ BackEnd
+
+<div>
+  <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white">
+  <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+  <img src="https://img.shields.io/badge/jwt-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white">
+  <img src="https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white">
+  <img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
+</div>
+
+## 🧠 AI 서버 (LLM/음성)
+
+<div>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white">
+  <img src="https://img.shields.io/badge/uvicorn-000000?style=for-the-badge&logo=uvicorn&logoColor=white">
+  <img src="https://img.shields.io/badge/transformers-FF9900?style=for-the-badge&logo=huggingface&logoColor=white">
+  <img src="https://img.shields.io/badge/torch-E34F26?style=for-the-badge&logo=pytorch&logoColor=white">
+  <img src="https://img.shields.io/badge/openAI-412991?style=for-the-badge&logo=openai&logoColor=white">
+</div>
+
+## ☁️ Infra / CI/CD
+
+<div>
+  <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=amazon-ec2&logoColor=white">
+  <img src="https://img.shields.io/badge/Amazon S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+  <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white">
+  <img src="https://img.shields.io/badge/DockerHub-0db7ed?style=for-the-badge&logo=docker&logoColor=white">
+</div>
+
+---
+
+# 🚀 기술적 특징
+
+### 음성 기반 대화 및 일기 자동 생성
+
+- VAD 기반 음성 감지 및 WebSocket 스트리밍 구현
+- 비동기 처리 기반 AI 서버 연동 (FastAPI + STT/LLM/TTS)
+- Redis를 통한 유저 세션/메시지 저장
+- 백엔드 중계 서버를 통한 인증·보안 처리 (JWT)
+
+### 일기 생성 로직
+
+- LLM 기반 사용자 맞춤형 일기 자동 생성
+- AI 응답 포함/제외 옵션 제공
+- 단독 일기 및 그룹 공유 일기 분류 저장
+
+### 웹 앱 구조
+
+- Hybrid App (PWA) 지원
+- 모바일 환경 최적화
+- 반응형 UI 및 음성 인터랙션 최적화
+
+---
+
+# 📷 화면 (추가 예정)
+
+> 추후 서비스 시연 화면 GIF 또는 이미지 업로드 예정
+
+---
+
+# 📕 아키텍처
+
+> AI 서버 / 백엔드 / 프론트엔드 간 실시간 스트리밍 및 일기 생성 플로우
+
+(이미지 추가 예정)
+
+
+# 🧾 깃 컨벤션
 
 ## Jira 연동 전략
 
