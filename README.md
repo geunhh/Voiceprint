@@ -1,6 +1,6 @@
-# <span style="color:#457b9d;">말자국</span> 🎙️📝
+# <span style="color:#457b9d;">말자국</span> 🎙️
 
-> AI 음성 대화 기반 자동 일기 생성 서비스
+> " 5가지 유형의 챗봇과 대화를 일기로 " - AI 음성 대화 기반 대화형 일기 플랫폼 <br>
 
 ---
 
@@ -15,7 +15,7 @@
 
 ---
 
-# 서비스
+# 📝서비스
 
 ### [음성 기반 대화로 기록을 남기고 일기를 자동 생성해주는 AI 일기 웹앱]
 
@@ -23,7 +23,9 @@
 1. 실시간 음성 채팅을 통해 AI와 대화<br>
 2. STT(음성 → 텍스트), LLM(대화 응답 및 일기 생성), TTS(텍스트 → 음성) 처리<br>
 3. 생성된 대화를 기반으로 자동 일기 작성<br>
-4. 개인 일기, 그룹 공유 일기 제공<br>
+4. 개인 일기, 그룹 공유 일기 지원<br>
+5. 개인/그룹 리마인더, 일기 공유, 댓글 작성 실시간 알림 지원
+
 </aside>
 
 ---
@@ -34,12 +36,12 @@
  <th>Backend</th>
  <tr>
     <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
-    <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
+    <td align="center"><a href="https://github.com/geunhh"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
   
   </tr>
   <tr>
     <td align="center"><b>TAEHONG96</b></td>
-    <td align="center"><b>TAEHONG96</b></td>
+    <td align="center"><b>geunhh</b></td>
   </tr>
  <tr>
     <td align="center"><b>민태홍</b> [팀장]</td>
@@ -113,6 +115,10 @@
   <img src="https://img.shields.io/badge/jwt-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white">
   <img src="https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white">
   <img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
+  <img src="https://img.shields.io/badge/JPA-%23318CE7?style=for-the-badge&logo=hibernate&logoColor=white" />
+  <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white" />
+
+
 </div>
 
 ## 🧠 AI 서버 (LLM/음성)
@@ -123,6 +129,9 @@
   <img src="https://img.shields.io/badge/transformers-FF9900?style=for-the-badge&logo=huggingface&logoColor=white">
   <img src="https://img.shields.io/badge/torch-E34F26?style=for-the-badge&logo=pytorch&logoColor=white">
   <img src="https://img.shields.io/badge/openAI-412991?style=for-the-badge&logo=openai&logoColor=white">
+  <img src="https://img.shields.io/badge/ChromaDB-vector%20store-8E44AD?style=for-the-badge" />
+</p>
+
 </div>
 
 ## ☁️ Infra / CI/CD
@@ -139,22 +148,43 @@
 
 # 🚀 기술적 특징
 
-### 음성 기반 대화 및 일기 자동 생성
+### 음성/텍스트 기반 대화 챗봇
 
-- VAD 기반 음성 감지 및 WebSocket 스트리밍 구현
-- 비동기 처리 기반 AI 서버 연동 (FastAPI + STT/LLM/TTS)
-- Redis를 통한 유저 세션/메시지 저장
-- 백엔드 중계 서버를 통한 인증·보안 처리 (JWT)
+- React ↔ springboot ↔ FastAPI 간 연동 구조 설계 및 채팅 중계 서버 개발
+- WebSocket + VAD 기반 음성 감지 및 스트리밍 처리
+- STT → LLM → TTS 비동기 파이프라인 구현 (FastAPI 기반 AI 서버 연동)
+- HTTP 기반 텍스트 대화 모드 지원 (Restful API 설계 및 처리)
+- Redis 기반 세션/메시지 저장 구조 설계 (유저별 채팅 이력 관리)
+- JWT 기반 인증 처리 및 보안 강화 (Spring 중계 서버에서 통합 관리)
+
 
 ### 일기 생성 로직
 
-- LLM 기반 사용자 맞춤형 일기 자동 생성
-- AI 응답 포함/제외 옵션 제공
-- 단독 일기 및 그룹 공유 일기 분류 저장
+- LLM 기반 맞춤형 일기 자동 생성 (STT/채팅 히스토리 기반 컨텍스트 분석)
+- 일기 타입 분류 저장: 단독 일기 vs 그룹 공유 일기 구분 저장
+- 하루 한 번 작성 제한 로직 적용 (스케줄러 기반 제어)
+
+### 일기 테마 생성 및 선택 기능
+- 기본 테마 + 사용자 정의 테마 생성 기능 제공
+- 선택한 테마에 따라 일기 문체 변화 (프롬프트에 동적으로 반영)
+- 사용자 커스텀 테마 저장 및 변경 지원
+  - 특정 일기를 기반으로 테마 문체를 추출하여 프롬프트로 변환
+
+
+### 그룹 일기 기능
+- 일기 공유 및 댓글 기능 지원
+- UUID 기반 URL 초대 기능 구현 (수락/거절)
+- 그룹 멤버 권한 관리 및 공유 여부 설정
+
+
+### 알림 시스템
+- 일기 작성 리마인더 알림 (Spring Scheduler + Redis + SSE 기반 실시간 전송)
+- 알림 수신 여부 사용자 설정 기능 제공
+- 댓글/공유 발생 시 그룹 내 알림 분기 처리
+- 알림 읽음 처리 및 안 읽은은 알림 수 조회회 API 제공
 
 ### 웹 앱 구조
 
-- Hybrid App (PWA) 지원
 - 모바일 환경 최적화
 - 반응형 UI 및 음성 인터랙션 최적화
 
@@ -171,6 +201,15 @@
 > AI 서버 / 백엔드 / 프론트엔드 간 실시간 스트리밍 및 일기 생성 플로우
 
 (이미지 추가 예정)
+
+
+
+
+
+
+
+
+
 
 
 # 🧾 깃 컨벤션
