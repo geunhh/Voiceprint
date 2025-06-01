@@ -3,10 +3,10 @@ import random
 
 # 실제 유저 4명의 토큰 (Bearer 포함)
 TOKENS = [
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTA2MDU0NjA1Mjk0NjUxNTUyNzM2IiwiaWF0IjoxNzQ4MDY5ODc4LCJleHAiOjE3NDg2Njk4Nzh9.4yuEonzvRGQ3YYnYZI10x4hAnIwAh9l8LaDJe76z5dQ",
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTE3MTYyMTUwMjM0ODg2Njc3MjY0IiwiaWF0IjoxNzQ4MDY5OTEyLCJleHAiOjE3NDg2Njk5MTJ9.jPCX3BICkLfk8M1-poj1-9M669ZATd_pZuHhs_EvmNI",
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTE2NTk3NDg3OTI1NjA3MzcyNTkxIiwiaWF0IjoxNzQ4MDY5OTQzLCJleHAiOjE3NDg2Njk5NDN9._Q5JruNoO8b9IbyddGbMrb8qp85Y6Jl2x6R7NRD5tis",
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTA3MzYxMzg0NjEzMTk1NzM3MjExIiwiaWF0IjoxNzQ4MDcwMDE5LCJleHAiOjE3NDg2NzAwMTl9.SecHc9uFNgii50GPUg7-0a0jIzPOmj_kRMa6SPaMgf8",
+    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTA2MDU0NjA1Mjk0NjUxNTUyNzM2IiwiaWF0IjoxNzQ4NTE0Mzg1LCJleHAiOjE3NDkxMTQzODV9.NRK5F5wr20hlaNFC6QsOGK3D8u0tqZTu2z7Y4CPqFi4",
+    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTA3MzYxMzg0NjEzMTk1NzM3MjExIiwiaWF0IjoxNzQ4NTE0NDE0LCJleHAiOjE3NDkxMTQ0MTR9.WnDCQ-9PFWVwB5u9BK4xeW4R3uoRNe70DRjB2XoHF40",
+    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTE3MTYyMTUwMjM0ODg2Njc3MjY0IiwiaWF0IjoxNzQ4NTEzMTMzLCJleHAiOjE3NDkxMTMxMzN9.ev6rZRNpsc3WrkGHXc6a30b-GBpaoF_a_NoZP5s9rC0",
+    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MiLCJwcm92aWRlcklkIjoiMTE2NTk3NDg3OTI1NjA3MzcyNTkxIiwiaWF0IjoxNzQ4NTEzMzQyLCJleHAiOjE3NDkxMTMzNDJ9.Zs1KLdP1P7z2HqsbVeGuKGge8Csh0vDHaIGj3BUMCTU"
 ]
 
 class DiaryLoadTest(HttpUser):
@@ -15,7 +15,7 @@ class DiaryLoadTest(HttpUser):
     @task
     def fetch_diaries(self):
         token = random.choice(TOKENS)
-        cursor = random.choice([None, 300, 250, 200])  # 랜덤 커서 (None은 첫 페이지)
+        cursor = random.choice([None] + [random.randint(1000, 999000) for _ in range(5)])
 
         params = {
             "cursor": cursor,
