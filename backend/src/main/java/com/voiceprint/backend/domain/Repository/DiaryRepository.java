@@ -22,11 +22,17 @@ public interface DiaryRepository extends JpaRepository<Diary, Integer> {
      */
     @Query("""
              SELECT d from Diary d
-             LEFT join fetch d.emotion
              where d.user.id = :userId
              and (:cursor is null or d.id < :cursor)
              order by d.id desc
              """)
+//    @Query("""
+//             SELECT d from Diary d
+//             LEFT join fetch d.emotion
+//             where d.user.id = :userId
+//             and (:cursor is null or d.id < :cursor)
+//             order by d.createdAt desc
+//             """)
     List<Diary> findMyDiaries(@Param("userId") Integer userId,@Param("cursor") Integer cursor, Pageable pageable);
 
     /**
