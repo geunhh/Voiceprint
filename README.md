@@ -2,6 +2,8 @@
 
 > " 5가지 유형의 챗봇과 대화를 일기로 " - AI 음성 대화 기반 대화형 일기 플랫폼 <br>
 
+<br>
+
 ---
 
 # 목차
@@ -12,6 +14,8 @@
 [화면](#-화면) <br>
 [기술적 특징](#-기술적-특징) <br>
 [깃 컨벤션](#-깃-컨벤션) <br>
+
+<br>
 
 ---
 
@@ -27,6 +31,8 @@
 5. 개인/그룹 리마인더, 일기 공유, 댓글 작성 실시간 알림 지원
 
 </aside>
+
+<br><br>
 
 ---
 
@@ -65,7 +71,7 @@
   </tr>
  <tr>
     <td align="center"><b>이지은</b></td>
- </tr>****
+ </tr>
 </table>
 
 <table>
@@ -73,13 +79,12 @@
  <tr>
     <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>  
   </tr>
-  <tr>
-    <td align="center"><b>TAEHONG96</b></td>
-  </tr>
  <tr>
     <td align="center"><b>조기흠</b></td>
  </tr>
 </table>
+
+<br>
 
 ---
 
@@ -314,7 +319,8 @@
 
 
 
-
+---
+---
 
 # 🧾 깃 컨벤션
 
