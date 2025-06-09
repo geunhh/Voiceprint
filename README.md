@@ -18,7 +18,7 @@
 # 📝서비스
 
 ### [음성 기반 대화로 기록을 남기고 일기를 자동 생성해주는 AI 일기 웹앱]
-
+![alt text](img/main.png)
 <aside>
 1. 실시간 음성 채팅을 통해 AI와 대화<br>
 2. STT(음성 → 텍스트), LLM(대화 응답 및 일기 생성), TTS(텍스트 → 음성) 처리<br>
@@ -39,10 +39,6 @@
     <td align="center"><a href="https://github.com/geunhh"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
   
   </tr>
-  <tr>
-    <td align="center"><b>TAEHONG96</b></td>
-    <td align="center"><b>geunhh</b></td>
-  </tr>
  <tr>
     <td align="center"><b>민태홍</b> [팀장]</td>
     <td align="center"><b>김근휘</b></td>
@@ -56,10 +52,6 @@
     <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>
   
   </tr>
-  <tr>
-    <td align="center"><b>TAEHONG96</b></td>
-    <td align="center"><b>TAEHONG96</b></td>
-  </tr>
  <tr>
     <td align="center"><b>김혜민</b></td>
     <td align="center"><b>정다인</b></td>
@@ -71,12 +63,9 @@
  <tr>
     <td align="center"><a href="https://github.com/TAEHONG96"><img src="https://avatars.githubusercontent.com/u/175571625?v=4" width="130px;" alt=""></a></td>  
   </tr>
-  <tr>
-    <td align="center"><b>TAEHONG96</b></td>
-  </tr>
  <tr>
     <td align="center"><b>이지은</b></td>
- </tr>
+ </tr>****
 </table>
 
 <table>
@@ -190,19 +179,55 @@
 
 ---
 
-# 📷 화면 (추가 예정)
+# 📷 서비스 화면 
 
-> 추후 서비스 시연 화면 GIF 또는 이미지 업로드 예정
+> - 다양한 유형의 챗봇
+> - 채팅 기능
+> - 일기 생성 기능
+> - 그룹 기능
+> - 실시간 알림 기능
+
+1. **5가지 유형의 챗봇 지원**
+  ![alt text](img/chatbotList.png)
+  - 대화 시작에 앞서 5가지 챗봇 유형 선택이 가능합니다. 
+2. **일기 작성(텍스트)**
+   ![alt text](img/chatting.png)
+   - 챗봇과의 채팅으로 하루를 마무리하세요.
+   - 작성될 일기의 문체 선택 + 나만의 문체 커스텀 지원
+   - 대화를 기반으로 일기 초안 자동 생성 지원 (수정가능)
+3. **일기 작성(음성)**
+  ![alt text](img/voice.png)
+   - 웹소켓, STT, TTS를 활용한 AI 챗봇과의 음성대화 모드 지원합니다.
+4. **내 마음 통계**
+  ![alt text](img/statistics.png)
+   - 마음 캘린더를 통해 알아보는 내 감정과 주간 감정 추이 확인이 가능해요.
+1. **그룹**
+  ![alt text](img/group2.png)
+   - 친구들과 공유하는 하루의 기록
+   - 공유하고 싶은 그룹에 오늘 일기를 공유해보세요.
+1. **그룹 - 일기 공유**
+  ![alt text](img/groupdiary.png)
+   - 오늘의 일기 저장 후 내가 속한 그룹들에 공유해보세요.
+1. **그룹 - 초대**
+  ![alt text](img/inviteGroup.png)
+   - 초대 코드로 손쉽게 친구를 그룹에 초대하세요.
+1. **그룹 - 댓글**
+  ![alt text](img/comment.png)
+   - 친구가 공유한 일기에 댓글을 달아보세요.
+1.  **실시간 알림**
+    ![alt text](img/chatbotList.png)
+    - 일기 작성할 시간이에요! 설정한 시간에 일기 리마인더 알람 전송
+    - A 그룹에 이벤트가 발생했어요. 알아보세요!
+    - 다양한 실시간 알람 기능 제공
+
 
 ---
 
 # 📕 아키텍처
+![alt text](img/image.png)
 
-> AI 서버 / 백엔드 / 프론트엔드 간 실시간 스트리밍 및 일기 생성 플로우
-
-(이미지 추가 예정)
-
-
+# 📕 ERD
+![alt text](img/ERD.png)
 
 
 
