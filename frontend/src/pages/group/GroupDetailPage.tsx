@@ -154,9 +154,10 @@ export default function GroupDetailPage() {
       const inviteCode = res.data.data.inviteCode;
 
       // 초대 링크 생성 - 배포용
-      const fullLink = `https://k12b106.p.ssafy.io/group/${group.groupId}/invite/${inviteCode}`;
+      // const fullLink = `https://k12b106.p.ssafy.io/group/${group.groupId}/invite/${inviteCode}`;
       // 초대 링크 생성 - 개발용
       // const fullLink = `http://localhost:5173/group/${group.groupId}/invite/${inviteCode}`; // 배포 시 도메인 변경
+      const fullLink = `http://localhost:81/group/${group.groupId}/invite/${inviteCode}`; // 배포 시 도메인 변경
       setInviteLink(fullLink);
       setIsInviteModalOpen(true);
     } catch (err) {

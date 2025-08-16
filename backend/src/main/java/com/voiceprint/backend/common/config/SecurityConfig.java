@@ -46,12 +46,14 @@ public class SecurityConfig {
                         configuration.setAllowedOrigins(List.of(
                                 "https://k12b106.p.ssafy.io",
                                 "http://localhost:63342", //Todo: 개발 후에 제거하기
-                                "http://localhost:5173"));
+                                "http://localhost:5173",
+                                "http://localhost:81"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
                         configuration.setMaxAge(3600L);
 
+                
                         configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
 
