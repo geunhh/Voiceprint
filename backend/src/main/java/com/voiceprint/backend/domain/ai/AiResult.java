@@ -1,19 +1,15 @@
-package com.voiceprint.backend.api.chat.dto;
+package com.voiceprint.backend.domain.ai;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * 채팅세션 메시지 조회 DTO
- */
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class ChatMessageResponseDTO {
-    private String role;
+public class AiResult {
     private String content;
-
+    private int totalTokens;
 }
