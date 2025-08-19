@@ -1,10 +1,14 @@
 package com.voiceprint.backend.service.diary;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.voiceprint.backend.domain.ai.PromptFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -13,78 +17,95 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class DiaryPromptFactory {
+public class DiaryPromptFactory implements PromptFactory {
 
     private final RedisTemplate<String, Object> redis;
+    private final RedisTemplate<String, String> redisStr;   // list<String>
+    private final ObjectMapper om = new ObjectMapper();
 
-    /** FastAPI /api/v1/to_diary: themeDescription/Title/Diary 사용 */
+    @Value("${session.key}")
+    private String session_key;
+
+    @Value("${message.key}")
+    private String message_key;
+
+    @Override
     public Prompt buildDiaryPrompt(String userId) {
-        Map<Object, Object> session = redis.opsForHash().entries("chat_session:" + userId);
+
+        String sessionKey = session_key + ":" + userId;
+        String messageKey = message_key + ":" + userId;
+
+        Map<Object, Object> session = redis.opsForHash().entries(sessionKey);
+        if (session == null || session.isEmpty()) throw new IllegalStateException("세션 없음");
+
 
         String themeDesc  = (String) session.get("themeDescription");
         String themeTitle = (String) session.get("themeTitle");
         String themeDiary = (String) session.get("themeDiary");
+        String themePrompt= (String) session.get("themePrompt");
+        String chatSystem = (String) session.get("chatPrompt");
+
 
         // 히스토리에서 유저 메시지만 이어붙이기
-        List<Object> raw = redis.opsForList().range("chat_session_messages:" + userId, 0, -1);
-        StringBuilder userChat = new StringBuilder();
-        if (raw != null) {
-            for (Object o : raw) {
-                String s = String.valueOf(o);
-                if (s.contains("\"role\":\"user\"")) {
-                    int i = s.indexOf("\"content\":\"");
-                    if (i > 0) {
-                        String sub = s.substring(i + 11);
-                        int j = sub.indexOf("\"");
-                        if (j > 0) userChat.append(sub, 0, j).append('\n');
-                    }
-                }
-            }
-        }
+        List<String> msgs = redisStr.opsForList().range(messageKey, 0, -1);
+        String userChat = mergeUser(msgs);
 
-        // FastAPI system prompt 재현 (요지 동일)
-        String systemPrompt = """
-            당신은 유저의 채팅 기록을 바탕으로 일기를 작성하는 전문가입니다. %s 글쓰기 스타일로 해주세요.
+        String system = """
+            당신은 유저의 채팅 기록을 바탕으로 일기를 작성하는 전문가입니다.
+            아래 테마 정보를 반영하여 글쓰기 스타일을 맞춰 주세요.
 
-            다음 형식을 엄격하게 지켜서 일기를 만들어주세요:
-
-            [일기의 제목]
-
-            [행복/설렘/피로/짜증/우울] (다섯 가지 감정 중 하나만 선택)
-
-            [채팅의 핵심 내용을 일기로 작성. 700자 내외로 작성]
-
-            출력 예시:
-
+            [Theme Title]
             %s
 
-            기쁨
-
+            [Theme Description]
             %s
 
-            주의사항:
-            1. 반드시 위 형식을 정확히 따라주세요
-            2. 채팅 기록을 그대로 복사하지 말고, 일기 형태로 재구성해주세요
-            3. 발랄하고 활기찬 분위기로 작성해주세요.
-            4. 각 항목 사이에는 빈 줄을 넣어주세요
-            5. 응답은 오직 일기 형식으로만 구성해주세요 (다른 설명이나 메타 정보 불필요)
-            6. 글자 수는 700자 정도입니다.
-        """.formatted(themeDesc, themeTitle, themeDiary);
-
-        String userPrompt = """
-            다음은 유저의 채팅 기록입니다. 이를 바탕으로 일기를 작성해주세요:
-
+            [Theme Prompt]
             %s
-        """.formatted(userChat);
 
-        var options = OpenAiChatOptions.builder()
-                .model("gpt-4.1")
+            [Diary Example]
+            %s
+
+            출력은 반드시 엄격한 JSON으로만 반환하세요. 다른 설명/메타 정보/코드블록은 절대 포함하지 마세요.
+            JSON 키: title, emotion, diary
+            emotion 값은 ["행복","설렘","피로","짜증","우울"] 중 하나
+            제약: 약 700자, 일기체 재구성, 발랄/활기찬 톤, 문단은 diary 내부에서 \\n\\n
+            """.formatted(themeTitle, themeDesc, themePrompt, themeDiary);
+
+        if (!chatSystem.isBlank()) system += "\n[Additional System Prompt]\n" + chatSystem;
+
+        String user = """
+            다음은 유저의 채팅 기록입니다. 이를 바탕으로 일기를 작성하세요.
+
+            채팅 기록:
+            %s
+
+            예시:
+            {"title":"오늘의 작은 설렘","emotion":"설렘","diary":"..."}
+            """.formatted(userChat);
+
+        OpenAiChatOptions options = OpenAiChatOptions.builder()
+                .model("gpt-4.1-mini")
                 .temperature(0.4)
                 .build();
 
         return new Prompt(
-                List.of(new SystemMessage(systemPrompt), new UserMessage(userPrompt)),
+                List.of(new SystemMessage(system), new UserMessage(user)),
                 options
         );
+    }
+
+    private String mergeUser(List<String> raw) {
+        if (raw == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (String j : raw) {
+            try {
+                JsonNode n = om.readTree(j);
+                if ("user".equalsIgnoreCase(n.path("role").asText())) {
+                    sb.append(n.path("content").asText()).append('\n');
+                }
+            } catch (Exception ignore) {}
+        }
+        return sb.toString().trim();
     }
 }

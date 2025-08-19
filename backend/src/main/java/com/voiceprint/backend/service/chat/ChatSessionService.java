@@ -1,5 +1,7 @@
 package com.voiceprint.backend.service.chat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.Gson;
 import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
 import com.voiceprint.backend.api.chat.dto.*;
@@ -16,9 +18,15 @@ import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import com.voiceprint.backend.domain.Entity.Emotion;
 import com.voiceprint.backend.domain.Repository.EmotionRepository;
 import com.voiceprint.backend.domain.Entity.DiaryThema;
+import com.voiceprint.backend.domain.ai.AiResult;
+import com.voiceprint.backend.domain.ai.AiService;
+import com.voiceprint.backend.domain.ai.PromptFactory;
 import com.voiceprint.backend.service.alarm.NotificationService;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -35,7 +43,6 @@ import java.util.concurrent.CompletableFuture;
 import static com.voiceprint.backend.domain.Entity.ChatSessionStatus.DIARY_SAVED;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class ChatSessionService {
@@ -47,13 +54,29 @@ public class ChatSessionService {
     private final EmotionRepository emotionRepository;
     private final WebClient fastApiWebClient;
     private final NotificationService notificationService;
+    private final AiService aiService;
+    private final PromptFactory promptFactory;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public ChatSessionService(RedisTemplate<String, Object> redisTemplate, ChatbotRepository chatbotRepository,
+                              UserRepository userRepository, DiaryRepository diaryRepository,
+                              EmotionRepository emotionRepository, WebClient fastApiWebClient,
+                              NotificationService notificationService, AiService aiService, @Qualifier("diaryPromptFactory") PromptFactory promptFactory) {
+        this.redisTemplate = redisTemplate;
+        this.chatbotRepository = chatbotRepository;
+        this.userRepository = userRepository;
+        this.diaryRepository = diaryRepository;
+        this.emotionRepository = emotionRepository;
+        this.fastApiWebClient = fastApiWebClient;
+        this.notificationService = notificationService;
+        this.aiService = aiService;
+        this.promptFactory = promptFactory;
+    }
     @Value("${session.key}")
     private String session_key;
 
     @Value("${message.key}")
     private String message_key;
-
     /**
      * 세션을 시작하는 메소드
      */
@@ -182,26 +205,20 @@ public class ChatSessionService {
      */
     public void endSession(Integer userId) {
         // 채팅 관련 Redis 키.
-        String sessionKey = session_key + ":" + userId;
+        final String sessionKey = session_key + ":" + userId;
 
-        // 일기 생성 직전 유저가 선택한 일기 테마를 Redis 서버에 갱신해줌
+        // 유저/테마 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
-
         DiaryThema thema = user.getUsingThema();
-        String cur_thema_title = thema.getTitle();
-        String cur_thema_prompt = thema.getPrompt();
-        String cur_thema_description = thema.getDescription();
-        String cur_thema_example = thema.getExample();
 
-        // 1. 상태값을 DIARY_CREATING(일기 생성중)으로 갱신
+
+        // 1. 상태값 갱신 + 테마 메타 저장
         redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_CREATING.name());
-
-        // 1.5 일기 생성에 필요한 테마 정보 갱신
-        redisTemplate.opsForHash().put(sessionKey,"themeTitle",cur_thema_title);
-        redisTemplate.opsForHash().put(sessionKey,"themeDescription",cur_thema_description);
-        redisTemplate.opsForHash().put(sessionKey,"themePrompt",cur_thema_prompt);
-        redisTemplate.opsForHash().put(sessionKey,"themeDiary",cur_thema_example);
+        redisTemplate.opsForHash().put(sessionKey,"themeTitle",thema.getTitle());
+        redisTemplate.opsForHash().put(sessionKey,"themeDescription",thema.getDescription());
+        redisTemplate.opsForHash().put(sessionKey,"themePrompt",thema.getPrompt());
+        redisTemplate.opsForHash().put(sessionKey,"themeDiary",thema.getExample());
 
         // 2. 백그라운드에서 일기 생성 비동기 처리
         CompletableFuture.runAsync(() -> {
@@ -262,16 +279,79 @@ public class ChatSessionService {
     }
 
     /**
-     * 임시 일기 데이터
+     * FastAPI -> SpringAI
      */
-    private String generateDiary(List<Object> messages) {
-        return "오늘은 친구들이랑 한강 공원에 놀러갔다. " +
-                "바람이 솔솔 불고 햇빛도 따뜻해서 걷기만 해도 기분이 좋아졌다. " +
-                "엽떡에 유부 추가 3번, 허니콤보랑 시원한 맥주까지… 진짜 완벽한 조합! " +
-                "잔디밭에 앉아 수다 떨고 먹는 그 시간이 참 좋았다. 해가 지고 나서는 따릉이를 타고 한강을 달렸다. " +
-                "밤공기 맞으며 자전거 타는 기분, 요즘 같은 날씨에 최고다. " +
-                "평범하지만 특별했던 하루. 이런 날, 자주 있었으면 좋겠다.";
+    public void endSession2(Integer userId) {
+        // 채팅 관련 Redis 키.
+        final String sessionKey = session_key + ":" + userId;
+
+        // 유저/테마 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
+        DiaryThema thema = user.getUsingThema();
+
+
+        // 1. 상태값 갱신 + 테마 메타 저장
+        redisTemplate.opsForHash().put(sessionKey,"status",ChatSessionStatus.DIARY_CREATING.name());
+        redisTemplate.opsForHash().put(sessionKey,"themeTitle",thema.getTitle());
+        redisTemplate.opsForHash().put(sessionKey,"themeDescription",thema.getDescription());
+        redisTemplate.opsForHash().put(sessionKey,"themePrompt",thema.getPrompt());
+        redisTemplate.opsForHash().put(sessionKey,"themeDiary",thema.getExample());
+
+        // 2. 백그라운드에서 일기 생성 비동기 처리
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 2-1 프롬프트 생성 (Redis에서 대화 이력/테마 조회)
+                Prompt prompt = promptFactory.buildDiaryPrompt(userId.toString());
+                log.info("## 프롬프트 : {}",prompt.getContents());
+                log.info("## 프롬프트 : {}",prompt.getUserMessages());
+                log.info("## 프롬프트 : {}",prompt.getSystemMessage());
+
+
+                // 2-2 Spring AI 호출
+                AiResult ai = aiService.chat(prompt);
+                String content = stripCodeFence(ai.getContent());
+
+                // 2-3) JSON 파싱
+                JsonNode node = objectMapper.readTree(content);
+                String diary = node.path("diary").asText("");
+                String title = node.path("title").asText("");
+                String emotion = normalizeEmotion(node.path("emotion").asText(""));
+
+                if (title.isBlank() || diary.isBlank()) {
+                    throw new IllegalStateException("응답 형식이 올바르지 않음 (title/diary 누락)");
+                }
+
+                // 3) Redis 저장 & 상태 변경
+                redisTemplate.opsForHash().put(sessionKey, "tempDiary", diary);
+                redisTemplate.opsForHash().put(sessionKey, "tempTitle", title);
+                redisTemplate.opsForHash().put(sessionKey, "emotion", emotion);
+                redisTemplate.opsForHash().put(sessionKey, "createdAt", LocalDateTime.now().toString());
+                redisTemplate.opsForHash().put(sessionKey, "status", ChatSessionStatus.DIARY_DONE.name());
+                log.info("일기 생성이 완료되었습니다. userId={}", user.getId());
+
+                // 4) 알림 전송
+                NotificationDTO dto = new NotificationDTO(
+                        "diaryComplete",
+                        "오늘의 일기가 생성이 완료되었습니다. 확인해보세요!!",
+                        null
+                );
+
+                try {
+                    notificationService.sendAndSave(user, dto);
+                    log.info("[일기 생성 알림 전송] userId={}", user.getId());
+                } catch (Exception e) {
+                    log.error("[일기 생성 알림 실패] userId={}, err={}", user.getId(), e.getMessage());
+                }
+            } catch (Exception e) {
+                log.error("일기 생성 중 에러발생 : {}", e.getMessage(), e);
+                redisTemplate.opsForHash().put(sessionKey, "status", ChatSessionStatus.ERROR.name());
+                redisTemplate.opsForHash().put(sessionKey, "errorMessage", e.getMessage());
+            }
+        });
     }
+
+
 
     public TempDiaryResponseDTO getTempDiary(Integer userId) {
         String sessionKey = session_key + ":"+userId;
@@ -300,7 +380,7 @@ public class ChatSessionService {
         redisTemplate.opsForHash().delete(sessionKey,
                 "tempDiary", "tempTitle", "createdAt", "emotion", "status");
         // 2. 종료 로직 재사용
-        endSession(userId);
+        endSession2(userId);
     }
 
     /**
@@ -403,6 +483,37 @@ public class ChatSessionService {
 
 
         return diary.getId();
+
+    }
+    // ------- 유틸 ---------//
+
+    /**
+     * ``` json ...``` 방어 메서드
+     */
+    private String stripCodeFence(String content) {
+        if (content == null) return "";
+        String s = content.trim();
+        if (s.startsWith("```")) {
+            int first = s.indexOf('\n');
+            int last = s.lastIndexOf("```");
+            if (first >= 0 && last > first)
+                return s.substring(first + 1, last).trim();
+        }
+        return s;
+    }
+
+    /**
+     * 감정 일반화 메서드
+     */
+    private String normalizeEmotion(String emotion) {
+        if (emotion == null) return "행복";
+        String x = emotion.trim();
+        if (x.contains("행복")) return "행복";
+        if (x.contains("설렘")) return "설렘";
+        if (x.contains("피로")) return "피로";
+        if (x.contains("짜증")) return "짜증";
+        if (x.contains("우울")) return "우울";
+        return "행복";
 
     }
 }

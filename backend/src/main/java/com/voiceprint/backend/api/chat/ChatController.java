@@ -53,7 +53,7 @@ public class ChatController {
         Integer userId = authService.getUserIdFromRequest(request);
         log.info("## 채팅 세션 종료 / userid : {}",userId);
         // 비동기 처리
-        chatSessionService.endSession(userId);
+        chatSessionService.endSession2(userId);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "세션 종료 성공", "일기 생성을 시작했습니다. (생성중입니다)"));
     }

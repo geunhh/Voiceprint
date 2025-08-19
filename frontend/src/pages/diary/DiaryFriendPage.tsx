@@ -129,7 +129,7 @@ export default function DiaryFriendPage() {
           />
           <ChatSelector onSelect={setSelectedCharacter} />
           <div className="mt-12 flex flex-col items-center gap-4">
-            <div
+            {/* <div
               onMouseEnter={() => setHovered("voice")}
               onMouseLeave={() => setHovered(null)}
             >
@@ -139,7 +139,7 @@ export default function DiaryFriendPage() {
                 size="L"
                 onClick={handleVoiceStart}
               />
-            </div>
+            </div> */}
 
             <div
               onMouseEnter={() => setHovered("chat")}
