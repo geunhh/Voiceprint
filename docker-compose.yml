@@ -1,0 +1,111 @@
+services:
+  # FE
+  frontend:
+    container_name: frontend
+    # image: jokiheum/voiceprint-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "81:80"
+    env_file:
+      - ./frontend/.env
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks: [voiceprint-network]
+    restart: unless-stopped
+
+  #NginX
+  # proxy:
+  #   image: nginx:1.26-alpine
+  #   container_name: proxy
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./voiceprint.conf:/etc/nginx/conf.d/default.conf:ro
+  #     # - /etc/letsencrypt:/etc/letsencrypt:ro
+  #   depends_on:
+  #     - backend
+  #     - frontend
+  #   networks: [voiceprint-network]
+    # restart: unless-stopped
+
+  #BE
+  backend:
+    ports:
+      - 8080:8080 # 임시로 포트 추가
+    container_name: backend
+    # image: jokiheum/voiceprint-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    environment:
+      TZ: Asia/Seoul
+      SPRING_DATASOURCE_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/voiceprint_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: voiceprint_user
+      SPRING_DATASOURCE_PASSWORD: thisisneverthat
+      BACKEND_WEBSOCKET_URL: ws://backend:8080/ws
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [voiceprint-network]
+    restart: unless-stopped
+    
+  mysql:
+    container_name: mysql
+    # image: jokiheum/voiceprint-mysql:latest
+    build: 
+      context: ./mysql
+      dockerfile: Dockerfile
+    ports:
+      - "3307:3306" #로컬에서 3306 이미 사용중.
+    env_file:
+      - ./mysql/.env
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks: [voiceprint-network]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"] # mysql이 healthy 한 지 판단
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    container_name: redis
+    image: redis:8
+    ports:
+      - "6379:6379"
+    env_file:
+      - ./redis/.env
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: 
+      - /bin/sh
+      - -c
+      - redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    networks: [voiceprint-network]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" ping"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+  
+volumes:
+  mysql-data:
+    name: mysql-data
+
+networks:
+  voiceprint-network:                
+    name: voiceprint-network         
+    driver: bridge

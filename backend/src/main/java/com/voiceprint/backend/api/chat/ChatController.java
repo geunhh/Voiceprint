@@ -34,7 +34,7 @@ public class ChatController {
             ){
         Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 채팅 / userid : {}",userId);
-        ChatTextResponseDTO response = chatServcie.processChat(userId, request.getMessage());
+        ChatTextResponseDTO response = chatServcie.processChatV1(userId, request.getMessage());
         log.info("답변 : {}",response.getResponse());
 
         return ResponseEntity.ok(new CommonResponse<>(
