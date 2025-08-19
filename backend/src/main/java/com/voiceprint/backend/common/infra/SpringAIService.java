@@ -61,16 +61,14 @@ public class SpringAIService implements AiService {
     }
 
     /**
-     * 프롬프트 버전
+     * Prompt 객체 기반 대화 메서드
      */
     @Override
     public AiResult chat(Prompt prompt) {
         try {
-            log.info("하아..");
-
-            var call = chatClient.prompt(prompt).call();
-            String content = call.content();
-//            ChatResponse chatResponse = chatClient.prompt(prompt).call().chatResponse();
+            log.info("openAI 채팅 모델 호출");
+            var call = chatClient.prompt(prompt).call();    // 모델 호출
+            String content = call.content();                // 모델 응답 텍스트
 
             int totalTokens = 0;
 
@@ -81,10 +79,13 @@ public class SpringAIService implements AiService {
 
         } catch (Exception e) {
             log.error("SpringAI call failed : {}", e.getMessage(), e);
-            return AiResult.builder().content("오류 발생").totalTokens(0).build();
+            return AiResult.builder().content("오류 발생").totalTokens(0).build();  //TOdo : 토큰은 추후 처리
         }
     }
 
+    /**
+     * 토큰 수 추출 메서드
+     */
     @SuppressWarnings("unchecked")
     private int extractTotalTokens(Map<String, Object> metadata) {
         if (metadata == null) return 0;

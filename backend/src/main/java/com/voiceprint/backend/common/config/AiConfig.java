@@ -21,7 +21,7 @@ public class AiConfig {
                 .build();
     }
 
-    // openAI chatmodel.
+    // openAI API와 연결되는 모델 객체.
     @Bean
     public ChatClient openAiChatClient(OpenAiChatModel chatModel) {
         return ChatClient.create(chatModel);

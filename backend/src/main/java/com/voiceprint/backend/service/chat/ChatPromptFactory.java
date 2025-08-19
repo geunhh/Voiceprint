@@ -2,7 +2,9 @@ package com.voiceprint.backend.service.chat;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.voiceprint.backend.domain.ai.PromptFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -18,13 +20,20 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
-public class ChatPromptFactory {
+public class ChatPromptFactory implements PromptFactory {
     private final RedisTemplate<String, Object> redis;
     private final ObjectMapper om = new ObjectMapper();
 
     @Value("${chat.max-length:2000}")
     private int maxChatLength;
+
+    @Value("${session.key}")
+    private String session_key;
+
+    @Value("${message.key}")
+    private String message_key;
 
     public record ChatTurn(String role, String content) {}
 
@@ -32,17 +41,17 @@ public class ChatPromptFactory {
      * Prompt 생성 메서드 - 세션기반
      */
     public Prompt buildChatPrompt(String userId, String userText) {
-        // 1) 세션 정보 로드
-        String sessionKey = "chat_session:" + userId;           //Todo : 바꾸기
-        String messageKey = "chat_session_messages:" + userId;
+        String sessionKey = session_key + ":" + userId;
+        String messageKey = message_key + ":" + userId;
 
+        // 1) 세션 메타데이터 로드
         Map<Object, Object> session = redis.opsForHash().entries(sessionKey);
         if (session == null || session.isEmpty())
             throw new IllegalStateException("세션 없음 or userId invalid");
 
         int totalToken = parseIntSafe(session.get("total_token"));
         if (totalToken > maxChatLength)
-            throw new IllegalStateException("챗봇 토큰 초과");
+            throw new IllegalStateException("챗봇 토큰(대화 길이) 초과");
 
         String systemPrompt = (String) session.get("chatPrompt");
 
@@ -61,7 +70,9 @@ public class ChatPromptFactory {
                         msgs.add(new UserMessage(t.content()));
                     else if ("assistant".equalsIgnoreCase(t.role()))
                         msgs.add(new AssistantMessage(t.content()));
-                } catch (Exception ignore) {}
+                } catch (Exception e) {
+                    log.error("채팅 파싱 실패 {}",o, e);
+                }
             }
         }
 
@@ -77,6 +88,7 @@ public class ChatPromptFactory {
         return new Prompt(msgs, options);
     }
 
+    // 파싱 유틸
     private int parseIntSafe(Object v) {
         try { return Integer.parseInt(String.valueOf(v)); } catch (Exception e) { return 0; }
 
