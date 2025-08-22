@@ -24,7 +24,7 @@ public class Emotion {
     private String color;
 
     //== 생성 메서드 ==//
-    public Emotion(String content) {
+    public Emotion(String name) {
         this.name = name;
     }
 }

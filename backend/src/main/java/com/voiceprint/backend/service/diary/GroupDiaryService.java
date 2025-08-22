@@ -1,7 +1,5 @@
 package com.voiceprint.backend.service.diary;
 
-import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
-import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.api.diary.dto.GroupDiaryResponseDTO;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryDetailResponse;
 import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
@@ -9,9 +7,7 @@ import com.voiceprint.backend.common.dto.CommonResponse;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
 
-import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
 import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
-import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
@@ -26,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 @Transactional
@@ -49,12 +45,12 @@ public class GroupDiaryService {
 
     public List<Notification> saveSharedDiary(Integer diaryId, Integer userId, List<Integer> groupIds) {
         // Diary 찾기.
-        Diary diary = diaryRepository.findById(diaryId)
+        DiaryEntity diaryEntity = diaryRepository.findById(diaryId)
                 .orElseThrow();
 
         User user = userRepository.findById(userId)
                 .orElseThrow();
-        if (!diary.getUser().getId().equals(userId)) {
+        if (!diaryEntity.getUser().getId().equals(userId)) {
             throw new UnauthorizedDiaryException("해당 일기에 권한이 없습니다.");
         }
 
@@ -72,7 +68,7 @@ public class GroupDiaryService {
             boolean isExist = groupDiaryRepository.existsByGroupIdAndDiaryId(groupId,diaryId);
             if (isExist) continue;
 
-            groupDiaries.add(new GroupDiary(null, diary, group, LocalDateTime.now()));
+            groupDiaries.add(new GroupDiary(null, diaryEntity, group, LocalDateTime.now()));
 
             // 1. 그룹 유저 조회
             List<User> users = groupUserRepository.findUsersByGroupId(groupId);
@@ -84,7 +80,7 @@ public class GroupDiaryService {
                 //메타 데이터 구성
                 Map<String, Object> metadata = Map.of(
                         "groupId", group.getId(),
-                        "diaryId", diary.getId()
+                        "diaryId", diaryEntity.getId()
                 );
 
                 String message = user.getNickname() + "님이 " + group.getName() + " 그룹에 일기를 공유했어요!";
@@ -143,7 +139,7 @@ public class GroupDiaryService {
         // 7. Diary 정보를 DTO로 매핑하여 응답 리스트 구성
         List<GroupDiaryResponseDTO> response = groupDiaries.stream()
                 .map(gd -> {
-                    Diary d = gd.getDiary();
+                    DiaryEntity d = gd.getDiary();
                     return new GroupDiaryResponseDTO(
                             groupId,
                             d.getId(),
@@ -171,21 +167,21 @@ public class GroupDiaryService {
         GroupDiary groupDiary = groupDiaryRepository.findByGroupIdAndDiaryId(groupId, diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("해당 그룹 일기를 찾을 수 없습니다."));
 
-        Diary diary = groupDiary.getDiary();
-        User user = diary.getUser();
+        DiaryEntity diaryEntity = groupDiary.getDiary();
+        User user = diaryEntity.getUser();
         Group group = groupDiary.getGroup();
 
         return new GroupDiaryDetailResponse(
                 groupDiary.getId(),
                 group.getId(),
                 group.getName(),
-                diary.getId(),
+                diaryEntity.getId(),
                 user.getId(),
                 user.getNickname(),
                 user.getProfileImage().getImageUrl(),
-                diary.getCreatedAt(),
-                diary.getTitle(),
-                diary.getContent()
+                diaryEntity.getCreatedAt(),
+                diaryEntity.getTitle(),
+                diaryEntity.getContent()
         );
     }
 
@@ -248,7 +244,7 @@ public class GroupDiaryService {
         // 6. DTO 변환
         List<GroupDiaryResponseDTO> response = finalList.stream()
                 .map(gd -> {
-                    Diary d = gd.getDiary();
+                    DiaryEntity d = gd.getDiary();
                     return new GroupDiaryResponseDTO(
                             gd.getGroup().getId(),
                             d.getId(),

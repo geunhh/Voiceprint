@@ -10,26 +10,21 @@ import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.api.diary.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.Diary;
 import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
+//@Service // TODO: 제거 대상
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
@@ -42,22 +37,22 @@ public class DiaryService {
         Integer userId = authService.getUserIdFromRequest(request);
         log.debug("userId : {}",userId);
 
-        Diary diary = diaryRepository.findDetailById(diaryId)
+        DiaryEntity diaryEntity = diaryRepository.findDetailById(diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("다이어리 정보가 없습니다."));
 
         // 일기의 user FK와 비교
-        if (!diary.getUser().getId().equals(userId)) {
+        if (!diaryEntity.getUser().getId().equals(userId)) {
             throw new UnauthorizedDiaryAccessException("다이어리의 userId와 일치하지 않습니다.");
         }
 
         return new DiaryDetailResponseDTO(
-                diary.getId(),
-                diary.getTitle(),
-                diary.getContent(),
-                diary.getEmotion() != null ? diary.getEmotion().getName() : null,
-                diary.getCreatedAt().toString(),
-                diary.getUser().getNickname(),
-                diary.getThumbnail() != null ? diary.getThumbnail() : null
+                diaryEntity.getId(),
+                diaryEntity.getTitle(),
+                diaryEntity.getContent(),
+                diaryEntity.getEmotion() != null ? diaryEntity.getEmotion().getName() : null,
+                diaryEntity.getCreatedAt().toString(),
+                diaryEntity.getUser().getNickname(),
+                diaryEntity.getThumbnail() != null ? diaryEntity.getThumbnail() : null
         );
     }
 
@@ -69,7 +64,7 @@ public class DiaryService {
         // 2. size + 1 개 조회 (다음 커서 존재 여부 확인용)
         PageRequest page = PageRequest.of(0,size+1); // (page Num, page Size)
 
-        List<Diary> diaries = diaryRepository.findMyDiaries(userId, cursor, page);
+        List<DiaryEntity> diaries = diaryRepository.findMyDiaries(userId, cursor, page);
 
         // 다음 페이지가 있다면?? : size보다 크면 있음.
         boolean hasNext = diaries.size() > size;
@@ -111,7 +106,7 @@ public class DiaryService {
 
         log.debug("startDate : {}, endDate : {}",startDate,endDate);
 
-        List<Diary> diaries = diaryRepository.findByUserIdAndDateRange(
+        List<DiaryEntity> diaries = diaryRepository.findByUserIdAndDateRange(
                 userId,
                 startDate.atStartOfDay(),
                 endDate.atTime(LocalTime.MAX) );
@@ -137,18 +132,18 @@ public class DiaryService {
         log.debug("userId : {}",userId);
 
         // 일기 정보 조회
-        Diary diary = diaryRepository.findById(diaryId)
+        DiaryEntity diaryEntity = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("해당 Id의 Diary를 찾을 수 없습니다."));
 
         // 일기의 유저id와 사용자의 id가 일치하는가??
-        if (!diary.getUser().getId().equals(userId)) {
-            log.debug("유저 id : {} 와 일기의 유저 id : {} 가 일치하지 않습니다.",userId, diary.getUser().getId());
+        if (!diaryEntity.getUser().getId().equals(userId)) {
+            log.debug("유저 id : {} 와 일기의 유저 id : {} 가 일치하지 않습니다.",userId, diaryEntity.getUser().getId());
             throw new UnauthorizedDiaryAccessException("diary에 권한이 없습니다.");
         }
-        log.debug("일기의 userID와 일치합니다. {}",diary.getUser().getId());
+        log.debug("일기의 userID와 일치합니다. {}", diaryEntity.getUser().getId());
 
         // messsages -> List로 매핑하기.
-        String messagesJson = diary.getMessages();
+        String messagesJson = diaryEntity.getMessages();
         System.out.println("messages : "+messagesJson);
 
         ObjectMapper mapper = new ObjectMapper();

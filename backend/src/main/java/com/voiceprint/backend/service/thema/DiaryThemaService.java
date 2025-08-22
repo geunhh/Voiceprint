@@ -5,7 +5,6 @@ import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
 import com.voiceprint.backend.api.thema.dto.DiaryThemaResponse;
 import com.voiceprint.backend.api.thema.dto.UsingDiaryThemaResponseDTO;
 import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
-import com.voiceprint.backend.common.exception.diary.DiaryThemaNotFoundException;
 import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
 import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
 import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
@@ -13,7 +12,7 @@ import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessExce
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import com.voiceprint.backend.domain.Entity.DiaryThema;
 import com.voiceprint.backend.domain.Repository.DiaryThemaRepository;
@@ -130,16 +129,16 @@ public class DiaryThemaService {
     @Transactional
     public void updateCustomThemaFromDiary(Integer userId, Integer diaryId) {
         //1. 일기 조회
-        Diary diary = diaryRepository.findById(diaryId)
+        DiaryEntity diaryEntity = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryNotFoundException("일기를 찾을 수 없습니다."));
 
         //2. 유저 조회 및 확인
-        if (!diary.getUser().getId().equals(userId)) {
+        if (!diaryEntity.getUser().getId().equals(userId)) {
             throw new UnauthorizedDiaryAccessException("일기에 접근권한이 없습니다.");
         }
 
         //3. 프롬프트 추출
-        String prompt = diary.getPrompt();
+        String prompt = diaryEntity.getPrompt();
 
         if (prompt == null || prompt.isBlank() || prompt.isEmpty()) {
             throw new InvalidPromptException("유효하지않은 프롬프트입니다,");
@@ -155,7 +154,7 @@ public class DiaryThemaService {
                         "내 커스텀 테마",
                         "일기를 기반으로 생성된 커스텀 테마입니다.",
                         prompt,
-                        diary.getContent() // 예시로 넣은 내용입니다. 필요에 맞게 수정하세요.
+                        diaryEntity.getContent() // 예시로 넣은 내용입니다. 필요에 맞게 수정하세요.
 
                 );
         });
@@ -166,7 +165,7 @@ public class DiaryThemaService {
         diaryThemaRepository.save(thema);
 
         //6. 내 usingThema로 변경
-        User user = diary.getUser();
+        User user = diaryEntity.getUser();
         user.setUsingThema(thema);
         userRepository.save(user);
 

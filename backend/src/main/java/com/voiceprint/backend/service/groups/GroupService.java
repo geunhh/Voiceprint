@@ -44,13 +44,14 @@ public class GroupService {
         if (request.getGroupImage() == null || request.getGroupImage().isEmpty()) {
             throw new GroupNotFoundException("그룹 이미지가 없습니다.");
         }
-        String imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+        //Todo : S3 서버 임시 제거
+//        String imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
 
         // 그룹 엔티티 생성
         Group group = Group.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .groupImage(imageUrl)
+                .groupImage("null") //TODO : 일단 null.
                 .enableAlarm(request.getEnableAlarm() != null ? request.getEnableAlarm() : false)
                 .alarmDays(request.getAlarmDays())
                 .alarmTime(request.getAlarmTime())

@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "Diary") // JPQL 엔티티명 = Diary
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Diary {
+public class DiaryEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -56,20 +56,19 @@ public class Diary {
     private LocalDateTime createdAt;
 
     //==생성 메서드==//
-    public static Diary createDiary(
+    public static DiaryEntity createDiary(
             User user, Emotion emotion, String title, String content, String thumbnail, String prompt, String messages) {
-        Diary diary = new Diary();
-        diary.user = user;
-        diary.emotion = emotion;
-        diary.title = title;
-        diary.content = content;
-        diary.thumbnail = thumbnail;
-        diary.prompt = prompt;
-        diary.messages = messages;
-        diary.createdAt = LocalDateTime.now();
-        return diary;
+        DiaryEntity diaryEntity = new DiaryEntity();
+        diaryEntity.user = user;
+        diaryEntity.emotion = emotion;
+        diaryEntity.title = title;
+        diaryEntity.content = content;
+        diaryEntity.thumbnail = thumbnail;
+        diaryEntity.prompt = prompt;
+        diaryEntity.messages = messages;
+        diaryEntity.createdAt = LocalDateTime.now();
+        return diaryEntity;
     }
-
 
 
 

@@ -3,7 +3,7 @@ package com.voiceprint.backend.service.diary;
 import com.voiceprint.backend.api.diary.dto.EmotionCountDTO;
 import com.voiceprint.backend.api.diary.dto.MonthlyEmotionResponseDTO;
 import com.voiceprint.backend.api.diary.dto.WeeklyEmotionResponseDTO;
-import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,14 +56,14 @@ public class EmotionService {
         }
 
         // 3. 감정 배열 생성
-        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(userId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
+        List<DiaryEntity> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(userId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
         log.info("diaries : {}",diaries);
 
-        for (Diary diary : diaries) {
-            if (diary.getEmotion() == null) continue;
+        for (DiaryEntity diaryEntity : diaries) {
+            if (diaryEntity.getEmotion() == null) continue;
 
-            int index = diary.getCreatedAt().getDayOfWeek().getValue() % 7 ;
-            emotionList.set(index, diary.getEmotion().getName());
+            int index = diaryEntity.getCreatedAt().getDayOfWeek().getValue() % 7 ;
+            emotionList.set(index, diaryEntity.getEmotion().getName());
         }
 
         return new WeeklyEmotionResponseDTO(emotionList);
@@ -79,7 +79,7 @@ public class EmotionService {
         log.debug("date range : {} ~ {}",startDate,endDate);
 
         // 2. 일기 목록 조회
-        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(
+        List<DiaryEntity> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(
                 userId, startDate.atStartOfDay(),endDate.atTime(LocalTime.MAX)
         );
         log.debug("diaries : {} ",diaries);
@@ -90,11 +90,11 @@ public class EmotionService {
 
         // 3. 감정 통계 조회
         Map<String, Integer> emotionMap = new HashMap<>();
-        for (Diary diary : diaries) {
-            log.debug("id:{}, emotion:{}",diary.getId(),diary.getEmotion().getName());
-            if (diary.getEmotion() == null) continue;
+        for (DiaryEntity diaryEntity : diaries) {
+            log.debug("id:{}, emotion:{}", diaryEntity.getId(), diaryEntity.getEmotion().getName());
+            if (diaryEntity.getEmotion() == null) continue;
 
-            String name = diary.getEmotion().getName();
+            String name = diaryEntity.getEmotion().getName();
             emotionMap.put(name, emotionMap.getOrDefault(name,0)+1);
         }
 
