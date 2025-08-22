@@ -1,4 +1,4 @@
-package com.voiceprint.backend.service.diary;
+package com.voiceprint.backend.service.diaryEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,9 +67,9 @@ public class DiaryPromptFactory implements PromptFactory {
             %s
 
             출력은 반드시 엄격한 JSON으로만 반환하세요. 다른 설명/메타 정보/코드블록은 절대 포함하지 마세요.
-            JSON 키: title, emotion, diary
+            JSON 키: title, emotion, diaryEntity
             emotion 값은 ["행복","설렘","피로","짜증","우울"] 중 하나
-            제약: 약 700자, 일기체 재구성, 발랄/활기찬 톤, 문단은 diary 내부에서 \\n\\n
+            제약: 약 700자, 일기체 재구성, 발랄/활기찬 톤, 문단은 diaryEntity 내부에서 \\n\\n
             """.formatted(themeTitle, themeDesc, themePrompt, themeDiary);
 
         if (!chatSystem.isBlank()) system += "\n[Additional System Prompt]\n" + chatSystem;
@@ -81,7 +81,7 @@ public class DiaryPromptFactory implements PromptFactory {
             %s
 
             예시:
-            {"title":"오늘의 작은 설렘","emotion":"설렘","diary":"..."}
+            {"title":"오늘의 작은 설렘","emotion":"설렘","diaryEntity":"..."}
             """.formatted(userChat);
 
         OpenAiChatOptions options = OpenAiChatOptions.builder()

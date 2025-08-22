@@ -1,7 +1,7 @@
 package com.voiceprint.backend.common.infra;
 
 import com.voiceprint.backend.domain.ai.AiResult;
-import com.voiceprint.backend.domain.ai.AiService;
+import com.voiceprint.backend.domain.ai.AiServicePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SpringAIService implements AiService {
+public class SpringAIService implements AiServicePort {
 
     private final ChatClient chatClient;
 

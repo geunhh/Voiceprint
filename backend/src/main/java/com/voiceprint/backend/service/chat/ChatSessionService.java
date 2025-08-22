@@ -8,23 +8,17 @@ import com.voiceprint.backend.api.chat.dto.*;
 import com.voiceprint.backend.common.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.common.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.common.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
-import com.voiceprint.backend.domain.Entity.Chatbot;
 import com.voiceprint.backend.domain.Repository.ChatbotRepository;
-import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Repository.DiaryRepository;
-import com.voiceprint.backend.domain.Entity.Emotion;
 import com.voiceprint.backend.domain.Repository.EmotionRepository;
-import com.voiceprint.backend.domain.Entity.DiaryThema;
 import com.voiceprint.backend.domain.ai.AiResult;
-import com.voiceprint.backend.domain.ai.AiService;
+import com.voiceprint.backend.domain.ai.AiServicePort;
 import com.voiceprint.backend.domain.ai.PromptFactory;
 import com.voiceprint.backend.service.alarm.NotificationService;
-import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,14 +48,14 @@ public class ChatSessionService {
     private final EmotionRepository emotionRepository;
     private final WebClient fastApiWebClient;
     private final NotificationService notificationService;
-    private final AiService aiService;
+    private final AiServicePort aiService;
     private final PromptFactory promptFactory;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ChatSessionService(RedisTemplate<String, Object> redisTemplate, ChatbotRepository chatbotRepository,
                               UserRepository userRepository, DiaryRepository diaryRepository,
                               EmotionRepository emotionRepository, WebClient fastApiWebClient,
-                              NotificationService notificationService, AiService aiService, @Qualifier("diaryPromptFactory") PromptFactory promptFactory) {
+                              NotificationService notificationService, AiServicePort aiService, @Qualifier("diaryPromptFactory") PromptFactory promptFactory) {
         this.redisTemplate = redisTemplate;
         this.chatbotRepository = chatbotRepository;
         this.userRepository = userRepository;
@@ -462,7 +456,7 @@ public class ChatSessionService {
                 : null;
 
         // 4. Diary 생성 및 저장
-        Diary diary = Diary.createDiary(
+        DiaryEntity diaryEntity = DiaryEntity.createDiary(
                 user,emotion,title,content,"임시..",prompt,messagesJson
         );
 
@@ -475,14 +469,14 @@ public class ChatSessionService {
                 .orElseThrow(() -> new RuntimeException("챗봇 정보 없음"));
         user.setLastChatbot(chatbot);
 
-        diaryRepository.save(diary);
+        diaryRepository.save(diaryEntity);
 
 
         // 일기 생성 및 채팅 상태 변경
         redisTemplate.opsForHash().put(sessionKey,"status", DIARY_SAVED.name());
 
 
-        return diary.getId();
+        return diaryEntity.getId();
 
     }
     // ------- 유틸 ---------//

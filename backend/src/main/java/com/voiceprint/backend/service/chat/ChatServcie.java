@@ -2,9 +2,8 @@ package com.voiceprint.backend.service.chat;
 
 import com.voiceprint.backend.api.chat.dto.ChatTextResponseDTO;
 import com.voiceprint.backend.domain.ai.AiResult;
-import com.voiceprint.backend.domain.ai.AiService;
+import com.voiceprint.backend.domain.ai.AiServicePort;
 import com.voiceprint.backend.domain.ai.PromptFactory;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,10 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatServcie {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final AiService aiService; // Spring AI 구현 주입
+    private final AiServicePort aiService; // Spring AI 구현 주입
     private final PromptFactory promptFactory;
 
-    public ChatServcie(RedisTemplate<String, Object> redisTemplate, AiService aiService, @Qualifier("chatPromptFactory") PromptFactory promptFactory) {
+    public ChatServcie(RedisTemplate<String, Object> redisTemplate, AiServicePort aiService, @Qualifier("chatPromptFactory") PromptFactory promptFactory) {
         this.redisTemplate = redisTemplate;
         this.aiService = aiService;
         this.promptFactory = promptFactory;
