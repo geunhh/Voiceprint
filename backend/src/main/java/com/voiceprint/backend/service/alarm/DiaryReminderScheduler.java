@@ -1,6 +1,6 @@
 package com.voiceprint.backend.service.alarm;
 
-import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
+import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.GroupRepository;

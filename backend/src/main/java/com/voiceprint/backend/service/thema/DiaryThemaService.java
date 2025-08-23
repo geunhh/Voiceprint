@@ -1,15 +1,15 @@
 package com.voiceprint.backend.service.thema;
 
-import com.voiceprint.backend.api.thema.dto.DiaryThemaCreateResponse;
-import com.voiceprint.backend.api.thema.dto.DiaryThemaListResponseDTO;
-import com.voiceprint.backend.api.thema.dto.DiaryThemaResponse;
-import com.voiceprint.backend.api.thema.dto.UsingDiaryThemaResponseDTO;
-import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
-import com.voiceprint.backend.common.exception.diary.InvalidPromptException;
-import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryAccessException;
-import com.voiceprint.backend.common.exception.thema.ThemaNotFoundExceiption;
-import com.voiceprint.backend.common.exception.thema.UnauthorizedThemaAccessException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaCreateResponse;
+import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaListResponseDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaResponse;
+import com.voiceprint.backend.diary.adapter.in.web.dto.thema.UsingDiaryThemaResponseDTO;
+import com.voiceprint.backend.global.exception.diary.DiaryNotFoundException;
+import com.voiceprint.backend.global.exception.diary.InvalidPromptException;
+import com.voiceprint.backend.global.exception.diary.UnauthorizedDiaryAccessException;
+import com.voiceprint.backend.global.exception.thema.ThemaNotFoundExceiption;
+import com.voiceprint.backend.global.exception.thema.UnauthorizedThemaAccessException;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.domain.Entity.DiaryEntity;

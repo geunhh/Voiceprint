@@ -1,10 +1,10 @@
 package com.voiceprint.backend.service.groups;
 
 
-import com.voiceprint.backend.api.groups.dto.*;
-import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
-import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
-import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.group.adapter.in.web.dto.*;
+import com.voiceprint.backend.global.exception.group.GroupNotFoundException;
+import com.voiceprint.backend.global.exception.group.GroupUserNotFoundException;
+import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.domain.Entity.Group;

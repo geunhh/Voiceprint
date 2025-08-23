@@ -1,9 +1,9 @@
 package com.voiceprint.backend.domain.port.in.diary;
 
-import com.voiceprint.backend.api.chat.dto.ChatMessageResponseDTO;
-import com.voiceprint.backend.api.diary.dto.DiaryDetailResponseDTO;
-import com.voiceprint.backend.api.diary.dto.DiaryListWithCursorDTO;
-import com.voiceprint.backend.api.diary.dto.DiaryMontlyListDTO;
+import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryDetailResponseDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryListWithCursorDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryMontlyListDTO;
 
 import java.util.List;
 

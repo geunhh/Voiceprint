@@ -1,14 +1,14 @@
 package com.voiceprint.backend.service.diary;
 
-import com.voiceprint.backend.api.diary.dto.GroupDiaryResponseDTO;
-import com.voiceprint.backend.api.groups.dto.GroupDiaryDetailResponse;
-import com.voiceprint.backend.api.groups.dto.GroupDiaryListWithCursorDTO;
-import com.voiceprint.backend.common.dto.CommonResponse;
-import com.voiceprint.backend.common.exception.diary.DiaryNotFoundException;
-import com.voiceprint.backend.common.exception.diary.UnauthorizedDiaryException;
+import com.voiceprint.backend.diary.adapter.in.web.dto.GroupDiaryResponseDTO;
+import com.voiceprint.backend.group.adapter.in.web.dto.GroupDiaryDetailResponse;
+import com.voiceprint.backend.group.adapter.in.web.dto.GroupDiaryListWithCursorDTO;
+import com.voiceprint.backend.global.dto.CommonResponse;
+import com.voiceprint.backend.global.exception.diary.DiaryNotFoundException;
+import com.voiceprint.backend.global.exception.diary.UnauthorizedDiaryException;
 
-import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
 import com.voiceprint.backend.service.alarm.NotificationService;

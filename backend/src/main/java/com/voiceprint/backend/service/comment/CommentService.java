@@ -1,12 +1,12 @@
 package com.voiceprint.backend.service.comment;
 
-import com.voiceprint.backend.api.comment.dto.CommentCreatRequestDTO;
-import com.voiceprint.backend.api.comment.dto.CommentCreateResponseDTO;
-import com.voiceprint.backend.api.comment.dto.CommentGetResponseDTO;
-import com.voiceprint.backend.api.comment.dto.CommentListWithCursorDTO;
-import com.voiceprint.backend.common.exception.comment.CommentNotFoundException;
-import com.voiceprint.backend.common.exception.comment.UnauthorizedCommentAccessException;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.comment.adapter.in.web.dto.CommentCreatRequestDTO;
+import com.voiceprint.backend.comment.adapter.in.web.dto.CommentCreateResponseDTO;
+import com.voiceprint.backend.comment.adapter.in.web.dto.CommentGetResponseDTO;
+import com.voiceprint.backend.comment.adapter.in.web.dto.CommentListWithCursorDTO;
+import com.voiceprint.backend.global.exception.comment.CommentNotFoundException;
+import com.voiceprint.backend.global.exception.comment.UnauthorizedCommentAccessException;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
 import com.voiceprint.backend.service.alarm.NotificationService;

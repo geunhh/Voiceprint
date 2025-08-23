@@ -1,6 +1,6 @@
 package com.voiceprint.backend.service.groups;
 
-import com.voiceprint.backend.common.dto.CommonResponse;
+import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
 import com.voiceprint.backend.domain.Repository.GroupUserRepository;

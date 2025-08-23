@@ -1,8 +1,8 @@
 package com.voiceprint.backend.service.diary;
 
-import com.voiceprint.backend.api.diary.dto.EmotionCountDTO;
-import com.voiceprint.backend.api.diary.dto.MonthlyEmotionResponseDTO;
-import com.voiceprint.backend.api.diary.dto.WeeklyEmotionResponseDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.EmotionCountDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.MonthlyEmotionResponseDTO;
+import com.voiceprint.backend.diary.adapter.in.web.dto.WeeklyEmotionResponseDTO;
 import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Repository.DiaryRepository;
 import lombok.RequiredArgsConstructor;

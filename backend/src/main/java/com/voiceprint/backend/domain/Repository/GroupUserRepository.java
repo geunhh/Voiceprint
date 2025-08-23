@@ -1,6 +1,6 @@
 package com.voiceprint.backend.domain.Repository;
 
-import com.voiceprint.backend.api.groups.dto.UserInfoDTO;
+import com.voiceprint.backend.group.adapter.in.web.dto.UserInfoDTO;
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
@@ -25,7 +25,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
 
     List<GroupUser> findAllByGroupId(Integer groupId);
 
-    @Query("SELECT new com.voiceprint.backend.api.groups.dto.UserInfoDTO(u.id, p.imageUrl, u.nickname) " +
+    @Query("SELECT new com.voiceprint.backend.group.adapter.in.web.dto.UserInfoDTO(u.id, p.imageUrl, u.nickname) " +
             "FROM GroupUser gu JOIN gu.user u " +
             "JOIN u.profileImage p " +
             "WHERE gu.group.id = :groupId")

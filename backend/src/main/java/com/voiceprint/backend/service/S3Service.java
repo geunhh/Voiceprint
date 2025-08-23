@@ -1,8 +1,7 @@
 package com.voiceprint.backend.service;
 
-import com.voiceprint.backend.common.exception.s3.InvalidFileException;
-import com.voiceprint.backend.common.exception.s3.S3UnavailableException;
-import org.springframework.http.HttpStatus;
+import com.voiceprint.backend.global.exception.s3.InvalidFileException;
+import com.voiceprint.backend.global.exception.s3.S3UnavailableException;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
 

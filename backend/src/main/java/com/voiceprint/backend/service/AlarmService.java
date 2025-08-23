@@ -1,6 +1,5 @@
 package com.voiceprint.backend.service;
 
-import com.voiceprint.backend.common.config.RedisConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

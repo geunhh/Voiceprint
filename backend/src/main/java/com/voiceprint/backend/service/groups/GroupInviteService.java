@@ -1,10 +1,10 @@
 package com.voiceprint.backend.service.groups;
 
-import com.voiceprint.backend.api.groups.dto.InviteAcceptResponseDTO;
-import com.voiceprint.backend.api.groups.dto.InviteCodeResponseDTO;
-import com.voiceprint.backend.api.groups.dto.InviteInfoReponseDTO;
-import com.voiceprint.backend.common.exception.group.*;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.group.adapter.in.web.dto.InviteAcceptResponseDTO;
+import com.voiceprint.backend.group.adapter.in.web.dto.InviteCodeResponseDTO;
+import com.voiceprint.backend.group.adapter.in.web.dto.InviteInfoReponseDTO;
+import com.voiceprint.backend.global.exception.group.*;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
 import lombok.RequiredArgsConstructor;
