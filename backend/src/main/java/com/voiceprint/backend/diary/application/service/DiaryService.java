@@ -11,7 +11,9 @@ import com.voiceprint.backend.diary.adapter.in.web.dto.DiarySummaryResponseDTO;
 import com.voiceprint.backend.diary.domain.Diary;
 import com.voiceprint.backend.diary.application.port.in.DiaryUseCase;
 import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
+import com.voiceprint.backend.global.exception.diary.DiaryNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,12 +34,12 @@ public class DiaryService implements DiaryUseCase {
     @Override
     public DiaryDetailResponseDTO getDiaryDetail(Integer userId, Integer diaryId) {
         Diary diary = diaryRepositoryPort.findDetailById(diaryId)
-                .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다.")); // Custom Exception으로 교체
+                .orElseThrow(() -> new DiaryNotFoundException("일기를 찾을 수 없습니다.")); // Custom Exception으로 교체
 
-        if (!diary.getUserId().equals(userId.longValue())) {
+        if (!diary.getUserId().equals(userId.intValue())) {
             throw new RuntimeException("권한이 없습니다."); // Custom Exception으로 교체
         }
-        
+
         return new DiaryDetailResponseDTO(diary.getId(), diary.getTitle(), diary.getContent(), null, diary.getCreatedAt().toString(), null, diary.getThumbnail());
     }
 
