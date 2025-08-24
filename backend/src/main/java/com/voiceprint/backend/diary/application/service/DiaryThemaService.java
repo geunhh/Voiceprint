@@ -1,4 +1,4 @@
-package com.voiceprint.backend.service.thema;
+package com.voiceprint.backend.diary.application.service;
 
 import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaCreateResponse;
 import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaListResponseDTO;

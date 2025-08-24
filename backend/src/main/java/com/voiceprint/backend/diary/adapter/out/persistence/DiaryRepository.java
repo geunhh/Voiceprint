@@ -56,4 +56,8 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Integer> {
     """)
     Optional<DiaryEntity> findDetailById(
             @Param("dairyId") Integer diaryId);
+
+
+    
+
 }

@@ -16,11 +16,12 @@ public class Diary {
     private final String messages;
     private final Boolean isDeleted;
     private final Integer userId;
-    private final Byte emotionId;
+    private final Emotion emotion;
     private final LocalDateTime createdAt;
 
     @Builder
-    public Diary(Integer id, String title, String content, String thumbnail, String prompt, String messages, Boolean isDeleted, Integer userId, Byte emotionId, LocalDateTime createdAt) {
+    public Diary(Integer id, String title, String content, String thumbnail, String prompt, String messages,
+                 Boolean isDeleted, Integer userId, Emotion emotion, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -29,7 +30,7 @@ public class Diary {
         this.messages = messages;
         this.isDeleted = isDeleted;
         this.userId = userId;
-        this.emotionId = emotionId;
+        this.emotion = emotion;
         this.createdAt = createdAt;
     }
 

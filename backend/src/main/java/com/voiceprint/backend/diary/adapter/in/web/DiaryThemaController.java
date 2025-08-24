@@ -7,7 +7,7 @@ import com.voiceprint.backend.diary.adapter.in.web.dto.thema.UsingDiaryThemaResp
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaRepository;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.thema.DiaryThemaService;
+import com.voiceprint.backend.diary.application.service.DiaryThemaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

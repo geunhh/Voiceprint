@@ -9,8 +9,10 @@ import java.util.Optional;
 public interface DiaryRepositoryPort {
     Diary save(Diary diary);
     Optional<Diary> findDetailById(Integer diaryId);
-    List<Diary> findMyDiaries(Long userId, Integer cursor, int limit);
-    List<Diary> findTop5ByUserId(Long userId);
-    List<Diary> findByUserIdAndDateRange(Long userId, LocalDateTime start, LocalDateTime end);
+    List<Diary> findMyDiaries(Integer userId, Integer cursor, int limit);
+    List<Diary> findTop5ByUserId(Integer userId);
+    List<Diary> findByUserIdAndDateRange(Integer userId, LocalDateTime start, LocalDateTime end);
     void deleteById(Integer diaryId);
+    List<Diary> findByUserIdAndCreatedAtBetween(Integer userId, LocalDateTime start, LocalDateTime end);
+    
 }

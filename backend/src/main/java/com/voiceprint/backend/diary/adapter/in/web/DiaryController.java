@@ -10,7 +10,7 @@ import com.voiceprint.backend.domain.Entity.Notification;
 import com.voiceprint.backend.diary.application.port.in.DiaryUseCase;
 import com.voiceprint.backend.service.alarm.NotificationService;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.diary.GroupDiaryService;
+import com.voiceprint.backend.diary.application.service.GroupDiaryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

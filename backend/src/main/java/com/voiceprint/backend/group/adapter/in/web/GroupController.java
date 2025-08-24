@@ -3,7 +3,7 @@ package com.voiceprint.backend.group.adapter.in.web;
 import com.voiceprint.backend.group.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.diary.GroupDiaryService;
+import com.voiceprint.backend.diary.application.service.GroupDiaryService;
 import com.voiceprint.backend.service.groups.GroupService;
 import com.voiceprint.backend.service.groups.GroupUserService;
 import jakarta.servlet.http.HttpServletRequest;

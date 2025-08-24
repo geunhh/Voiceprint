@@ -1,4 +1,4 @@
-package com.voiceprint.backend.service.s3;
+package com.voiceprint.backend.global.util;
 
 import org.springframework.stereotype.Component;
 import java.io.InputStream;

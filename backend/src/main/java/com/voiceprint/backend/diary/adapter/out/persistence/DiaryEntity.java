@@ -24,7 +24,7 @@ public class DiaryEntity {
     // 감정
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emotion_id")
-    private Emotion emotion;
+    private EmotionJPAEntity emotion;
 
     //제목
     @Column(length = 30, nullable = false)
@@ -58,7 +58,7 @@ public class DiaryEntity {
 
     //==생성 메서드==//
     public static DiaryEntity createDiary(
-            User user, Emotion emotion, String title, String content, String thumbnail, String prompt, String messages) {
+            User user, EmotionJPAEntity emotion, String title, String content, String thumbnail, String prompt, String messages) {
         DiaryEntity diaryEntity = new DiaryEntity();
         diaryEntity.user = user;
         diaryEntity.emotion = emotion;

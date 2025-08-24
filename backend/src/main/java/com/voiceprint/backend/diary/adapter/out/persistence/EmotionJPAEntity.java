@@ -7,10 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
-@Entity
+@Entity(name = "Emotion")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Emotion {
+public class EmotionJPAEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Byte id;
@@ -24,8 +24,12 @@ public class Emotion {
     private String color;
 
     //== 생성 메서드 ==//
-    public Emotion(String name) {
-        this.name = name;
+
+    public static EmotionJPAEntity create(String name, String color) {
+        EmotionJPAEntity e = new EmotionJPAEntity();
+        e.name = name;
+        e.color = color;
+        return e;
     }
 }
 

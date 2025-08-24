@@ -46,7 +46,7 @@ public class DiaryService implements DiaryUseCase {
     @Override
     public DiaryListWithCursorDTO getUserDiaries(Integer userId, Integer cursor, Integer size) {
         // 페이지네이션 로직은 Application Service의 책임
-        List<Diary> diaries = diaryRepositoryPort.findMyDiaries(userId.longValue(), cursor, size + 1);
+        List<Diary> diaries = diaryRepositoryPort.findMyDiaries(userId, cursor, size + 1);
         boolean hasNext = diaries.size() > size;
         if (hasNext) {
             diaries = diaries.subList(0, size);
@@ -66,7 +66,7 @@ public class DiaryService implements DiaryUseCase {
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = startDate.withDayOfMonth(startDate.lengthOfMonth()).atTime(LocalTime.MAX);
 
-        List<Diary> diaries = diaryRepositoryPort.findByUserIdAndDateRange(userId.longValue(), start, end);
+        List<Diary> diaries = diaryRepositoryPort.findByUserIdAndDateRange(userId, start, end);
         
         List<DiarySummaryResponseDTO> dtos = diaries.stream()
             .map(d -> new DiarySummaryResponseDTO(d.getId(), d.getTitle(), d.getContent(), null, d.getCreatedAt().toString(), d.getThumbnail()))

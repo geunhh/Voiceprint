@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface EmotionRepository extends JpaRepository<Emotion, Byte> {
+public interface EmotionRepository extends JpaRepository<EmotionJPAEntity, Byte> {
 
-    Optional<Emotion> findByName(String name);
+    Optional<EmotionJPAEntity> findByName(String name);
 }

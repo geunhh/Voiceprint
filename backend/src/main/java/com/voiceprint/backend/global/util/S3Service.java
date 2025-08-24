@@ -1,4 +1,4 @@
-package com.voiceprint.backend.service;
+package com.voiceprint.backend.global.util;
 
 import com.voiceprint.backend.global.exception.s3.InvalidFileException;
 import com.voiceprint.backend.global.exception.s3.S3UnavailableException;

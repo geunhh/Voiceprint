@@ -4,7 +4,7 @@ import com.voiceprint.backend.diary.adapter.in.web.dto.MonthlyEmotionResponseDTO
 import com.voiceprint.backend.diary.adapter.in.web.dto.WeeklyEmotionResponseDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.diary.EmotionService;
+import com.voiceprint.backend.diary.application.service.EmotionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

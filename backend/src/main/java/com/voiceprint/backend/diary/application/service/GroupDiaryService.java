@@ -1,4 +1,4 @@
-package com.voiceprint.backend.service.diary;
+package com.voiceprint.backend.diary.application.service;
 
 import com.voiceprint.backend.diary.adapter.in.web.dto.GroupDiaryResponseDTO;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
@@ -13,7 +13,6 @@ import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessExce
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
-import com.voiceprint.backend.service.alarm.NotificationService;
 import com.voiceprint.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +36,6 @@ public class GroupDiaryService {
     private final UserRepository userRepository;
     private final GroupUserRepository groupUserRepository;
     private final NotificationRepository notificationRepository;
-    private final NotificationService notificationService;
 
     /**
      * 일기 공유 메서드

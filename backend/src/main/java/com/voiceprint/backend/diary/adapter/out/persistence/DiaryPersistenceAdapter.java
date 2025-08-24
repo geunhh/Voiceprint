@@ -4,6 +4,7 @@ import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.diary.domain.Diary;
 import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -26,11 +27,15 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
     public Diary save(Diary diary) {
         // Fetch User and Emotion entities
         User user = userRepository.findById(diary.getUserId())
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Emotion emotion = emotionRepository.findById(diary.getEmotionId())
-            .orElse(null); // Emotion can be optional
+            .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        DiaryEntity entity = diaryMapper.toEntity(diary, user, emotion);
+        EmotionJPAEntity emotionEntity = null;
+        if (diary.getEmotion() != null && diary.getEmotion().getId() != null) {
+             emotionEntity = emotionRepository.findById(emotionEntity.getId())
+                    .orElse(null);
+        }
+
+        DiaryEntity entity = diaryMapper.toEntity(diary, user, emotionEntity);
         DiaryEntity savedEntity = diaryRepository.save(entity);
         return diaryMapper.toDomain(savedEntity);
     }
@@ -41,24 +46,24 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
     }
 
     @Override
-    public List<Diary> findMyDiaries(Long userId, Integer cursor, int limit) {
-        return diaryRepository.findMyDiaries(userId.intValue(), cursor, PageRequest.of(0, limit))
+    public List<Diary> findMyDiaries(Integer userId, Integer cursor, int limit) {
+        return diaryRepository.findMyDiaries(userId, cursor, PageRequest.of(0, limit))
                 .stream()
                 .map(diaryMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Diary> findTop5ByUserId(Long userId) {
-        return diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId.intValue())
+    public List<Diary> findTop5ByUserId(Integer userId) {
+        return diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(diaryMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Diary> findByUserIdAndDateRange(Long userId, LocalDateTime start, LocalDateTime end) {
-        return diaryRepository.findByUserIdAndDateRange(userId.intValue(), start, end)
+    public List<Diary> findByUserIdAndDateRange(Integer userId, LocalDateTime start, LocalDateTime end) {
+        return diaryRepository.findByUserIdAndDateRange(userId, start, end)
                 .stream()
                 .map(diaryMapper::toDomain)
                 .collect(Collectors.toList());
@@ -68,4 +73,15 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
     public void deleteById(Integer diaryId) {
         diaryRepository.deleteById(diaryId);
     }
+
+    @Override
+    public List<Diary> findByUserIdAndCreatedAtBetween(Integer userId, LocalDateTime start, LocalDateTime end) {
+        return diaryRepository.findByUserIdAndCreatedAtBetween(userId, start, end)
+                .stream()
+                .map(diaryMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    
+
 }

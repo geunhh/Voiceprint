@@ -1,10 +1,10 @@
-package com.voiceprint.backend.service.diary;
+package com.voiceprint.backend.diary.application.service;
 
 import com.voiceprint.backend.diary.adapter.in.web.dto.EmotionCountDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.MonthlyEmotionResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.WeeklyEmotionResponseDTO;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
+import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
+import com.voiceprint.backend.diary.domain.Diary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class EmotionService {
 
-    private final DiaryRepository diaryRepository;
+    private final DiaryRepositoryPort diaryRepository;
 
     public WeeklyEmotionResponseDTO getWeeklyEmotions(Integer userId) {
 
@@ -56,14 +56,14 @@ public class EmotionService {
         }
 
         // 3. 감정 배열 생성
-        List<DiaryEntity> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(userId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
+        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(userId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
         log.info("diaries : {}",diaries);
 
-        for (DiaryEntity diaryEntity : diaries) {
-            if (diaryEntity.getEmotion() == null) continue;
+        for (Diary diary : diaries) {
+            if (diary.getEmotion() == null) continue;
 
-            int index = diaryEntity.getCreatedAt().getDayOfWeek().getValue() % 7 ;
-            emotionList.set(index, diaryEntity.getEmotion().getName());
+            int index = diary.getCreatedAt().getDayOfWeek().getValue() % 7 ;
+            emotionList.set(index, diary.getEmotion().getName());
         }
 
         return new WeeklyEmotionResponseDTO(emotionList);
@@ -79,7 +79,7 @@ public class EmotionService {
         log.debug("date range : {} ~ {}",startDate,endDate);
 
         // 2. 일기 목록 조회
-        List<DiaryEntity> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(
+        List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetween(
                 userId, startDate.atStartOfDay(),endDate.atTime(LocalTime.MAX)
         );
         log.debug("diaries : {} ",diaries);
@@ -90,11 +90,11 @@ public class EmotionService {
 
         // 3. 감정 통계 조회
         Map<String, Integer> emotionMap = new HashMap<>();
-        for (DiaryEntity diaryEntity : diaries) {
-            log.debug("id:{}, emotion:{}", diaryEntity.getId(), diaryEntity.getEmotion().getName());
-            if (diaryEntity.getEmotion() == null) continue;
+        for (Diary diary : diaries) {
+            log.debug("id:{}, emotion:{}", diary.getId(), diary.getEmotion().getName());
+            if (diary.getEmotion() == null) continue;
 
-            String name = diaryEntity.getEmotion().getName();
+            String name = diary.getEmotion().getName();
             emotionMap.put(name, emotionMap.getOrDefault(name,0)+1);
         }
 

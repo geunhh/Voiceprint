@@ -6,7 +6,7 @@ import com.nimbusds.jose.shaded.gson.Gson;
 import com.voiceprint.backend.ai.domain.AiResult;
 import com.voiceprint.backend.ai.domain.PromptFactory;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
-import com.voiceprint.backend.diary.adapter.out.persistence.Emotion;
+import com.voiceprint.backend.diary.adapter.out.persistence.EmotionJPAEntity;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
 import com.voiceprint.backend.chat.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.exception.chat.ChatSessionNotFoundException;
@@ -453,7 +453,7 @@ public class ChatSessionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
-        Emotion emotion = (emotionStr != null)
+        EmotionJPAEntity emotion = (emotionStr != null)
                 ? emotionRepository.findByName(emotionStr).orElse(null)
                 : null;
 
