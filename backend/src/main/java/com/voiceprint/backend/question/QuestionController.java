@@ -19,7 +19,11 @@ public class QuestionController {
     }
     @GetMapping("/today-question")
     public ResponseEntity<CommonResponse<QuestionGetResponseDTO>> getTodayQustion() {
-        QuestionGetResponseDTO questionGetResponseDTO = questionService.getTodayQuestion();
+//        QuestionGetResponseDTO questionGetResponseDTO = questionService.getTodayQuestion();
+        //Todo : 임시 질문 사용.
+        QuestionGetResponseDTO questionGetResponseDTO = new QuestionGetResponseDTO();
+        questionGetResponseDTO.setQuestion("임시 질문");
+        questionGetResponseDTO.setId((byte) 1);
         return ResponseEntity.ok(new CommonResponse<>(200, "오늘의 질문 조회 성공", questionGetResponseDTO));
     }
 }

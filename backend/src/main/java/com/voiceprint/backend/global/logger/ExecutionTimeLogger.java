@@ -17,7 +17,7 @@ public class ExecutionTimeLogger {
         Object result = joinPoint.proceed();
 
         long end = System.currentTimeMillis();
-        log.info("[실행시간] {}.{}() => {}ms",
+        log.debug("[실행시간] {}.{}() => {}ms",
                 joinPoint.getSignature().getDeclaringTypeName(),
                 joinPoint.getSignature().getName(),
                 end - start);
