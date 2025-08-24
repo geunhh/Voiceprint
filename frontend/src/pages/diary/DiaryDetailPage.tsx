@@ -58,7 +58,9 @@ export default function DiaryDetailPage() {
     if (diaryId) fetchDiary();
   }, [diaryId]);
 
-  if (!diary || !diary.emotion) return null;
+  if (!diary) {
+    return <div>Loading...</div>;
+  }
   if (!diaryIdNum) return null;
 
   const date = new Date(diary.createdAt);
@@ -66,7 +68,7 @@ export default function DiaryDetailPage() {
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  const emotionTagImage = emotionTagMap[diary.emotion];
+  const emotionTagImage = diary.emotion ? emotionTagMap[diary.emotion] : null;
 
   return (
     <div className="pb-28">
@@ -77,7 +79,7 @@ export default function DiaryDetailPage() {
             <p className="font-semibold text-gray-500 text-lg">
               {year}.{month}.{day}
             </p>
-            <img src={emotionTagImage} alt="감정태그" className="w-12 h-5" />
+                        {emotionTagImage && <img src={emotionTagImage} alt="감정태그" className="w-12 h-5" />}
           </div>
 
           {/* 일기 제목 */}
