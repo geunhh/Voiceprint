@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.port.in.diary;
+package com.voiceprint.backend.diary.application.port.in;
 
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryDetailResponseDTO;

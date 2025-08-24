@@ -7,7 +7,7 @@ import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.SharedDiaryRequest;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.domain.Entity.Notification;
-import com.voiceprint.backend.domain.port.in.diary.DiaryUseCase;
+import com.voiceprint.backend.diary.application.port.in.DiaryUseCase;
 import com.voiceprint.backend.service.alarm.NotificationService;
 import com.voiceprint.backend.service.auth.AuthService;
 import com.voiceprint.backend.service.diary.GroupDiaryService;

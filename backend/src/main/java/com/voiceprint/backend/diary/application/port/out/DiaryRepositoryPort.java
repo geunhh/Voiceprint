@@ -1,6 +1,6 @@
-package com.voiceprint.backend.domain.port.out.diary;
+package com.voiceprint.backend.diary.application.port.out;
 
-import com.voiceprint.backend.domain.model.diary.Diary;
+import com.voiceprint.backend.diary.domain.Diary;
 
 import java.time.LocalDateTime;
 import java.util.List;

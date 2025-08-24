@@ -1,6 +1,6 @@
 package com.voiceprint.backend.user.adapter.in.web.dto;
 
-import com.voiceprint.backend.domain.Entity.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

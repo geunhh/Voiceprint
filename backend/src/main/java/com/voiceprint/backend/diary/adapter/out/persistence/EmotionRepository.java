@@ -1,6 +1,5 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.Emotion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

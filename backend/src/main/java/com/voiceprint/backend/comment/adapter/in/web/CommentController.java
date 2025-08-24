@@ -5,7 +5,7 @@ import com.voiceprint.backend.comment.adapter.in.web.dto.CommentCreateResponseDT
 import com.voiceprint.backend.comment.adapter.in.web.dto.CommentListWithCursorDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.service.comment.CommentService;
+import com.voiceprint.backend.comment.application.service.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

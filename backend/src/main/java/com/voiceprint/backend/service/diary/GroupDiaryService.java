@@ -1,6 +1,8 @@
 package com.voiceprint.backend.service.diary;
 
 import com.voiceprint.backend.diary.adapter.in.web.dto.GroupDiaryResponseDTO;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
 import com.voiceprint.backend.group.adapter.in.web.dto.GroupDiaryDetailResponse;
 import com.voiceprint.backend.group.adapter.in.web.dto.GroupDiaryListWithCursorDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;

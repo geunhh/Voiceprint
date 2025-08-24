@@ -1,6 +1,5 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.comment.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.Comment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface CommentRepository extends JpaRepository<Comment, Integer> {
+/**
+ * Spring Data JPA Repository
+ * - Persistence Adapter 에서 호출하는 구체 구현체.
+ */
+public interface CommentRepository extends JpaRepository<CommentEntity, Integer> {
     // 첫 페이지용
     @Query("""
         SELECT c
@@ -21,7 +24,7 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
         AND NOT c.isDeleted 
         ORDER BY c.id DESC
         """)
-    List<Comment> findFirstComment(
+    List<CommentEntity> findFirstComment(
             @Param("groupDiaryId") long groupDiaryId,
             Pageable pageable
     );
@@ -36,7 +39,7 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
         AND NOT c.isDeleted
         ORDER BY c.id DESC
         """)
-    List<Comment> findAfterFirstComment(
+    List<CommentEntity> findAfterFirstComment(
             @Param("groupDiaryId") long groupDiaryId,
             @Param("cursor") Integer cursor,
             Pageable pageable

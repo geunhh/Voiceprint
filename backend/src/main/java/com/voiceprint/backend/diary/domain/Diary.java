@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.model.diary;
+package com.voiceprint.backend.diary.domain;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +15,7 @@ public class Diary {
     private final String prompt;
     private final String messages;
     private final Boolean isDeleted;
-    private final Integer userId; // authorId -> userId로 수정
+    private final Integer userId;
     private final Byte emotionId;
     private final LocalDateTime createdAt;
 

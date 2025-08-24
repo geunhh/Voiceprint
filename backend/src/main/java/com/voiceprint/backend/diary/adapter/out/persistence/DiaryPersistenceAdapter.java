@@ -1,13 +1,9 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Repository.DiaryRepository;
-import com.voiceprint.backend.domain.Repository.EmotionRepository;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Entity.Emotion;
-import com.voiceprint.backend.domain.model.diary.Diary;
-import com.voiceprint.backend.domain.port.out.diary.DiaryRepositoryPort;
+import com.voiceprint.backend.diary.domain.Diary;
+import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;

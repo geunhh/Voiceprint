@@ -12,10 +12,10 @@ import com.voiceprint.backend.global.exception.thema.UnauthorizedThemaAccessExce
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.DiaryEntity;
-import com.voiceprint.backend.domain.Repository.DiaryRepository;
-import com.voiceprint.backend.domain.Entity.DiaryThema;
-import com.voiceprint.backend.domain.Repository.DiaryThemaRepository;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;

@@ -1,6 +1,6 @@
 package com.voiceprint.backend.diary.adapter.in.web.dto.thema;
 
-import com.voiceprint.backend.domain.Entity.DiaryThema;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

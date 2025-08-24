@@ -1,9 +1,7 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.DiaryEntity;
 import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Entity.Emotion;
-import com.voiceprint.backend.domain.model.diary.Diary;
+import com.voiceprint.backend.diary.domain.Diary;
 import org.springframework.stereotype.Component;
 
 @Component

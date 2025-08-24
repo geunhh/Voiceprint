@@ -1,5 +1,7 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.comment.adapter.out.persistence;
 
+import com.voiceprint.backend.domain.Entity.GroupDiary;
+import com.voiceprint.backend.domain.Entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -9,10 +11,14 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
+/**
+ * JPA 엔티티
+ * DB 스키마와 매핑되며, 도메인 객체와는 분리
+ */
+@Entity(name = "Comment")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment {
+public class CommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -49,12 +55,12 @@ public class Comment {
     }
 
     @Builder
-    private Comment(User user,
-                    GroupDiary groupDiary,
-                    String content,
-                    boolean isDeleted,
-                    LocalDateTime createdAt,
-                    LocalDateTime updatedAt) {
+    private CommentEntity(User user,
+                          GroupDiary groupDiary,
+                          String content,
+                          boolean isDeleted,
+                          LocalDateTime createdAt,
+                          LocalDateTime updatedAt) {
         this.user = user;
         this.groupDiary = groupDiary;
         this.content = content;
