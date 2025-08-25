@@ -5,8 +5,8 @@ import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
-import com.voiceprint.backend.domain.Entity.Chatbot;
-import com.voiceprint.backend.domain.Repository.ChatbotRepository;
+import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
+import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +49,7 @@ public class VoiceChatService {
 
         try {
             // 2. DB에서 챗봇 프롬프트 조회
-            Chatbot chatbot = chatbotRepository.findById(chatbotId)
+            ChatbotJPAEntity chatbot = chatbotRepository.findById(chatbotId)
                     .orElseThrow(() -> new IllegalArgumentException("챗봇 없음"));
             String prompt = chatbot.getPrompt();
 

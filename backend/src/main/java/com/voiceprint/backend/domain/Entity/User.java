@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.Entity;
 
+import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
 import jakarta.persistence.*;
@@ -78,7 +79,7 @@ public class User {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")
-    private Chatbot lastChatbot;
+    private ChatbotJPAEntity lastChatbot;
 
     // 알림 여부
     @Column(nullable = true, columnDefinition = "BOOLEAN")

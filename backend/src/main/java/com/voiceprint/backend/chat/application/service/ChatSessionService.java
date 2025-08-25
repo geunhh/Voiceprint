@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.Gson;
 import com.voiceprint.backend.ai.domain.AiResult;
 import com.voiceprint.backend.ai.domain.PromptFactory;
+import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
 import com.voiceprint.backend.diary.adapter.out.persistence.EmotionJPAEntity;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
@@ -14,7 +15,7 @@ import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Repository.ChatbotRepository;
+import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.EmotionRepository;
@@ -95,7 +96,7 @@ public class ChatSessionService {
             // 사용자ID, 챗봇ID, 생성일시, 상태값 설정.
 
             // 3. 챗봇 프롬프트 조회
-            Chatbot chatbot = chatbotRepository.findById(chatbotId)
+            ChatbotJPAEntity chatbot = chatbotRepository.findById(chatbotId)
                     .orElseThrow(() -> new IllegalArgumentException("챗봇 없음"));
             String prompt = chatbot.getPrompt();
 
@@ -468,7 +469,7 @@ public class ChatSessionService {
                 ? ((Number) chatbotIdObj).byteValue()
                 : Byte.parseByte(String.valueOf(chatbotIdObj));
 
-        Chatbot chatbot = chatbotRepository.findById(chatbotId)
+        ChatbotJPAEntity chatbot = chatbotRepository.findById(chatbotId)
                 .orElseThrow(() -> new RuntimeException("챗봇 정보 없음"));
         user.setLastChatbot(chatbot);
 

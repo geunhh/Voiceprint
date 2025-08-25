@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.chat.adapter.out.persistence;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,13 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-@Entity
+@Entity(name = "Chatbot")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Chatbot {
+public class ChatbotJPAEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Byte id;
