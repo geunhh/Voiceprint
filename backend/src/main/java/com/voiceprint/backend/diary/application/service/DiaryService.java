@@ -80,7 +80,7 @@ public class DiaryService implements DiaryUseCase {
         Diary diary = diaryRepositoryPort.findDetailById(diaryId)
                 .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
 
-        if (!diary.getUserId().equals(userId.longValue())) {
+        if (!diary.getUserId().equals(userId)) {
             throw new RuntimeException("권한이 없습니다.");
         }
 
