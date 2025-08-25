@@ -1,6 +1,6 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,7 +19,7 @@ public class DiaryEntity {
     //유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserJPAEntity user;
 
     // 감정
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,7 +58,7 @@ public class DiaryEntity {
 
     //==생성 메서드==//
     public static DiaryEntity createDiary(
-            User user, EmotionJPAEntity emotion, String title, String content, String thumbnail, String prompt, String messages) {
+            UserJPAEntity user, EmotionJPAEntity emotion, String title, String content, String thumbnail, String prompt, String messages) {
         DiaryEntity diaryEntity = new DiaryEntity();
         diaryEntity.user = user;
         diaryEntity.emotion = emotion;

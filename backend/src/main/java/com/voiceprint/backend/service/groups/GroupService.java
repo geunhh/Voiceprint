@@ -5,8 +5,8 @@ import com.voiceprint.backend.group.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.exception.group.GroupNotFoundException;
 import com.voiceprint.backend.global.exception.group.GroupUserNotFoundException;
 import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessException;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
@@ -14,7 +14,7 @@ import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
 import com.voiceprint.backend.domain.Repository.GroupUserRepository;
 import com.voiceprint.backend.global.util.S3Service;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,12 +33,12 @@ public class GroupService {
     private final GroupUserRepository groupUserRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
-    private final AuthService authService;
+    private final UserService authService;
 
     @Transactional
     public GroupCreateResponse createGroup(Integer userId, GroupCreateRequest request) {
         // 유저 조회
-        User createUser = userRepository.findById(userId)
+        UserJPAEntity createUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));;
         // 이미지 업로드
         if (request.getGroupImage() == null || request.getGroupImage().isEmpty()) {

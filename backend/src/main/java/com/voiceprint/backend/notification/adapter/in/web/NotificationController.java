@@ -3,7 +3,7 @@ package com.voiceprint.backend.notification.adapter.in.web;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.service.alarm.NotificationService;
 import com.voiceprint.backend.service.alarm.SseService;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/api/notifications")
 public class NotificationController {
     private final SseService sseService;
-    private final AuthService authService;
+    private final UserService authService;
     private final NotificationService notificationService;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

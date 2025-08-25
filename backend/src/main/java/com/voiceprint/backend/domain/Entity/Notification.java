@@ -1,6 +1,7 @@
 package com.voiceprint.backend.domain.Entity;
 
 import com.voiceprint.backend.global.util.JpaJsonConverter;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +25,7 @@ public class Notification {
     // 수신 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;            // 수신자.
+    private UserJPAEntity user;            // 수신자.
 
     // 알림 타입 (ex. reminder, new_comment, new_post 등)
     @Column(length = 20, nullable = false)
@@ -51,7 +52,7 @@ public class Notification {
     //== 생성 메서드 ==//
 
     public static Notification create(
-            User user,
+            UserJPAEntity user,
             String type,
             String message,
             Map<String, Object> metadata

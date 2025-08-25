@@ -1,6 +1,6 @@
 package com.voiceprint.backend.domain.Entity;
 
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ public class GroupUser {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_gu_user"))
-    private User user;
+    private UserJPAEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("groupId")

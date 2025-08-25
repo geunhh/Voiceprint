@@ -1,7 +1,7 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.diary.domain.Diary;
 import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
@@ -26,7 +26,7 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
     @Override
     public Diary save(Diary diary) {
         // Fetch User and Emotion entities
-        User user = userRepository.findById(diary.getUserId())
+        UserJPAEntity user = userRepository.findById(diary.getUserId())
             .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         EmotionJPAEntity emotionEntity = null;
@@ -82,6 +82,13 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-    
+    @Override
+    public List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Integer userId) {
+        return diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(diaryMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
 
 }

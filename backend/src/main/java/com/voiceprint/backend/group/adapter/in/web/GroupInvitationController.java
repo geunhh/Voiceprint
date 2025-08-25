@@ -7,7 +7,7 @@ import com.voiceprint.backend.group.adapter.in.web.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.domain.Entity.Notification;
 import com.voiceprint.backend.service.alarm.NotificationService;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.service.groups.GroupInviteService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class GroupInvitationController {
 
-    private final AuthService authService;
+    private final UserService authService;
     private final GroupInviteService groupInviteService;
     private final NotificationService notificationService;
 

@@ -14,13 +14,14 @@ import com.voiceprint.backend.global.exception.chat.ChatSessionNotFoundException
 import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.EmotionRepository;
 import com.voiceprint.backend.ai.domain.AiServicePort;
 import com.voiceprint.backend.service.alarm.NotificationService;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -101,7 +102,7 @@ public class ChatSessionService {
             String prompt = chatbot.getPrompt();
 
             // 3-1. 챗봇 사용 정보 저장
-            User user = userRepository.findById(userId)
+            UserJPAEntity user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
             user.setLastChatbot(chatbot);   // 최근 사용한 챗봇 저장
             userRepository.save(user);
@@ -206,7 +207,7 @@ public class ChatSessionService {
         final String sessionKey = session_key + ":" + userId;
 
         // 유저/테마 조회
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
         DiaryThema thema = user.getUsingThema();
 
@@ -284,7 +285,7 @@ public class ChatSessionService {
         final String sessionKey = session_key + ":" + userId;
 
         // 유저/테마 조회
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
         DiaryThema thema = user.getUsingThema();
 
@@ -452,7 +453,7 @@ public class ChatSessionService {
         String messagesJson = new Gson().toJson(messages);
 
         // 3. DB 조회
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         EmotionJPAEntity emotion = (emotionStr != null)

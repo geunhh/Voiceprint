@@ -13,7 +13,9 @@ import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessExce
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
+import com.voiceprint.backend.user.application.service.UserService;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +34,7 @@ public class GroupDiaryService {
     private final GroupDiaryRepository groupDiaryRepository;
     private final GroupRepository groupRepository;
     private final DiaryRepository diaryRepository;
-    private final AuthService authService;
+    private final UserService authService;
     private final UserRepository userRepository;
     private final GroupUserRepository groupUserRepository;
     private final NotificationRepository notificationRepository;
@@ -48,7 +50,7 @@ public class GroupDiaryService {
         DiaryEntity diaryEntity = diaryRepository.findById(diaryId)
                 .orElseThrow();
 
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow();
         if (!diaryEntity.getUser().getId().equals(userId)) {
             throw new UnauthorizedDiaryException("해당 일기에 권한이 없습니다.");
@@ -71,10 +73,10 @@ public class GroupDiaryService {
             groupDiaries.add(new GroupDiary(null, diaryEntity, group, LocalDateTime.now()));
 
             // 1. 그룹 유저 조회
-            List<User> users = groupUserRepository.findUsersByGroupId(groupId);
+            List<UserJPAEntity> users = groupUserRepository.findUsersByGroupId(groupId);
 
             // 2. 알림 생성 및 전송
-            for (User member : users) {
+            for (UserJPAEntity member : users) {
                 if (member.getId().equals(userId)) continue; //작성자 제외
 
                 //메타 데이터 구성
@@ -118,7 +120,7 @@ public class GroupDiaryService {
         Integer userId = authService.getUserIdFromRequest(request);
 
         // 2. 사용자 유효성 검사
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
 
         // 3. 페이징을 위한 PageRequest 객체 생성 (size + 1 로 다음 페이지 유무 판단)
@@ -168,7 +170,7 @@ public class GroupDiaryService {
                 .orElseThrow(() -> new DiaryNotFoundException("해당 그룹 일기를 찾을 수 없습니다."));
 
         DiaryEntity diaryEntity = groupDiary.getDiary();
-        User user = diaryEntity.getUser();
+        UserJPAEntity user = diaryEntity.getUser();
         Group group = groupDiary.getGroup();
 
         return new GroupDiaryDetailResponse(
@@ -190,7 +192,7 @@ public class GroupDiaryService {
         Integer userId = authService.getUserIdFromRequest(request);
 
         // 1. 유저 정보 확인
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElse(null); // ← 변경
         if (user == null) {
             log.warn("유저 정보 없음");

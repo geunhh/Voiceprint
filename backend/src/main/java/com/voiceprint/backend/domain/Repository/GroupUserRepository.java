@@ -4,7 +4,7 @@ import com.voiceprint.backend.group.adapter.in.web.dto.UserInfoDTO;
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.GroupUser;
 import com.voiceprint.backend.domain.Entity.GroupUserId;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,9 +36,9 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             select  gu.user from GroupUser gu 
             where gu.group.id = :groupId
             """)
-    List<User> findUsersByGroupId(@Param("groupId") Integer groupId);
+    List<UserJPAEntity> findUsersByGroupId(@Param("groupId") Integer groupId);
 
-    boolean existsByGroupAndUser(Group group, User user);
+    boolean existsByGroupAndUser(Group group, UserJPAEntity user);
 
     boolean existsByUserIdAndGroupId(Integer userId, Integer groupId);
 

@@ -1,14 +1,14 @@
-package com.voiceprint.backend.service.auth;
+package com.voiceprint.backend.user.application.service;
 
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
 import com.voiceprint.backend.user.adapter.in.web.dto.GoogleResponse;
 import com.voiceprint.backend.user.adapter.in.web.dto.KakaoResponse;
 import com.voiceprint.backend.user.adapter.in.web.dto.OAuth2Response;
 import com.voiceprint.backend.global.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.domain.Entity.ProfileImage;
-import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.ProfileImageJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.ProfileImageRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -46,14 +46,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
 
-        User.AuthProvider provider = User.AuthProvider.valueOf(providerName);
+        UserJPAEntity.AuthProvider provider = UserJPAEntity.AuthProvider.valueOf(providerName);
         String providerId = oAuth2Response.getProviderId();
         String name = oAuth2Response.getName();
-        ProfileImage profileImage = profileImageRepository.findById((byte)1)
+        ProfileImageJPAEntity profileImage = profileImageRepository.findById((byte)1)
                 .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));;
-        User user = userRepository.findByProviderId(providerId)
+        UserJPAEntity user = userRepository.findByProviderId(providerId)
                 .orElseGet(() -> {
-                    User newUser = User.builder()
+                    UserJPAEntity newUser = UserJPAEntity.builder()
                             .profileImage(profileImage)
                             .providerId(providerId)
                             .nickname(name)

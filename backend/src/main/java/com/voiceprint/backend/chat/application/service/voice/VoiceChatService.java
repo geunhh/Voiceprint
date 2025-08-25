@@ -2,8 +2,8 @@ package com.voiceprint.backend.chat.application.service.voice;
 
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessage;
 import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotRepository;
@@ -54,7 +54,7 @@ public class VoiceChatService {
             String prompt = chatbot.getPrompt();
 
             // 3. 사용자 정보 조회 및 최근 사용 챗봇 저장
-            User user = userRepository.findById(userId)
+            UserJPAEntity user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
             user.setLastChatbot(chatbot);
             userRepository.save(user);

@@ -10,8 +10,8 @@ import com.voiceprint.backend.global.exception.diary.UnauthorizedDiaryAccessExce
 import com.voiceprint.backend.global.exception.thema.ThemaNotFoundExceiption;
 import com.voiceprint.backend.global.exception.thema.UnauthorizedThemaAccessException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
@@ -60,7 +60,7 @@ public class DiaryThemaService {
     }
 
     public void selectThema(Integer userId, Integer themaId) {
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저정보X"));
         System.out.println("현재 사용중인 테마 :"+user);
 
@@ -79,7 +79,7 @@ public class DiaryThemaService {
 
     public DiaryThemaCreateResponse createCustomThema(Integer userId, String exampleDiary) {
         // 유저 정보 확인
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
 
         //FastAPI API 호출
@@ -148,7 +148,7 @@ public class DiaryThemaService {
 
         //4. 내 커스텀 테마 조회
         DiaryThema thema = diaryThemaRepository.findByUserId(userId).orElseGet(() -> {
-                User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
+                UserJPAEntity user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
                 return DiaryThema.creatDiaryThema(
                         user,
                         "내 커스텀 테마",
@@ -165,7 +165,7 @@ public class DiaryThemaService {
         diaryThemaRepository.save(thema);
 
         //6. 내 usingThema로 변경
-        User user = diaryEntity.getUser();
+        UserJPAEntity user = diaryEntity.getUser();
         user.setUsingThema(thema);
         userRepository.save(user);
 
@@ -177,7 +177,7 @@ public class DiaryThemaService {
      */
     @Transactional(readOnly = true)
     public UsingDiaryThemaResponseDTO getUsingThema(Integer userId) {
-        User user = userRepository.findUserWithUsingThema(userId)
+        UserJPAEntity user = userRepository.findUserWithUsingThema(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         DiaryThema thema = user.getUsingThema();

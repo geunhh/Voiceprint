@@ -2,7 +2,7 @@ package com.voiceprint.backend.group.adapter.in.web;
 
 import com.voiceprint.backend.group.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.diary.application.service.GroupDiaryService;
 import com.voiceprint.backend.service.groups.GroupService;
 import com.voiceprint.backend.service.groups.GroupUserService;
@@ -21,7 +21,7 @@ public class GroupController {
 
     private final GroupUserService groupUserService;
     private final GroupService groupService;
-    private final AuthService authService;
+    private final UserService authService;
     private final GroupDiaryService groupDiaryService;
 
     /**

@@ -2,7 +2,7 @@ package com.voiceprint.backend.chat.adapter.in.web;
 
 import com.voiceprint.backend.chat.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.chat.application.service.ChatServcie;
 import com.voiceprint.backend.chat.application.service.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class ChatController {
 
     private final ChatServcie chatServcie;
     private final ChatSessionService chatSessionService;
-    private final AuthService authService;
+    private final UserService authService;
     /**
      * Text 채팅 API
      */

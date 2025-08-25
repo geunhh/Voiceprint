@@ -2,9 +2,9 @@ package com.voiceprint.backend.service.alarm;
 
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
 import com.voiceprint.backend.domain.Entity.Group;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,9 +58,9 @@ public class DiaryReminderScheduler {
                 .toList();
 
         for (Group group : targetGroups) {
-            List<User> members = userRepository.findAlarmEnabledUsersByGroup(group); // 알람 켠 멤버만
+            List<UserJPAEntity> members = userRepository.findAlarmEnabledUsersByGroup(group); // 알람 켠 멤버만
 
-            for (User user : members) {
+            for (UserJPAEntity user : members) {
                 NotificationDTO dto = new NotificationDTO(
                         "groupReminder",
                         String.format("%s 그룹의 공유 시간이 다가왔어요!! 일기를 공유하고 친구들과 일상을 공유하세요!", group.getName()),
@@ -80,9 +80,9 @@ public class DiaryReminderScheduler {
     }
 
     private void notifyIndividualUsers(LocalTime now) {
-        List<User> users = userRepository.findAll();
+        List<UserJPAEntity> users = userRepository.findAll();
 
-        for (User user : users) {
+        for (UserJPAEntity user : users) {
             try {
 //                log.debug("userId : {}", user.getId());
                 // null 체크 유의.

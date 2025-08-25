@@ -1,8 +1,9 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.user.adapter.out.persistence;
 
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
+import com.voiceprint.backend.domain.Entity.Notification;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,19 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Table(name = "users")
-@Entity
+@Entity(name = "User")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class UserJPAEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     // 프로필 이미지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
-    private ProfileImage profileImage;
+    private ProfileImageJPAEntity profileImage;
 
 
     @Column(nullable = false, length = 50)

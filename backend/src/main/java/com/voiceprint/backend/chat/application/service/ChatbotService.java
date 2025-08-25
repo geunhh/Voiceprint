@@ -6,8 +6,8 @@ import com.voiceprint.backend.chat.application.port.in.ChatbotUseCase;
 import com.voiceprint.backend.chat.application.port.out.ChatbotRepositoryPort;
 import com.voiceprint.backend.chat.domain.Chatbot;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class ChatbotService implements ChatbotUseCase {
 
     public ChatbotListResponseDTO getChatbots(Integer userId) {
         //유저 정보 조회
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         // 최근 사용 챗봇

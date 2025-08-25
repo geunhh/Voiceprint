@@ -1,6 +1,6 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +20,7 @@ public class DiaryThema {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // unique 해제
-    private User user;
+    private UserJPAEntity user;
 
     @Column(length = 10)
     private String title;
@@ -44,7 +44,7 @@ public class DiaryThema {
 
     //== 생성메서드 ==//
     public static DiaryThema creatDiaryThema(
-        User user, String title, String description, String prompt, String example
+            UserJPAEntity user, String title, String description, String prompt, String example
     ) {
         DiaryThema thema = new DiaryThema();
         thema.setUser(user);

@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.user.adapter.out.persistence;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,10 +7,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Table(name = "profile_images")
-@Entity
+@Entity(name = "ProfileImage")
 @Getter
 @Setter
-public class ProfileImage {
+public class ProfileImageJPAEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Byte id;

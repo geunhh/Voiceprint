@@ -3,7 +3,7 @@ package com.voiceprint.backend.chat.adapter.in.web;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatbotListResponseDTO;
 import com.voiceprint.backend.chat.application.port.in.ChatbotUseCase;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChatbotController {
 
     private final ChatbotUseCase chatbotService;
-    private final AuthService authService;
+    private final UserService authService;
 
     /**
      * 챗봇 조회 API

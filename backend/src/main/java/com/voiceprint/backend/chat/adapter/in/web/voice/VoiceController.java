@@ -3,7 +3,7 @@ package com.voiceprint.backend.chat.adapter.in.web.voice;
 import com.voiceprint.backend.chat.adapter.in.web.voice.dto.VoiceSessionResponseDto;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.user.application.service.JWTUtil;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.chat.application.service.voice.VoiceChatService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class VoiceController {
 
-    private final AuthService authService;
+    private final UserService authService;
     private final JWTUtil jwtUtil;
     private final VoiceChatService voiceChatService;
     @Value("${back-websocket.url}")

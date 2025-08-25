@@ -7,6 +7,8 @@ import com.voiceprint.backend.global.exception.group.*;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class GroupInviteService {
                 .orElseThrow(() -> new GroupNotFoundException("그룹을 찾을 수 없습니다."));
 
         // 유저 조회
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
         log.debug("groupId : {}, userId : {}",groupId,userId);
 
@@ -109,7 +111,7 @@ public class GroupInviteService {
         log.info("group : {} and groupId :{}",group, group.getId());
 
         // 유저 조회
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
 
         boolean alreadyMember = groupUserRepository.existsByUserIdAndGroupId(userId, group.getId());
@@ -137,18 +139,18 @@ public class GroupInviteService {
 
     @Transactional
     public List<Notification> saveAndSendNewMember(Integer groupId, Integer userId) {
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("그룹 정보가 없습니다."));
 
-        List<User> users = groupUserRepository.findUsersByGroupId(groupId);
+        List<UserJPAEntity> users = groupUserRepository.findUsersByGroupId(groupId);
 
         List<Notification> toSaveNotifications = new ArrayList<>();
 
         // 2. 알림 생성 및 전송
-        for (User member : users) {
+        for (UserJPAEntity member : users) {
             if (member.getId().equals(userId)) continue; // 뉴멤버 제외
 
             //메타 데이터 구성

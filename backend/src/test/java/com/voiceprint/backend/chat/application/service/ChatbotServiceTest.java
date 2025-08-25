@@ -3,8 +3,8 @@ package com.voiceprint.backend.chat.application.service;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatbotListResponseDTO;
 import com.voiceprint.backend.chat.application.port.out.ChatbotRepositoryPort;
 import com.voiceprint.backend.chat.domain.Chatbot;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,14 +31,14 @@ class ChatbotServiceTest {
     @InjectMocks
     private ChatbotService chatbotService;
 
-    private User testUser;
+    private UserJPAEntity testUser;
     private Chatbot testChatbot;
     private Integer testUserId = 1;
 
     @BeforeEach
     void setUp() {
         // Create a test user
-        testUser = User.builder()
+        testUser = UserJPAEntity.builder()
             .id(testUserId)
             .build();
 

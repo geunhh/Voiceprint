@@ -1,5 +1,6 @@
 package com.voiceprint.backend.domain.Entity;
 
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ public class GroupInvite {
 
     // 초대자
     @ManyToOne(fetch = FetchType.LAZY)
-    private User inviter;
+    private UserJPAEntity inviter;
 
     // 초대 코드
     @Column(name = "invite_code", length = 16, nullable = false, unique = true)
@@ -35,7 +36,7 @@ public class GroupInvite {
     private LocalDateTime expiredAt;
 
     //== 초대 코드 생성 메서드 ==//
-    public static GroupInvite create(Group group, User inviter) {
+    public static GroupInvite create(Group group, UserJPAEntity inviter) {
         GroupInvite invite = new GroupInvite();
         invite.group = group;
         invite.inviter = inviter;

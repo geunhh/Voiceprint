@@ -1,7 +1,5 @@
 package com.voiceprint.backend.comment.domain;
 
-import com.voiceprint.backend.domain.Entity.GroupDiary;
-import com.voiceprint.backend.domain.Entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

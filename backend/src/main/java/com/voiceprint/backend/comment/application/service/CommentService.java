@@ -13,6 +13,8 @@ import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
 import com.voiceprint.backend.service.alarm.NotificationService;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -45,7 +47,7 @@ public class CommentService implements CommentUseCase {
     @Override
     public CommentCreateResponseDTO saveComment (Integer userId, Integer groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
 
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User를 찾을 수 없습니다."));
 
         GroupDiary groupDiary = groupDiaryRepository.getById(groupDiaryId);
@@ -61,10 +63,10 @@ public class CommentService implements CommentUseCase {
         commentRepository.save(comment);
 
         // 댓글 작성자 제외한 그룹 유저들에게 알림 생성
-        List<User> users = groupUserRepository.findUsersByGroupId(group.getId());
+        List<UserJPAEntity> users = groupUserRepository.findUsersByGroupId(group.getId());
         List<Notification> notifications = new ArrayList<>();
 
-        for (User target : users) {
+        for (UserJPAEntity target : users) {
             if (Objects.equals(target.getId(), userId)) continue;
 
             Map<String, Object> metadata = Map.of(
@@ -137,15 +139,15 @@ public class CommentService implements CommentUseCase {
                 : null;
 
         Set<Integer> userIds = slice.stream().map(Comment::getUserId).collect(Collectors.toSet());
-        Map<Integer, User> userMap = userIds.isEmpty()
+        Map<Integer, UserJPAEntity> userMap = userIds.isEmpty()
                 ? Collections.emptyMap()
                 : userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(User::getId, u -> u));
+                .collect(Collectors.toMap(UserJPAEntity::getId, u -> u));
 
 
         // 6. entity -> dto 매핑
         List<CommentGetResponseDTO> dtoList = slice.stream().map(c -> {
-            User u = userMap.get(c.getUserId());
+            UserJPAEntity u = userMap.get(c.getUserId());
             String nickname = (u != null) ? u.getNickname() : "탈퇴회원";
             String profileUrl = (u != null && u.getProfileImage() != null) ? u.getProfileImage().getImageUrl() : null;
 

@@ -9,7 +9,7 @@ import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.domain.Entity.Notification;
 import com.voiceprint.backend.diary.application.port.in.DiaryUseCase;
 import com.voiceprint.backend.service.alarm.NotificationService;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.diary.application.service.GroupDiaryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.List;
 public class DiaryController {
 
     private final DiaryUseCase diaryUseCase;
-    private final AuthService authService;
+    private final UserService authService;
     private final GroupDiaryService groupDiaryService;
     private final NotificationService notificationService;
 

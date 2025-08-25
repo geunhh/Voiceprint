@@ -1,7 +1,6 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.user.adapter.out.persistence;
 
 import com.voiceprint.backend.domain.Entity.Group;
-import com.voiceprint.backend.domain.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,14 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByProviderId(String providerId);
+public interface UserRepository extends JpaRepository<UserJPAEntity, Integer> {
+    Optional<UserJPAEntity> findByProviderId(String providerId);
 
 //    Optional<User> findByEmail(String email);
 
     boolean existsByNicknameAndIdNot(String nickname, Integer userId);
 
-    List<User> findByEnableAlarmIsTrueAndAlarmTime(LocalTime alarmTime);
+    List<UserJPAEntity> findByEnableAlarmIsTrueAndAlarmTime(LocalTime alarmTime);
 
     /**
      * 알람여부가 True인 사용자만 조회
@@ -29,7 +28,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
         where gu.group = :group
         and gu.user.enableAlarm = true
     """)
-    List<User> findAlarmEnabledUsersByGroup(
+    List<UserJPAEntity> findAlarmEnabledUsersByGroup(
             @Param("group") Group group);
 
     @Query("""
@@ -37,7 +36,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
         join fetch u.usingThema
         where u.id = :userId
     """)
-    Optional<User> findUserWithUsingThema(
+    Optional<UserJPAEntity> findUserWithUsingThema(
             @Param("userId") Integer userId);
 
 

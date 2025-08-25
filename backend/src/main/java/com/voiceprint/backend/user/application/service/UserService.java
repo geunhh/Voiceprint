@@ -1,17 +1,17 @@
-package com.voiceprint.backend.service.auth;
+package com.voiceprint.backend.user.application.service;
 
 
+import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
 import com.voiceprint.backend.user.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.exception.user.NicknameConflictException;
 import com.voiceprint.backend.global.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.user.application.service.JWTUtil;
-import com.voiceprint.backend.domain.Entity.ProfileImage;
-import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Repository.RefreshTokenRepository;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
+import com.voiceprint.backend.user.application.port.in.*;
+import com.voiceprint.backend.user.application.port.out.ProfileImageRepositoryPort;
+import com.voiceprint.backend.user.application.port.out.UserRepositoryPort;
+import com.voiceprint.backend.user.domain.ProfileImage;
+import com.voiceprint.backend.user.domain.User;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +29,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
-public class AuthService {
+public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, GetUserUseCase,
+        LogoutUseCase, ManageAlarmSettingsUseCase, ReissueTokenUseCase, UpdateProfileUseCase {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final ProfileImageRepository profileImageRepository;
-    private final DiaryRepository diaryRepository;
+    private final ProfileImageRepositoryPort profileImageRepository;
+    private final DiaryRepositoryPort diaryRepository;
 
+    @Override
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Integer userId) {
         User user = userRepository.findById(userId)
@@ -45,10 +47,11 @@ public class AuthService {
         // 최근 일기 리스트 조회
         // 일기 리스트가 비어있을 경우 빈 리스트로 처리
         List<DiaryResponse> diaries = diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(DiaryResponse::new)  // Diary 객체를 DiaryResponse로 변환
-                .collect(Collectors.toList());
+                .map(DiaryResponse::new).collect(Collectors.toList());
 
-        return new ProfileResponse(user.getId(), user.getNickname(), user.getProfileImage().getImageUrl(), diaries);
+        ProfileImage profileImage = profileImageRepository.findById(user.getProfileImageId())
+                .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없음"));
+        return new ProfileResponse(user.getId(), user.getNickname(), profileImage.getImageUrl(), diaries);
     }
 
 
@@ -59,6 +62,7 @@ public class AuthService {
      * @return 새로 발급된 토큰 정보
      * @throws RuntimeException 토큰이 유효하지 않거나 Redis에 저장된 토큰과 일치하지 않는 경우
      */
+    @Override
     @Transactional
     public TokenResponse reissueToken(String refreshToken) {
         // 1. 리프레시 토큰 유효성 검증
@@ -117,6 +121,7 @@ public class AuthService {
      *
      * @param refreshToken 쿠키에서 추출한 리프레시 토큰
      */
+    @Override
     @Transactional
     public void logout(String refreshToken) {
         try {
@@ -133,6 +138,7 @@ public class AuthService {
             // 로그아웃은 항상 성공해야 함
         }
     }
+    @Override
     @Transactional(readOnly = true)
     public Integer getUserIdFromRequest(HttpServletRequest request){
 
@@ -145,6 +151,7 @@ public class AuthService {
      * @param authorizationHeader Bearer 토큰이 포함된 Authorization 헤더 값
      * @return 유효한 토큰이고 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
      */
+    @Override
     @Transactional(readOnly = true)
     public Integer getUserIdFromAuthHeader(String authorizationHeader) {
         // 헤더가 null이거나 Bearer로 시작하지 않으면 null 반환
@@ -177,6 +184,7 @@ public class AuthService {
      * @param token JWT 토큰
      * @return 유효한 토큰이고 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 그렇지 않으면 null 반환
      */
+    @Override
     @Transactional(readOnly = true)
     public Integer getUserIdFromToken(String token) {
         // 토큰이 null이면 null 반환
@@ -213,6 +221,7 @@ public class AuthService {
      * @param providerId 사용자 providerId
      * @return 해당 providerId의 사용자가 존재하면 사용자 ID 반환, 없으면 null 반환
      */
+    @Override
     @Transactional(readOnly = true)
     public Integer getUserIdByProviderId(String providerId) {
         // providerId이 null이면 null 반환
@@ -227,6 +236,7 @@ public class AuthService {
         return userOptional.map(User::getId).orElse(null);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<ProfileImageResponse> getProfileImages() {
         // DB에서 모든 프로필 이미지 정보를 조회
@@ -240,7 +250,7 @@ public class AuthService {
                 .map(image -> new ProfileImageResponse(image.getId(), image.getTitle(),image.getImageUrl()))
                 .collect(Collectors.toList());
     }
-
+    @Override
     public ProfileUpdateResponse updateProfile(Integer userId, ProfileUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
@@ -251,26 +261,22 @@ public class AuthService {
             if (isNicknameDuplicate(request.getNickname(), userId)) {
                 throw new NicknameConflictException("중복된 닉네임이 있습니다.");
             }
-            user.setNickname(request.getNickname());
+            user = user.withNickname(request.getNickname());
         }
 
         // 프로필 이미지 ID가 존재할 경우 업데이트
         if (request.getProfileImageId() != null) {
-            ProfileImage profileImage = profileImageRepository.findById(request.getProfileImageId())
+            profileImageRepository.findById(request.getProfileImageId())
                     .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));
-            user.setProfileImage(profileImage);
+            user = user.withProfileImageId(request.getProfileImageId());
         }
 
         // 변경 사항 저장
-        userRepository.save(user);
+        User updatedUser = userRepository.save(user);
 
-        return new ProfileUpdateResponse(user.getId(), user.getNickname(), user.getProfileImage().getId());
+        return new ProfileUpdateResponse(updatedUser.getId(), updatedUser.getNickname(), updatedUser.getProfileImageId());
     }
-    // 닉네임 중복 체크 메서드
-    private boolean isNicknameDuplicate(String nickname, Integer userId) {
-        return userRepository.existsByNicknameAndIdNot(nickname, userId);
-    }
-
+    @Override
     @Transactional(readOnly = true)
     // 유저 알림 여부 확인 메서드
     public AlarmSettingsResponseDTO isReminderEnabled(Integer userId) {
@@ -287,6 +293,7 @@ public class AuthService {
     /**
      * 유저 알람 T/F 수정 메서드
      */
+    @Override
     public Boolean updateReminderSetting(Boolean enableAlarms, Integer userId) {
 
         User user = userRepository.findById(userId)
@@ -294,8 +301,9 @@ public class AuthService {
         log.info("USER id : {}, 알람여부 : {}",userId,enableAlarms);
 
 
-        user.setEnableAlarm(enableAlarms);
-        userRepository.save(user);
+        user = user.withEnableAlarm(enableAlarms);
+        User savedUser = userRepository.save(user);
+        log.info("### savedUser : {}",savedUser);
 
         return user.getEnableAlarm();
     }
@@ -303,6 +311,7 @@ public class AuthService {
     /**
      * 유저 알람 시간 수정 메서드
      */
+    @Override
     public String updateReminderTime(String alarmTime, Integer userId) {
 
         User user = userRepository.findById(userId)
@@ -316,8 +325,7 @@ public class AuthService {
                 return null;
             }
 
-
-            user.setAlarmTime(time);
+            user.withAlarmTime(time);
             userRepository.save(user);
 
             return time.toString();
@@ -326,5 +334,11 @@ public class AuthService {
             return null;
         }
 
+    }
+
+
+    // 닉네임 중복 체크 메서드
+    private boolean isNicknameDuplicate(String nickname, Integer userId) {
+        return userRepository.existsByNicknameAndIdNot(nickname, userId);
     }
 }
