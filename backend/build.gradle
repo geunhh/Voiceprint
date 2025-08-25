@@ -57,6 +57,12 @@ dependencies {
 	implementation 'software.amazon.awssdk:s3:2.31.4'
 
 
+	// Spring AI - openAI
+	implementation platform("org.springframework.ai:spring-ai-bom:1.0.1")
+	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+	// JDBC 구혀네 사용을 위한 의존성
+	implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
 
 //	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

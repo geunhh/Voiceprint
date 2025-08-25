@@ -1,10 +1,10 @@
 package com.voiceprint.backend.service.auth;
 
-import com.voiceprint.backend.api.auth.dto.CustomOAuth2User;
-import com.voiceprint.backend.api.auth.dto.GoogleResponse;
-import com.voiceprint.backend.api.auth.dto.KakaoResponse;
-import com.voiceprint.backend.api.auth.dto.OAuth2Response;
-import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
+import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
+import com.voiceprint.backend.user.adapter.in.web.dto.GoogleResponse;
+import com.voiceprint.backend.user.adapter.in.web.dto.KakaoResponse;
+import com.voiceprint.backend.user.adapter.in.web.dto.OAuth2Response;
+import com.voiceprint.backend.global.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.domain.Entity.ProfileImage;
 import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
 import com.voiceprint.backend.domain.Entity.User;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Map;
 
 @Service
 @Transactional

@@ -1,6 +1,7 @@
 package com.voiceprint.backend.domain.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -71,8 +72,9 @@ public class User {
     @JoinColumn(name = "using_thema_id", unique = false)
     private DiaryThema usingThema;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Diary> diaries = new ArrayList<>();
+    private List<DiaryEntity> diaries = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")
@@ -87,6 +89,7 @@ public class User {
     @Builder.Default    // builder 사용에 있어 초기화 되지 않는 문제를 해결
     private LocalTime alarmTime = LocalTime.of(21,0);
 
+    @Builder.Default
     // 알림 목록
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) //
     private List<Notification> notifications = new ArrayList<>();

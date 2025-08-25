@@ -1,6 +1,6 @@
 package com.voiceprint.backend.domain.Entity;
 
-import com.voiceprint.backend.common.util.JpaJsonConverter;
+import com.voiceprint.backend.global.util.JpaJsonConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

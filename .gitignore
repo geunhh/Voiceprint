@@ -17,6 +17,9 @@ dist-ssr
 *.local
 .env.*
 
+# MySQL
+mysql-data/
+
 # Gradle
 .gradle
 build/

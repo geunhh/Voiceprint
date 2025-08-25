@@ -1,17 +1,17 @@
 package com.voiceprint.backend.service.auth;
 
 
-import com.voiceprint.backend.api.auth.dto.*;
-import com.voiceprint.backend.common.exception.user.NicknameConflictException;
-import com.voiceprint.backend.common.exception.user.ProfileImageNotFoundException;
-import com.voiceprint.backend.common.util.JWTUtil;
+import com.voiceprint.backend.user.adapter.in.web.dto.*;
+import com.voiceprint.backend.global.exception.user.NicknameConflictException;
+import com.voiceprint.backend.global.exception.user.ProfileImageNotFoundException;
+import com.voiceprint.backend.user.application.service.JWTUtil;
 import com.voiceprint.backend.domain.Entity.ProfileImage;
 import com.voiceprint.backend.domain.Repository.ProfileImageRepository;
-import com.voiceprint.backend.common.exception.user.UserNotFoundException;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Repository.RefreshTokenRepository;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Repository.DiaryRepository;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

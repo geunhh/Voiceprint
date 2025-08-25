@@ -1,6 +1,6 @@
 package com.voiceprint.backend.domain.Entity;
 
-import com.voiceprint.backend.domain.Entity.Diary;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,7 +21,7 @@ public class GroupDiary {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = false)
-    private Diary diary;
+    private DiaryEntity diary;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)

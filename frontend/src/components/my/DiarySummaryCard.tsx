@@ -23,7 +23,7 @@ const emotionImageMap: Record<DiarySummaryCardProps["emotion"], string> = {
 
 function DiarySummaryCard(props: DiarySummaryCardProps) {
   const { date, emotion, title, diaryId, content } = props;
-  const emotionImage = emotionImageMap[emotion];
+  const emotionImage = emotionImageMap[emotion] || emotionImageMap["행복"];
 
   const navigate = useNavigate();
 

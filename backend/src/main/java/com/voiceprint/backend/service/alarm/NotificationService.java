@@ -1,14 +1,12 @@
 package com.voiceprint.backend.service.alarm;
 
-import com.voiceprint.backend.api.alarm.RedisPublisher;
-import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
-import com.voiceprint.backend.api.alarm.dto.NotificationListWithCursorDTO;
-import com.voiceprint.backend.common.exception.user.NotificationNotFoundException;
-import com.voiceprint.backend.common.exception.user.UnauthorizedNotificationException;
+import com.voiceprint.backend.notification.adapter.out.RedisPublisher;
+import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
+import com.voiceprint.backend.notification.adapter.in.web.NotificationListWithCursorDTO;
+import com.voiceprint.backend.global.exception.user.NotificationNotFoundException;
 import com.voiceprint.backend.domain.Entity.Notification;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.NotificationRepository;
-import com.voiceprint.backend.domain.Repository.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

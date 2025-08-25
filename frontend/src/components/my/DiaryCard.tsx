@@ -35,7 +35,8 @@ export default function DiaryCard({
   emotion,
 }: DiaryCardProps) {
   const navigate = useNavigate();
-  const { img, bg, border } = emotionIcons[emotion];
+  const emotionStyle = emotionIcons[emotion] || emotionIcons["행복"];
+  const { img, bg, border } = emotionStyle;
 
   return (
     <div

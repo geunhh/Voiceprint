@@ -1,10 +1,10 @@
 package com.voiceprint.backend.service.groups;
 
 
-import com.voiceprint.backend.api.groups.dto.*;
-import com.voiceprint.backend.common.exception.group.GroupNotFoundException;
-import com.voiceprint.backend.common.exception.group.GroupUserNotFoundException;
-import com.voiceprint.backend.common.exception.group.UnauthorizedGroupAccessException;
+import com.voiceprint.backend.group.adapter.in.web.dto.*;
+import com.voiceprint.backend.global.exception.group.GroupNotFoundException;
+import com.voiceprint.backend.global.exception.group.GroupUserNotFoundException;
+import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessException;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.UserRepository;
 import com.voiceprint.backend.domain.Entity.Group;
@@ -13,7 +13,7 @@ import com.voiceprint.backend.domain.Entity.GroupUserId;
 import com.voiceprint.backend.domain.Repository.GroupDiaryRepository;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
 import com.voiceprint.backend.domain.Repository.GroupUserRepository;
-import com.voiceprint.backend.service.S3Service;
+import com.voiceprint.backend.global.util.S3Service;
 import com.voiceprint.backend.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,13 +44,14 @@ public class GroupService {
         if (request.getGroupImage() == null || request.getGroupImage().isEmpty()) {
             throw new GroupNotFoundException("그룹 이미지가 없습니다.");
         }
-        String imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
+        //Todo : S3 서버 임시 제거
+//        String imageUrl = s3Service.uploadFile(request.getGroupImage(), "group");
 
         // 그룹 엔티티 생성
         Group group = Group.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .groupImage(imageUrl)
+                .groupImage("null") //TODO : 일단 null.
                 .enableAlarm(request.getEnableAlarm() != null ? request.getEnableAlarm() : false)
                 .alarmDays(request.getAlarmDays())
                 .alarmTime(request.getAlarmTime())

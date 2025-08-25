@@ -1,6 +1,6 @@
 package com.voiceprint.backend.service.question;
 
-import com.voiceprint.backend.api.question.dto.QuestionGetResponseDTO;
+import com.voiceprint.backend.question.dto.QuestionGetResponseDTO;
 import com.voiceprint.backend.domain.Entity.PromptQuestion;
 import com.voiceprint.backend.domain.Repository.QuestionRepository;
 import com.voiceprint.backend.domain.Repository.TodayQuestionRepository;

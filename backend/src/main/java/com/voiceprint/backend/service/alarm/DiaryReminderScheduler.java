@@ -1,6 +1,6 @@
 package com.voiceprint.backend.service.alarm;
 
-import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
+import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
 import com.voiceprint.backend.domain.Entity.Group;
 import com.voiceprint.backend.domain.Entity.User;
 import com.voiceprint.backend.domain.Repository.GroupRepository;
@@ -40,7 +40,7 @@ public class DiaryReminderScheduler {
         // 0 or 30분일 때만 실행.
 //        if (minute != 0 && minute !=30) return;
 
-        log.info("🕒 리마인더 스케줄러 실행 시작: {}", now);
+//        log.info("🕒 리마인더 스케줄러 실행 시작: {}", now);
 
         notifyIndividualUsers(now);
         notifyGroupUsers(now);
@@ -84,12 +84,12 @@ public class DiaryReminderScheduler {
 
         for (User user : users) {
             try {
-                log.debug("userId : {}", user.getId());
+//                log.debug("userId : {}", user.getId());
                 // null 체크 유의.
                 if (user.getAlarmTime() == null ||
                         !Boolean.TRUE.equals(user.getEnableAlarm()) ||
                         !user.getAlarmTime().equals(now)) {
-                    log.debug("패스");
+//                    log.debug("패스");
                     continue;  // 알람 시간 없음, 알람 꺼짐, 알람 시각 아님 → 패스
                 }
 

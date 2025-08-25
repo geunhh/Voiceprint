@@ -1,7 +1,7 @@
 package com.voiceprint.backend.service.alarm;
 
-import com.voiceprint.backend.api.alarm.dto.NotificationDTO;
-import com.voiceprint.backend.common.util.ConnectionPoolMonitor;
+import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
+import com.voiceprint.backend.global.logger.ConnectionPoolMonitor;
 import com.voiceprint.backend.domain.Repository.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
