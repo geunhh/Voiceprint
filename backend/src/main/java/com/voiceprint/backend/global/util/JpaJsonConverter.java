@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,11 +16,13 @@ import java.util.Map;
  * JPA에서 Map<String, Object> 타입을
  * DB의 JSON 문자열로 자동 변환해주는 컨버터 클래스
  */
+@Component
 @Converter
 public class JpaJsonConverter implements AttributeConverter<Map<String, Object>, String> {
 
     // Jackson의 ObjectMapper를 이용해 JSON 직렬화/역직렬화 수행
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * Entity → DB로 저장될 때 호출됨

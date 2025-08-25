@@ -21,7 +21,7 @@ public class DiaryPromptFactory implements PromptFactory {
 
     private final RedisTemplate<String, Object> redis;
     private final RedisTemplate<String, String> redisStr;   // list<String>
-    private final ObjectMapper om = new ObjectMapper();
+    private final ObjectMapper om;
 
     @Value("${session.key}")
     private String session_key;

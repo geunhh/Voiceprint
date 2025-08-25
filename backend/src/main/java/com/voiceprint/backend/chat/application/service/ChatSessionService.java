@@ -52,12 +52,12 @@ public class ChatSessionService {
     private final NotificationService notificationService;
     private final AiServicePort aiService;
     private final PromptFactory promptFactory;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public ChatSessionService(RedisTemplate<String, Object> redisTemplate, ChatbotRepository chatbotRepository,
                               UserRepository userRepository, DiaryRepository diaryRepository,
                               EmotionRepository emotionRepository, WebClient fastApiWebClient,
-                              NotificationService notificationService, AiServicePort aiService, @Qualifier("diaryPromptFactory") PromptFactory promptFactory) {
+                              NotificationService notificationService, AiServicePort aiService, @Qualifier("diaryPromptFactory") PromptFactory promptFactory, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
         this.chatbotRepository = chatbotRepository;
         this.userRepository = userRepository;
@@ -67,6 +67,7 @@ public class ChatSessionService {
         this.notificationService = notificationService;
         this.aiService = aiService;
         this.promptFactory = promptFactory;
+        this.objectMapper = objectMapper;
     }
     @Value("${session.key}")
     private String session_key;

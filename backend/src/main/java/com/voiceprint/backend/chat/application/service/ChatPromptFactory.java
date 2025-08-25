@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChatPromptFactory implements PromptFactory {
     private final RedisTemplate<String, Object> redis;
-    private final ObjectMapper om = new ObjectMapper();
+    private final ObjectMapper om;
 
     @Value("${chat.max-length:2000}")
     private int maxChatLength;
