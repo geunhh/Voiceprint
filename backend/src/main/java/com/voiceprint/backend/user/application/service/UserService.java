@@ -7,6 +7,8 @@ import com.voiceprint.backend.global.exception.user.NicknameConflictException;
 import com.voiceprint.backend.global.exception.user.ProfileImageNotFoundException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Repository.RefreshTokenRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.ProfileImageJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.application.port.in.*;
 import com.voiceprint.backend.user.application.port.out.ProfileImageRepositoryPort;
 import com.voiceprint.backend.user.application.port.out.UserRepositoryPort;
@@ -250,32 +252,34 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
                 .map(image -> new ProfileImageResponse(image.getId(), image.getTitle(),image.getImageUrl()))
                 .collect(Collectors.toList());
     }
+
+
+
     @Override
     public ProfileUpdateResponse updateProfile(Integer userId, ProfileUpdateRequest request) {
-        User user = userRepository.findById(userId)
+        UserJPAEntity userEntity = userRepository.findJPAById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
         // 닉네임이 존재할 경우 업데이트
-        // 닉네임 중복 체크
         if (request.getNickname() != null && !request.getNickname().isEmpty()) {
             if (isNicknameDuplicate(request.getNickname(), userId)) {
                 throw new NicknameConflictException("중복된 닉네임이 있습니다.");
             }
-            user = user.withNickname(request.getNickname());
+            userEntity.setNickname(request.getNickname());
         }
 
         // 프로필 이미지 ID가 존재할 경우 업데이트
         if (request.getProfileImageId() != null) {
-            profileImageRepository.findById(request.getProfileImageId())
+            ProfileImageJPAEntity profileImageEntity = profileImageRepository.findJPAById(request.getProfileImageId())
                     .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));
-            user = user.withProfileImageId(request.getProfileImageId());
+            userEntity.setProfileImage(profileImageEntity);
         }
 
-        // 변경 사항 저장
-        User updatedUser = userRepository.save(user);
+        userRepository.saveJPA(userEntity);
 
-        return new ProfileUpdateResponse(updatedUser.getId(), updatedUser.getNickname(), updatedUser.getProfileImageId());
+        return new ProfileUpdateResponse(userEntity.getId(), userEntity.getNickname(), userEntity.getProfileImage().getId());
     }
+
     @Override
     @Transactional(readOnly = true)
     // 유저 알림 여부 확인 메서드
@@ -295,17 +299,16 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
      */
     @Override
     public Boolean updateReminderSetting(Boolean enableAlarms, Integer userId) {
-
-        User user = userRepository.findById(userId)
+        UserJPAEntity userEntity = userRepository.findJPAById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
         log.info("USER id : {}, 알람여부 : {}",userId,enableAlarms);
 
+        userEntity.setEnableAlarm(enableAlarms);
+        userRepository.saveJPA(userEntity);
 
-        user = user.withEnableAlarm(enableAlarms);
-        User savedUser = userRepository.save(user);
-        log.info("### savedUser : {}",savedUser);
+        log.info("### savedUser enableAlarm: {}", userEntity.getEnableAlarm());
 
-        return user.getEnableAlarm();
+        return userEntity.getEnableAlarm();
     }
 
     /**
@@ -314,7 +317,7 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
     @Override
     public String updateReminderTime(String alarmTime, Integer userId) {
 
-        User user = userRepository.findById(userId)
+        UserJPAEntity userEntity = userRepository.findJPAById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
         log.info("USER id : {}, 알람 시간 : {}",userId,alarmTime);
 
@@ -325,8 +328,8 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
                 return null;
             }
 
-            user.withAlarmTime(time);
-            userRepository.save(user);
+            userEntity.setAlarmTime(time);
+            userRepository.saveJPA(userEntity);
 
             return time.toString();
 

@@ -27,4 +27,9 @@ public class ProfileImagePersistenceAdapter implements ProfileImageRepositoryPor
                 stream().map(profileImageMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public Optional<ProfileImageJPAEntity> findJPAById(Byte id) {
+        return profileImageRepository.findById(id);
+    }
 }

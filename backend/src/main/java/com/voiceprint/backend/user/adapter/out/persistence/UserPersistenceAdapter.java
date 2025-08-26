@@ -61,4 +61,14 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     public Optional<User> findById(Integer userId) {
         return userRepository.findById(userId).map(userMapper::toDomain);
     }
+
+    @Override
+    public Optional<UserJPAEntity> findJPAById(Integer userId) {
+        return userRepository.findById(userId);
+    }
+
+    @Override
+    public void saveJPA(UserJPAEntity userJPAEntity) {
+        userRepository.save(userJPAEntity);
+    }
 }
