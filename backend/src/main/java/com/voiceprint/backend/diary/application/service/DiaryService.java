@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class DiaryService implements DiaryUseCase {
 
@@ -79,15 +80,12 @@ public class DiaryService implements DiaryUseCase {
     public List<ChatMessageResponseDTO> getChatRecordFromDiary(Integer userId, Integer diaryId) {
         Diary diary = diaryRepositoryPort.findDetailById(diaryId)
                 .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
+        log.info("diary : {}, {}",diary,diary.getMessages());
 
         if (!diary.getUserId().equals(userId)) {
             throw new RuntimeException("권한이 없습니다.");
         }
-
-        try {
-            return objectMapper.readValue(diary.getMessages(), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("채팅 메시지 파싱에 실패했습니다.", e);
-        }
+        // ChatMessageListConverter로 간소화.
+        return diary.getMessages();
     }
 }

@@ -449,8 +449,15 @@ public class ChatSessionService {
 
 
         // 2. Redis 메시지 파싱
-        List<Object> messages = redisTemplate.opsForList().range(messageKey,0,-1);
-        String messagesJson = new Gson().toJson(messages);
+        List<Object> rawMessages = redisTemplate.opsForList().range(messageKey,0,-1);
+        List<ChatMessageResponseDTO> chatMessages = new ArrayList<>();
+        for (Object msg : rawMessages) {
+            if (msg instanceof ChatMessage) {
+                ChatMessage chatMsg = (ChatMessage) msg;
+                chatMessages.add(new ChatMessageResponseDTO(chatMsg.getRole(), chatMsg.getContent()));
+            }
+        }
+        String messagesJson = new Gson().toJson(rawMessages);
 
         // 3. DB 조회
         UserJPAEntity user = userRepository.findById(userId)
@@ -462,7 +469,7 @@ public class ChatSessionService {
 
         // 4. Diary 생성 및 저장
         DiaryEntity diaryEntity = DiaryEntity.createDiary(
-                user,emotion,title,content,"임시..",prompt,messagesJson
+                user,emotion,title,content,"임시..",prompt,chatMessages
         );
 
         //5. 최근 사용 챗봇 정보 저장

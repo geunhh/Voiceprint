@@ -6,9 +6,13 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Spring MVC Jackson 전역 설정
+ */
 @Configuration
 public class JacksonConfig {
 
+    //스프링에서 사용하는 전역 ObjectMapper 설정.
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return builder -> builder

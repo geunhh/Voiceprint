@@ -67,7 +67,8 @@ class DiaryServiceTest {
                 .content("Test Diary Content")
                 .thumbnail("test_thumb.png")
                 .prompt("Test Prompt")
-                .messages("{\"messages\":[{\"sender\":\"user\",\"message\":\"hello\"}]}")
+                .messages(Arrays.asList(new ChatMessageResponseDTO("user","hi hi"),
+                                        new ChatMessageResponseDTO("assistant","hi there")))
                 .isDeleted(false)
                 .emotion(testEmotion)
                 .createdAt(LocalDateTime.now())
@@ -200,21 +201,15 @@ class DiaryServiceTest {
     }
 
     @Test
-    void getChatRecordFromDiary_success() throws JsonProcessingException {
-        ChatMessageResponseDTO chatMessage = new ChatMessageResponseDTO("user", "hello");
-        List<ChatMessageResponseDTO> expectedMessages = Collections.singletonList(chatMessage);
-
+    void getChatRecordFromDiary_success() {
         when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.of(testDiary));
-        when(objectMapper.readValue(eq(testDiary.getMessages()), any(TypeReference.class)))
-                .thenReturn(expectedMessages);
 
         List<ChatMessageResponseDTO> result = diaryService.getChatRecordFromDiary(testUserId, testDiaryId);
 
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.getFirst().getContent()).isEqualTo("hello");
+        assertThat(result).isEqualTo(testDiary.getMessages());
+
         verify(diaryRepositoryPort, times(1)).findDetailById(testDiaryId);
-        verify(objectMapper, times(1)).readValue(eq(testDiary.getMessages()), any(TypeReference.class));
     }
 
     @Test
@@ -242,17 +237,4 @@ class DiaryServiceTest {
         verifyNoInteractions(objectMapper);
     }
 
-    @Test
-    void getChatRecordFromDiary_jsonParsingError() throws JsonProcessingException {
-        when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.of(testDiary));
-        when(objectMapper.readValue(eq(testDiary.getMessages()), any(TypeReference.class)))
-                .thenThrow(new JsonProcessingException("Invalid JSON") {});
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            diaryService.getChatRecordFromDiary(testUserId, testDiaryId);
-        });
-        assertThat(exception.getMessage()).contains("채팅 메시지 파싱에 실패했습니다.");
-        verify(diaryRepositoryPort, times(1)).findDetailById(testDiaryId);
-        verify(objectMapper, times(1)).readValue(eq(testDiary.getMessages()), any(TypeReference.class));
-    }
 }
