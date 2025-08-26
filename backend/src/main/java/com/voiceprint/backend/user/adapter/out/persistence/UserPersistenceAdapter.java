@@ -1,10 +1,13 @@
 package com.voiceprint.backend.user.adapter.out.persistence;
 
+import com.voiceprint.backend.global.exception.user.ProfileImageNotFoundException;
+import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.user.application.port.out.UserRepositoryPort;
 import com.voiceprint.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 public class UserPersistenceAdapter implements UserRepositoryPort {
 
     private final UserRepository userRepository;
+    private final ProfileImageRepository profileImageRepository; // Injected
     private final UserMapper userMapper;
 
     @Override
@@ -26,6 +30,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
 
     @Override
+    @Transactional
     public boolean existsByNicknameAndIdNot(String nickname, Integer userId) {
         return userRepository.existsByNicknameAndIdNot(nickname, userId);
     }
@@ -63,12 +68,35 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
 
     @Override
-    public Optional<UserJPAEntity> findJPAById(Integer userId) {
-        return userRepository.findById(userId);
+    @Transactional
+    public void updateEnableAlarm(Integer userId, Boolean enable) {
+        UserJPAEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+        userEntity.setEnableAlarm(enable);
     }
 
     @Override
-    public void saveJPA(UserJPAEntity userJPAEntity) {
-        userRepository.save(userJPAEntity);
+    @Transactional
+    public void updateAlarmTime(Integer userId, LocalTime alarmTime) {
+        UserJPAEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+        userEntity.setAlarmTime(alarmTime);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(Integer userId, String newNickname, Byte newProfileImageId) {
+        UserJPAEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
+
+        if (newNickname != null) {
+            userEntity.setNickname(newNickname);
+        }
+
+        if (newProfileImageId != null) {
+            ProfileImageJPAEntity profileImageEntity = profileImageRepository.findById(newProfileImageId)
+                    .orElseThrow(() -> new ProfileImageNotFoundException("프로필 이미지를 찾을 수 없습니다."));
+            userEntity.setProfileImage(profileImageEntity);
+        }
     }
 }
