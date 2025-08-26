@@ -2,10 +2,10 @@ package com.voiceprint.backend.chat.application.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.shaded.gson.Gson;
 import com.voiceprint.backend.ai.domain.AiResult;
 import com.voiceprint.backend.ai.domain.PromptFactory;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
+import com.voiceprint.backend.chat.domain.ChatMessage;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
 import com.voiceprint.backend.diary.adapter.out.persistence.EmotionJPAEntity;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
@@ -37,6 +37,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static com.voiceprint.backend.domain.Entity.ChatSessionStatus.DIARY_SAVED;
 
@@ -120,7 +121,7 @@ public class ChatSessionService {
             String todayMessage = chatbot.getInitMent();
             redisTemplate.delete(messageKey);
             redisTemplate.opsForList().rightPush(messageKey,
-                    new ChatMessage("assistant", todayMessage));
+                    ChatMessage.builder().role("assistant").content(todayMessage).build());
 
             log.info("세션 생성 완료 : userId = {}, chatbotId={}", userId, chatbotId);
         } catch (RedisConnectionFailureException e ) {
@@ -450,14 +451,11 @@ public class ChatSessionService {
 
         // 2. Redis 메시지 파싱
         List<Object> rawMessages = redisTemplate.opsForList().range(messageKey,0,-1);
-        List<ChatMessageResponseDTO> chatMessages = new ArrayList<>();
-        for (Object msg : rawMessages) {
-            if (msg instanceof ChatMessage) {
-                ChatMessage chatMsg = (ChatMessage) msg;
-                chatMessages.add(new ChatMessageResponseDTO(chatMsg.getRole(), chatMsg.getContent()));
-            }
-        }
-        String messagesJson = new Gson().toJson(rawMessages);
+
+        List<ChatMessage> chatMessages = rawMessages.stream()
+                .filter(ChatMessage.class::isInstance)
+                .map(ChatMessage.class::cast)
+                .collect(Collectors.toList());
 
         // 3. DB 조회
         UserJPAEntity user = userRepository.findById(userId)

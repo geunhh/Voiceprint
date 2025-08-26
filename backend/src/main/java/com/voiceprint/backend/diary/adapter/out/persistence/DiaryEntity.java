@@ -1,8 +1,8 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
+import com.voiceprint.backend.chat.domain.ChatMessage;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.global.util.ChatMessageListConverter;
-import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -54,7 +54,7 @@ public class DiaryEntity {
     //채팅기록
     @Convert(converter = ChatMessageListConverter.class)
     @Column(columnDefinition = "json")
-    private List<ChatMessageResponseDTO> messages;
+    private List<ChatMessage> messages;
 
     //생성일시
     @Column(name = "created_at", updatable = false)
@@ -62,7 +62,7 @@ public class DiaryEntity {
 
     //==생성 메서드==//
     public static DiaryEntity createDiary(
-            UserJPAEntity user, EmotionJPAEntity emotion, String title, String content, String thumbnail, String prompt, List<ChatMessageResponseDTO> messages) {
+            UserJPAEntity user, EmotionJPAEntity emotion, String title, String content, String thumbnail, String prompt, List<ChatMessage> messages) {
         DiaryEntity diaryEntity = new DiaryEntity();
         diaryEntity.user = user;
         diaryEntity.emotion = emotion;

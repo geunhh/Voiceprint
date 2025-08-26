@@ -1,6 +1,6 @@
 package com.voiceprint.backend.diary.domain;
 
-import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
+import com.voiceprint.backend.chat.domain.ChatMessage;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,14 +15,14 @@ public class Diary {
     private final String content;
     private final String thumbnail;
     private final String prompt;
-    private final List<ChatMessageResponseDTO> messages;
+    private final List<ChatMessage> messages;
     private final Boolean isDeleted;
     private final Integer userId;
     private final Emotion emotion;
     private final LocalDateTime createdAt;
 
     @Builder
-    public Diary(Integer id, String title, String content, String thumbnail, String prompt, List<ChatMessageResponseDTO> messages,
+    public Diary(Integer id, String title, String content, String thumbnail, String prompt, List<ChatMessage> messages,
                  Boolean isDeleted, Integer userId, Emotion emotion, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;

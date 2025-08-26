@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatMessage {
+public class ChatMessageDTO {
     private String role;
     private String content;
 }

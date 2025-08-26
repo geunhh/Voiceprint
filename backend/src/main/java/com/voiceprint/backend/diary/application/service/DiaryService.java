@@ -1,7 +1,5 @@
 package com.voiceprint.backend.diary.application.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryDetailResponseDTO;
@@ -86,6 +84,10 @@ public class DiaryService implements DiaryUseCase {
             throw new RuntimeException("권한이 없습니다.");
         }
         // ChatMessageListConverter로 간소화.
-        return diary.getMessages();
+        return diary.getMessages().stream()
+                .map(chatMessage -> new ChatMessageResponseDTO(
+                        chatMessage.getRole(), chatMessage.getContent()
+                ))
+                .collect(Collectors.toList());
     }
 }

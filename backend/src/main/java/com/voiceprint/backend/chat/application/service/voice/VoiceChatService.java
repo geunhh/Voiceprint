@@ -1,6 +1,6 @@
 package com.voiceprint.backend.chat.application.service.voice;
 
-import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessage;
+import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageDTO;
 import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
@@ -73,7 +73,7 @@ public class VoiceChatService {
             if (Boolean.FALSE.equals(messageExists)) {
                 String todayMessage = chatbot.getInitMent();
                 redisTemplate.opsForList().rightPush(messageKey,
-                        new ChatMessage("assistant", todayMessage));
+                        new ChatMessageDTO("assistant", todayMessage));
             }
 
             log.info("🆕 세션 새로 생성 완료: userId={}, chatbotId={}", userId, chatbotId);
@@ -90,7 +90,7 @@ public class VoiceChatService {
      */
     public void saveMessage(Integer userId, String role, String content) {
         String key = messageKeyPrefix + ":" + userId;
-        ChatMessage message = new ChatMessage(role, content);
+        ChatMessageDTO message = new ChatMessageDTO(role, content);
         redisTemplate.opsForList().rightPush(key, message);
         log.debug("📥 메시지 저장됨: {} - {}", role, content);
     }
