@@ -14,6 +14,7 @@ public interface DiaryRepositoryPort {
     List<Diary> findByUserIdAndCreatedAtBetween(Integer userId, LocalDateTime start, LocalDateTime end);
     List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Integer userId);
 
+    Optional<Diary> findById(Integer diaryId);
     void deleteById(Integer diaryId);
     Diary save(Diary diary);
 

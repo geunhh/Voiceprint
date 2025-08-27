@@ -6,7 +6,7 @@ import com.voiceprint.backend.ai.domain.AiResult;
 import com.voiceprint.backend.ai.domain.PromptFactory;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.chat.domain.ChatMessage;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaJpaEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.EmotionJPAEntity;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
 import com.voiceprint.backend.chat.adapter.in.web.dto.*;
@@ -210,7 +210,7 @@ public class ChatSessionService {
         // 유저/테마 조회
         UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
-        DiaryThema thema = user.getUsingThema();
+        DiaryThemaJpaEntity thema = user.getUsingThema();
 
 
         // 1. 상태값 갱신 + 테마 메타 저장
@@ -288,7 +288,7 @@ public class ChatSessionService {
         // 유저/테마 조회
         UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("유저 정보 없음"));
-        DiaryThema thema = user.getUsingThema();
+        DiaryThemaJpaEntity thema = user.getUsingThema();
 
 
         // 1. 상태값 갱신 + 테마 메타 저장

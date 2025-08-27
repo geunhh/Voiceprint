@@ -1,5 +1,6 @@
 package com.voiceprint.backend.user.domain;
 
+import com.voiceprint.backend.diary.domain.DiaryThema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
-@Builder
+@Builder(toBuilder = true) // 기존 객체에서 수정사항만 반영해서 Builder 자동 생성
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -30,7 +31,9 @@ public class User {
 
     private LocalDateTime updatedAt;
 
-    private Integer usingThemaId;
+    private DiaryThema usingThema;
+
+    private DiaryThema customThema;
 
     private Byte lastChatbotId;
 
@@ -39,19 +42,26 @@ public class User {
     private LocalTime alarmTime;
 
     public User withNickname(String newNickname) {
-        return new User(this.id, this.profileImageId, this.providerId, newNickname, this.authProvider, this.isDeleted, this.createdAt,
-                        this.updatedAt, this.usingThemaId, this.lastChatbotId, this.enableAlarm, this.alarmTime);
+        return this.toBuilder().nickname(newNickname).build();
     }
 
     public User withProfileImageId(Byte newProfileImageId) {
-        return new User(this.id, newProfileImageId, this.providerId, this.nickname, this.authProvider, this.isDeleted, this.createdAt, this.updatedAt, this.usingThemaId, this.lastChatbotId, this.enableAlarm, this.alarmTime);
+        return this.toBuilder().profileImageId(newProfileImageId).build();
     }
 
     public User withEnableAlarm(Boolean enableAlarm) {
-        return new User(this.id, this.profileImageId, this.providerId, this.nickname, this.authProvider, this.isDeleted, this.createdAt, this.updatedAt, this.usingThemaId, this.lastChatbotId, enableAlarm, this.alarmTime);
+        return this.toBuilder().enableAlarm(enableAlarm).build();
     }
 
     public User withAlarmTime(LocalTime alarmTime) {
-        return new User(this.id, this.profileImageId, this.providerId, this.nickname, this.authProvider, this.isDeleted, this.createdAt, this.updatedAt, this.usingThemaId, this.lastChatbotId, this.enableAlarm, alarmTime);
+        return this.toBuilder().alarmTime(alarmTime).build();
+    }
+
+    public User withUsingThema(DiaryThema usingThema) {
+        return this.toBuilder().usingThema(usingThema).build();
+    }
+
+    public User withCustomThema(DiaryThema customThema) {
+        return this.toBuilder().customThema(customThema).build();
     }
 }

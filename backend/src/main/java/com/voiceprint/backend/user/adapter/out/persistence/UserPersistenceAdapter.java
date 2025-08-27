@@ -41,6 +41,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
         try {
             UserJPAEntity entity = userMapper.toEntity(user);
             savedEntity = userRepository.save(entity);
+            log.info("저장이 안된거같은데??");
         } catch(Exception e) {
             log.info("error {}",e.getMessage());
         }

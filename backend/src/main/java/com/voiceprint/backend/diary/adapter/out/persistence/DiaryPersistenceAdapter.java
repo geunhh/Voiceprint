@@ -90,5 +90,10 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Optional<Diary> findById(Integer diaryId) {
+        return diaryRepository.findById(diaryId).map(diaryMapper::toDomain);
+    }
+
 
 }

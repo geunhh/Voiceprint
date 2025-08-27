@@ -5,7 +5,6 @@ import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaCreateRes
 import com.voiceprint.backend.diary.adapter.in.web.dto.thema.DiaryThemaListResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.thema.UsingDiaryThemaResponseDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaRepository;
 import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.diary.application.service.DiaryThemaService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,12 +20,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/thema")
 public class DiaryThemaController {
 
-    private final DiaryThemaRepository diaryThemaRepository;
     private final DiaryThemaService diaryThemaService;
     private final UserService authService;
 
     @GetMapping("/all")
-    public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThmeas(
+    public ResponseEntity<CommonResponse<DiaryThemaListResponseDTO>> getThemas(
             HttpServletRequest request    ) {
 
         Integer userId = authService.getUserIdFromRequest(request);
@@ -37,7 +35,7 @@ public class DiaryThemaController {
     }
 
     @PutMapping("/select/{themaId}")
-    public ResponseEntity<CommonResponse<Void>> selectTheam(
+    public ResponseEntity<CommonResponse<Void>> selectThema(
             @PathVariable Integer themaId,
             HttpServletRequest request) {
 

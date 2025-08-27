@@ -2,7 +2,7 @@ package com.voiceprint.backend.user.adapter.out.persistence;
 
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThema;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaJpaEntity;
 import com.voiceprint.backend.domain.Entity.Notification;
 import jakarta.persistence.*;
 import lombok.*;
@@ -66,13 +66,13 @@ public class UserJPAEntity {
 
     // 내가 만든 커스텀 테마 (DiaryThema.user로 연결된 역방향
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-    private DiaryThema customThema;
+    private DiaryThemaJpaEntity customThema;
 
     // 현재 사용중인 테마 (단방향 연관)
     @ManyToOne(fetch = FetchType.LAZY)
 //    @JsonIgnore
     @JoinColumn(name = "using_thema_id", unique = false)
-    private DiaryThema usingThema;
+    private DiaryThemaJpaEntity usingThema;
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

@@ -9,11 +9,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "DiaryThema")
 @Getter
 @Setter
 @Table(name = "diary_themas")
-public class DiaryThema {
+public class DiaryThemaJpaEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -43,10 +43,10 @@ public class DiaryThema {
     private LocalDateTime updatedAt;
 
     //== 생성메서드 ==//
-    public static DiaryThema creatDiaryThema(
+    public static DiaryThemaJpaEntity creatDiaryThema(
             UserJPAEntity user, String title, String description, String prompt, String example
     ) {
-        DiaryThema thema = new DiaryThema();
+        DiaryThemaJpaEntity thema = new DiaryThemaJpaEntity();
         thema.setUser(user);
         thema.setPrompt(prompt);
         thema.setExample(example);
