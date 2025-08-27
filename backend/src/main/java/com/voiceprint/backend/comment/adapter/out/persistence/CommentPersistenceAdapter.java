@@ -30,6 +30,11 @@ public class CommentPersistenceAdapter implements CommentRepositoryPort {
     }
 
     @Override
+    public void update(Comment comment) {
+
+    }
+
+    @Override
     public Optional<Comment> findById(Integer commentId) {
         return commentRepository.findById(commentId).map(commentMapper::toDomain);
     }

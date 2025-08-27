@@ -9,11 +9,11 @@ import java.util.Optional;
 public interface UserRepositoryPort {
     Optional<User> findByProviderId(String providerId);
     boolean existsByNicknameAndIdNot(String nickname, Integer userId);
-    User save(User user);
     List<User> findUsersWithAlarmEnabledAt(LocalTime alarmTime);
     Optional<User> findUserWithUsingThema(Integer userId);
     Optional<User> findById(Integer userId);
 
+    User save(User user);
     void updateEnableAlarm(Integer userId, Boolean enable);
     void updateAlarmTime(Integer userId, LocalTime alarmTime);
     void updateProfile(Integer userId, String newNickname, Byte newProfileImageId);

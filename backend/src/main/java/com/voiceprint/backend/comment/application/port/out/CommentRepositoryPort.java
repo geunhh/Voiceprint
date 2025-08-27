@@ -11,15 +11,14 @@ import java.util.Optional;
  * - 코어에서 외부 영속 계층을 호출할 때 이 인터페이스만 의존.
  */
 public interface CommentRepositoryPort {
-
-    Comment save(Comment comment);
-
     Optional<Comment> findById(Integer commentId);
 
     List<Comment> findFirstComment(Long groupDiaryId, Pageable pageable);
 
     List<Comment> findAfterFirstComment(Long groupDiaryId, Integer cursor, Pageable pageable);
 
+    Comment save(Comment comment);
+    void update(Comment comment);
     void delete(Comment comment);
 }
 
