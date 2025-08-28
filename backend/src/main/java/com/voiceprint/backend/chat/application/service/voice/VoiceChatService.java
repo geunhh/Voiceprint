@@ -4,7 +4,7 @@ import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageDTO;
 import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
-import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
+import com.voiceprint.backend.chat.domain.ChatSessionStatus;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotRepository;
 import lombok.RequiredArgsConstructor;

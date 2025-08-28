@@ -6,6 +6,7 @@ import com.voiceprint.backend.ai.domain.AiResult;
 import com.voiceprint.backend.ai.domain.PromptFactory;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.chat.domain.ChatMessage;
+import com.voiceprint.backend.chat.domain.ChatSessionStatus;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaJpaEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.EmotionJPAEntity;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
@@ -13,7 +14,6 @@ import com.voiceprint.backend.chat.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.exception.chat.ChatSessionNotFoundException;
 import com.voiceprint.backend.global.exception.chat.RedisUnavailableException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotRepository;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static com.voiceprint.backend.domain.Entity.ChatSessionStatus.DIARY_SAVED;
+import static com.voiceprint.backend.chat.domain.ChatSessionStatus.DIARY_SAVED;
 
 @Service
 @Slf4j
@@ -48,7 +48,7 @@ public class ChatSessionService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatbotRepository chatbotRepository;
-    private final UserRepository userRepository; // UserRepsitory 병합시 수정하기
+    private final UserRepository userRepository; // UserRepository 병합시 수정하기
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
     private final WebClient fastApiWebClient;

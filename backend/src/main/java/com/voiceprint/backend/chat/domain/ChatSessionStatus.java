@@ -1,7 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+package com.voiceprint.backend.chat.domain;
 
 /**
  * 채팅 세션의 상태를 명시하기 위한 ENUM

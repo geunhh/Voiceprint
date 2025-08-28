@@ -3,7 +3,7 @@ package com.voiceprint.backend.chat.adapter.in.web;
 import com.voiceprint.backend.chat.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.user.application.service.UserService;
-import com.voiceprint.backend.chat.application.service.ChatServcie;
+import com.voiceprint.backend.chat.application.service.ChatService;
 import com.voiceprint.backend.chat.application.service.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -21,7 +21,7 @@ import java.util.Map;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    private final ChatServcie chatServcie;
+    private final ChatService chatService;
     private final ChatSessionService chatSessionService;
     private final UserService authService;
     /**
@@ -34,7 +34,7 @@ public class ChatController {
             ){
         Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("## 채팅 / userid : {}",userId);
-        ChatTextResponseDTO response = chatServcie.processChatV1(userId, request.getMessage());
+        ChatTextResponseDTO response = chatService.processChatV1(userId, request.getMessage());
         log.info("답변 : {}",response.getResponse());
 
         return ResponseEntity.ok(new CommonResponse<>(

@@ -6,8 +6,8 @@ import com.voiceprint.backend.chat.application.port.in.ChatbotUseCase;
 import com.voiceprint.backend.chat.application.port.out.ChatbotRepositoryPort;
 import com.voiceprint.backend.chat.domain.Chatbot;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
-import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
+import com.voiceprint.backend.user.application.port.out.UserRepositoryPort;
+import com.voiceprint.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,18 +23,15 @@ import java.util.List;
 public class ChatbotService implements ChatbotUseCase {
 
     private final ChatbotRepositoryPort chatbotRepository;
-    private final UserRepository userRepository; //Todo : 반드시 수정할것. 왜 얘를 의존하냐.
+    private final UserRepositoryPort userRepositoryPort; //Todo : 반드시 수정할것. 왜 얘를 의존하냐.
 
     public ChatbotListResponseDTO getChatbots(Integer userId) {
         //유저 정보 조회
-        UserJPAEntity user = userRepository.findById(userId)
+        User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
 
         // 최근 사용 챗봇
-        Byte recentChatbotId = null;
-        if (user.getLastChatbot() != null) {
-            recentChatbotId = user.getLastChatbot().getId();
-        }
+        Byte recentChatbotId = user.getLastChatbotId();
 
         // 챗봇 전체 목록 조회
         List<Chatbot> chatbots = chatbotRepository.findAll();

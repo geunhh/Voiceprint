@@ -15,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 @Transactional(readOnly = true)
-public class ChatServcie {
+public class ChatService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final AiServicePort aiService; // Spring AI 구현 주입
     private final PromptFactory promptFactory;
 
-    public ChatServcie(RedisTemplate<String, Object> redisTemplate, AiServicePort aiService, @Qualifier("chatPromptFactory") PromptFactory promptFactory) {
+    public ChatService(RedisTemplate<String, Object> redisTemplate, AiServicePort aiService, @Qualifier("chatPromptFactory") PromptFactory promptFactory) {
         this.redisTemplate = redisTemplate;
         this.aiService = aiService;
         this.promptFactory = promptFactory;

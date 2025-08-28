@@ -3,7 +3,7 @@ package com.voiceprint.backend.chat.adapter.in.web;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageListWithTokenDTO;
 import com.voiceprint.backend.chat.adapter.in.web.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.domain.Entity.ChatSessionStatus;
+import com.voiceprint.backend.chat.domain.ChatSessionStatus;
 import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.chat.application.service.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
