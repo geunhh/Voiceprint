@@ -13,6 +13,8 @@ import com.voiceprint.backend.global.exception.group.UnauthorizedGroupAccessExce
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
+import com.voiceprint.backend.notification.application.port.out.NotificationRepositoryPort;
+import com.voiceprint.backend.notification.domain.Notification;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,7 +40,7 @@ public class GroupDiaryService {
     private final UserService authService;
     private final UserRepository userRepository;
     private final GroupUserRepository groupUserRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationRepositoryPort notificationPort;
 
     /**
      * 일기 공유 메서드
@@ -89,7 +92,7 @@ public class GroupDiaryService {
 
                 // 알림 Entity 직접 생성
                 Notification notification = Notification.create(
-                        member,
+                        member.getId(),
                         "newDiary",
                         message,
                         metadata
@@ -102,8 +105,7 @@ public class GroupDiaryService {
 
 
             //2. 알림 저장 & flush
-            notificationRepository.saveAll(toSaveNotifications);
-            notificationRepository.flush();
+            notificationPort.saveAll(toSaveNotifications);
             log.debug("## 그룹일기 및 Notificaiton 저장 완료");
 
         }
@@ -124,7 +126,7 @@ public class GroupDiaryService {
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 확인 불가"));
 
         // 3. 페이징을 위한 PageRequest 객체 생성 (size + 1 로 다음 페이지 유무 판단)
-        PageRequest page = PageRequest.of(0, size + 1); // 항상 첫 페이지부터 size+1 개
+        PageRequest page = PageRequest.of(0, size + 1);
 
         // 4. 특정 그룹에서 공유된 일기들을 sharedAt 기준으로 최신순 정렬하여 가져옴 (cursor가 있으면 필터링)
         List<GroupDiary> groupDiaries = groupDiaryRepository.findGroupDiariesWithCursor(groupId, cursor, page);
@@ -132,7 +134,7 @@ public class GroupDiaryService {
         // 5. 다음 페이지 존재 여부 판단
         boolean hasNext = groupDiaries.size() > size;
         if (hasNext) {
-            groupDiaries = groupDiaries.subList(0, size); // 응답은 size 개까지만
+            groupDiaries = groupDiaries.subList(0, size);
         }
 
         // 6. 다음 커서 값 설정 (마지막 sharedAt 기준)
@@ -193,7 +195,7 @@ public class GroupDiaryService {
 
         // 1. 유저 정보 확인
         UserJPAEntity user = userRepository.findById(userId)
-                .orElse(null); // ← 변경
+                .orElse(null);
         if (user == null) {
             log.warn("유저 정보 없음");
             return new CommonResponse<>(404,"유저 정보 없음",new GroupDiaryListWithCursorDTO(Collections.emptyList(), null));
@@ -222,7 +224,7 @@ public class GroupDiaryService {
             return new CommonResponse<>(404,"공유 일기 없음",new GroupDiaryListWithCursorDTO(Collections.emptyList(), null));
         }
 
-        log.debug("그룹 공유일기 중복제거");
+        log.debug("그룹 공유일기 마지막!");
 
         // 4. diaryId 기준으로 중복 제거
         LinkedHashMap<Integer, GroupDiary> distinctDiaries = new LinkedHashMap<>();

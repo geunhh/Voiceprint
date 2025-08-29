@@ -3,7 +3,7 @@ package com.voiceprint.backend.user.adapter.out.persistence;
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaJpaEntity;
-import com.voiceprint.backend.domain.Entity.Notification;
+import com.voiceprint.backend.notification.adapter.out.persistence.NotificationJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -94,7 +94,7 @@ public class UserJPAEntity {
     @Builder.Default
     // 알림 목록
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) //
-    private List<Notification> notifications = new ArrayList<>();
+    private List<NotificationJpaEntity> notifications = new ArrayList<>();
 
     @PreUpdate
     public void preUpdate() {
@@ -106,7 +106,7 @@ public class UserJPAEntity {
     }
 
     //== 헬퍼 메서드 ==//
-    public void addNotification(Notification notification) {
+    public void addNotification(NotificationJpaEntity notification) {
         notifications.add(notification);
         notification.setUser(this);
     }

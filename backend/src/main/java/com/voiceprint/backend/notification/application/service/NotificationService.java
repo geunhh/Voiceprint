@@ -1,15 +1,14 @@
-package com.voiceprint.backend.service.alarm;
+package com.voiceprint.backend.notification.application.service;
 
 import com.voiceprint.backend.notification.adapter.out.RedisPublisher;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
 import com.voiceprint.backend.notification.adapter.in.web.NotificationListWithCursorDTO;
-import com.voiceprint.backend.global.exception.user.NotificationNotFoundException;
-import com.voiceprint.backend.domain.Entity.Notification;
+import com.voiceprint.backend.notification.application.port.out.NotificationRepositoryPort;
+import com.voiceprint.backend.notification.domain.Notification;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
-import com.voiceprint.backend.domain.Repository.NotificationRepository;
+import com.voiceprint.backend.notification.application.port.in.NotificationUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -18,30 +17,30 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class NotificationService {
+public class NotificationService implements NotificationUseCase {
 
-    private final NotificationRepository notificationRepository;
-    private final RedisPublisher redisPublisher;      // Redis Pub/sub관리
+    private final NotificationRepositoryPort notificationPort;
+    private final RedisPublisher redisPublisher;
 
     /**
      * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
      */
+    @Override
     public void sendAndSave(UserJPAEntity user, NotificationDTO dto) {
-        // 1.DB 저장
         Notification notification = Notification.create(
-                user,
+                user.getId(),
                 dto.getType(),
                 dto.getMessage(),
                 dto.getMetadata()
         );
-        notificationRepository.save(notification); //
-        // 2. Redis 전송
+        Notification savedNotification = notificationPort.save(notification);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -50,95 +49,86 @@ public class NotificationService {
                         dto.getType(),
                         dto.getMessage(),
                         Map.of(
-                                "notificationId", notification.getId(),
+                                "notificationId", savedNotification.getId(),
                                 "userId", user.getId()
                         )
                 );
                 redisPublisher.publishNotification(inputDto);
             }
         });
-
     }
 
 
     /**
      * 읽지 않은 알림 정보를 조회하는 메서드 (커서 기반 무한스크롤)
      */
+    @Override
     @Transactional(readOnly = true)
     public NotificationListWithCursorDTO getUnreadNotifications(Integer userId, Long cursor, Integer size) {
-        PageRequest page = PageRequest.of(0,size+1);
-
-        List<Notification> notifications = notificationRepository.findMyNotifications(userId,cursor,page);
+        List<Notification> notifications = notificationPort.findMyNotifications(userId, cursor, size + 1);
 
         boolean hasNext = notifications.size() > size;
 
         if (hasNext) {
-            notifications = notifications.subList(0,size);
+            notifications = notifications.subList(0, size);
             log.info("다음 알림 존재");
         } else {
             log.info("마지막 알람입니다.");
         }
 
-        Long nextCursor = hasNext ? notifications.getLast().getId() : null;
+        Long nextCursor = hasNext ? notifications.get(notifications.size() - 1).getId() : null;
 
         List<NotificationDTO> response = notifications.stream()
                 .map(n -> {
-                    Map<String ,Object> metadata = new HashMap<>();
+                    Map<String, Object> metadata = new HashMap<>();
                     metadata.put("notificationId", n.getId());
 
-                    if (n.getMetadata().get("groupId") != null) metadata.put("groupId", n.getMetadata().get("groupId"));
-                    if (n.getMetadata().get("diaryId") != null) metadata.put("diaryId", n.getMetadata().get("diaryId"));
-                    if (n.getMetadata().get("status") != null) metadata.put("status", n.getMetadata().get("status"));
+                    if (n.getMetadata() != null) {
+                        if (n.getMetadata().get("groupId") != null) metadata.put("groupId", n.getMetadata().get("groupId"));
+                        if (n.getMetadata().get("diaryId") != null) metadata.put("diaryId", n.getMetadata().get("diaryId"));
+                        if (n.getMetadata().get("status") != null) metadata.put("status", n.getMetadata().get("status"));
+                    }
 
                     return new NotificationDTO(n.getType(), n.getMessage(), metadata);
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         return new NotificationListWithCursorDTO(response, nextCursor);
-
-
-
     }
 
     /**
      * 알림 읽음 처리 메서드
      */
+    @Override
     public void markNotification(Integer userId, Long notificationId) {
-        Notification notification = notificationRepository.findByIdAndUserId(notificationId,userId)
-                .orElseThrow(() -> new NotificationNotFoundException("해당 알림이 존재하지 않거나 권한이 없습니다."));
-
-        if (!notification.isRead()){
-            notification.markAsRead(); // 캡슐화
-            log.debug("noti Id : {} -  읽음 처리 성공",notificationId);
-        }
+        notificationPort.markAsRead(notificationId, userId);
+        log.debug("noti Id : {} -  읽음 처리 성공", notificationId);
     }
 
+    @Override
     @Transactional(readOnly = true)
-    public void publishAllNotifications(List<Notification> notification) {
+    public void publishAllNotifications(List<Notification> notifications) {
         log.debug("알림 전송하기");
-        for (Notification n : notification) {
-            log.debug("notification : {}",n.getMessage());
+        for (Notification n : notifications) {
+            log.debug("notification : {}", n.getMessage());
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("notificationId", n.getId());
-            metadata.put("groupId", n.getMetadata().getOrDefault("groupId", null));
-            metadata.put("diaryId", n.getMetadata().getOrDefault("diaryId", null));
+            metadata.put("groupId", n.getMetadata() != null ? n.getMetadata().getOrDefault("groupId", null) : null);
+            metadata.put("diaryId", n.getMetadata() != null ? n.getMetadata().getOrDefault("diaryId", null) : null);
 
             NotificationDTO dto = new NotificationDTO(
                     n.getType(),
                     n.getMessage(),
                     metadata
             );
-            log.debug("notiDTO : {}",dto);
-            log.debug("notiDTO meta : {}",dto.getMetadata());
+            log.debug("notiDTO : {}", dto);
+            log.debug("notiDTO meta : {}", dto.getMetadata());
             redisPublisher.publishNotification(dto);
-
-
         }
     }
 
     @Transactional
     public void updateNotificationMetadata(List<Notification> notifications) {
-        notificationRepository.saveAll(notifications);
+        log.warn("updateNotificationMetadata method needs implementation using NotificationPort.");
     }
-
 }

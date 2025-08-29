@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.notification.adapter.out.sse;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

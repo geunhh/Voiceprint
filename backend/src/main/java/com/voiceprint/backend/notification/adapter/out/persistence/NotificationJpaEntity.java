@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.notification.adapter.out.persistence;
 
 import com.voiceprint.backend.global.util.JpaJsonConverter;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
@@ -11,12 +11,12 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Entity
+@Entity(name = "Notification")
 @Table(name = "notifications")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification {
+public class NotificationJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,13 +51,13 @@ public class Notification {
 
     //== 생성 메서드 ==//
 
-    public static Notification create(
+    public static NotificationJpaEntity create(
             UserJPAEntity user,
             String type,
             String message,
             Map<String, Object> metadata
     ) {
-        Notification notification = new Notification();
+        NotificationJpaEntity notification = new NotificationJpaEntity();
         notification.user = user;
         notification.type = type;
         notification.message = message;

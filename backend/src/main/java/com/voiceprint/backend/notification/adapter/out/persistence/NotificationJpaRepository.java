@@ -1,8 +1,6 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.notification.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.Notification;
 import io.lettuce.core.dynamic.annotation.Param;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface NotificationJpaRepository extends JpaRepository<NotificationJpaEntity, Long> {
 
 
     @Query("""
@@ -20,9 +18,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         and (:cursor is null or n.id < :cursor)
         order by n.id desc
         """)
-    List<Notification> findMyNotifications(
+    List<NotificationJpaEntity> findMyNotifications(
             @Param("userId") Integer userId,
             @Param("cursor") Long cursor, Pageable pageable);
 
-    Optional<Notification> findByIdAndUserId(Long notificationId, Integer userId);
+    Optional<NotificationJpaEntity> findByIdAndUserId(Long notificationId, Integer userId);
 }

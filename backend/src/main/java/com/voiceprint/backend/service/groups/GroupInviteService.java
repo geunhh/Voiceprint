@@ -7,6 +7,8 @@ import com.voiceprint.backend.global.exception.group.*;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
 import com.voiceprint.backend.domain.Entity.*;
 import com.voiceprint.backend.domain.Repository.*;
+import com.voiceprint.backend.notification.application.port.out.NotificationRepositoryPort;
+import com.voiceprint.backend.notification.domain.Notification;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,7 @@ public class GroupInviteService {
     private final UserRepository userRepository;
     private final GroupInviteRepository groupInviteRepository;
     private final GroupUserRepository groupUserRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationRepositoryPort notificationPort;
 
     /**
      * 그룹 초대 코드를 생성하는 메소드
@@ -151,7 +153,7 @@ public class GroupInviteService {
 
         // 2. 알림 생성 및 전송
         for (UserJPAEntity member : users) {
-            if (member.getId().equals(userId)) continue; // 뉴멤버 제외
+            if (member.getId().equals(userId)) continue;
 
             //메타 데이터 구성
             Map<String, Object> metadata = Map.of(
@@ -162,14 +164,14 @@ public class GroupInviteService {
 
             // 알림 Entity 직접 생성
             Notification notification = Notification.create(
-                    member,
+                    member.getId(),
                     "newMember",
                     message,
                     metadata
             );
             toSaveNotifications.add(notification);
         }
-        notificationRepository.saveAll(toSaveNotifications);
+        notificationPort.saveAll(toSaveNotifications);
 
         return toSaveNotifications;
     }

@@ -1,8 +1,8 @@
 package com.voiceprint.backend.notification.adapter.in.web;
 
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.alarm.NotificationService;
-import com.voiceprint.backend.service.alarm.SseService;
+import com.voiceprint.backend.notification.application.service.NotificationService;
+import com.voiceprint.backend.notification.application.service.SseService;
 import com.voiceprint.backend.user.application.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
