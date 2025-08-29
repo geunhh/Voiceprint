@@ -1,9 +1,10 @@
 package com.voiceprint.backend.chat.application.service;
 
 import com.voiceprint.backend.ai.domain.AiResult;
+import com.voiceprint.backend.ai.domain.AiServicePort;
 import com.voiceprint.backend.ai.domain.PromptFactory;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatTextResponseDTO;
-import com.voiceprint.backend.ai.domain.AiServicePort;
+import com.voiceprint.backend.chat.application.port.in.ChatUseCase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 @Transactional(readOnly = true)
-public class ChatService {
+public class ChatService implements ChatUseCase {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final AiServicePort aiService; // Spring AI 구현 주입
+    private final AiServicePort aiService;
     private final PromptFactory promptFactory;
 
     public ChatService(RedisTemplate<String, Object> redisTemplate, AiServicePort aiService, @Qualifier("chatPromptFactory") PromptFactory promptFactory) {
@@ -34,83 +35,26 @@ public class ChatService {
 
     @Value("${message.key}")
     private String message_key;
-    /**
-     * FastAPI와 HTTP 통신. (기존 로직)
-     */
-//    public ChatTextResponseDTO processChat(Integer userId, String message) {
-//        // requestBody 초기화
-//        Map<String, Object> requestBody = new HashMap<>();
-//        requestBody.put("user_id",userId);
-//        requestBody.put("chatting",message);
-//
-//        log.info("requestBody : {}",requestBody);
-//
-//        // 변수 초기화
-//        int limit_token = 2000;  // 글자수 제한
-//        String botResponse = "오류가 발생했습니다.";    // 챗봇 답변
-//        int total_token = 0;    // 현재 글자수
-//
-//        try {
-//            Map<String, Object> fastApiResponse = fastApiWebClient.post()
-//                    .uri("/api/v1/chat")
-//                    .bodyValue(requestBody)
-//
-//                    .retrieve()
-//
-//                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-//                            resp -> resp.bodyToMono(String.class).flatMap(body -> {
-//                                return Mono.error(new RuntimeException("FastAPI 호출 실패"));
-//                            })
-//                    )
-//                    .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {
-//                    })
-//                    .block();
-//
-//            if (fastApiResponse != null) {
-//                botResponse = fastApiResponse.get("chatting_response").toString();
-//                total_token = Integer.parseInt(fastApiResponse.get("token").toString());
-//                log.info("FastAPI 응답 : {}, 토큰 수 : {}", botResponse, total_token);
-//            }
-//        } catch (Exception e){
-//            log.error("FastAPI 호출 및 파싱에서 에러 : {}.",e.getMessage(),e);
-//        }
-//
-//        // Redis 에 저장
-//        String sessionKey = session_key + ":" +userId;
-//        String messageKey = message_key + ":" +userId;
-//
-//        // redis에 현재 토큰수 저장
-//        redisTemplate.opsForHash().put(sessionKey,"total_token",total_token);
-//
-//        // 레디스에 유저 request 저장
-//        ChatMessage userMsg = new ChatMessage("user",message);
-//        redisTemplate.opsForList().rightPush(messageKey,userMsg);
-//
-//        // 레디스에 서버 response 저장
-//        ChatMessage botMsg = new ChatMessage("assistant",botResponse);
-//        redisTemplate.opsForList().rightPush(messageKey,botMsg);
-//
-//        int usageRate = (int) Math.round((double) total_token / limit_token * 100);
-//
-//        //2. 응답 처리
-//        return new ChatTextResponseDTO(botResponse, usageRate, total_token);
-//    }
 
     /**
      * Spring AI 활용
      */
-    public ChatTextResponseDTO processChatV1(Integer userId, String message) {
+    @Override
+    @Transactional
+    public ChatTextResponseDTO processChat(Integer userId, String message) {
         log.info("SpingAI 챗봇 호출 : {}", message);
 
         String uid = String.valueOf(userId);
 
         // 1) Prompt 생성
         Prompt prompt = promptFactory.buildChatPrompt(uid, message);
+        log.info("## prompt : {}",prompt);
 
         // 2) 호출
         AiResult result = aiService.chat(prompt);
 
         String botResponse = result.getContent();
+        log.info("## botResp : {} ",botResponse);
         int totalTokenDelta = message.length() + botResponse.length();
 
         // 3) Redis 업데이트 (누적 토큰/히스토리)
@@ -127,12 +71,10 @@ public class ChatService {
         redisTemplate.opsForList().rightPush(messageKey, toJson("assistant", botResponse));
 
         int usageRate = (int) Math.round((double) newTotal / LIMIT_TOKEN * 100);
-        return new ChatTextResponseDTO(botResponse,usageRate,newTotal);
-
+        return new ChatTextResponseDTO(botResponse, usageRate, newTotal);
     }
 
     private String toJson(String role, String content) {
         return "{\"role\":\"" + role + "\",\"content\":\"" + content.replace("\"","\\\"") + "\"}";
     }
-
 }

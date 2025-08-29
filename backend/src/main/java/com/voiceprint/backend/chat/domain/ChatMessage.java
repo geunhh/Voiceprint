@@ -1,17 +1,17 @@
 package com.voiceprint.backend.chat.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessage {
 
-    private final String role;
-    private final String content;
+    private String role;
+    private String content;
 
-    @Builder
-    public ChatMessage(String role, String content) {
-        this.role = role;
-        this.content = content;
-    }
 }

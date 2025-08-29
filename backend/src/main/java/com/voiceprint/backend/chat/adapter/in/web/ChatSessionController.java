@@ -2,10 +2,10 @@ package com.voiceprint.backend.chat.adapter.in.web;
 
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageListWithTokenDTO;
 import com.voiceprint.backend.chat.adapter.in.web.dto.SessionStartRequestDTO;
-import com.voiceprint.backend.global.dto.CommonResponse;
+import com.voiceprint.backend.chat.application.port.in.ChatSessionUseCase;
 import com.voiceprint.backend.chat.domain.ChatSessionStatus;
+import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.user.application.service.UserService;
-import com.voiceprint.backend.chat.application.service.ChatSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/chat/session")
 public class ChatSessionController {
 
-    private final ChatSessionService chatSessionService;
+    private final ChatSessionUseCase chatSessionUseCase;
     private final UserService authService;
 
     /**
@@ -27,17 +27,16 @@ public class ChatSessionController {
      */
     @PostMapping("/start")
     public ResponseEntity<CommonResponse<?>> startSession(
-        @Valid @RequestBody SessionStartRequestDTO request,
-        HttpServletRequest httprequest // 유저 토큰
+            @Valid @RequestBody SessionStartRequestDTO request,
+            HttpServletRequest httpRequest
     ) {
-        Integer userId = authService.getUserIdFromRequest(httprequest);
-        log.info("## 채팅 세션 시작 / userid : {}",userId);
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
+        log.info("## 채팅 세션 시작 / userid : {}", userId);
 
-
-        chatSessionService.startSession(userId, request.getChatbotId()); //Todo : 토큰으로 변경
+        chatSessionUseCase.startChatSession(userId, request.getChatbotId());
 
         return ResponseEntity.ok(new CommonResponse<>(
-                200,"대화 세션 생성 성공", null
+                200, "대화 세션 생성 성공", null
         ));
     }
 
@@ -46,13 +45,14 @@ public class ChatSessionController {
       */
     @GetMapping("/status")
     public ResponseEntity<CommonResponse<String>> getSessionStatus(
-            HttpServletRequest request) {
-        Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 채팅 세션 확인 / userid : {}",userId);
-        ChatSessionStatus status = chatSessionService.getSessionStatus(userId);
+            HttpServletRequest httpRequest
+    ) {
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
+        log.info("## 채팅 세션 확인 / userid : {}", userId);
+        ChatSessionStatus status = chatSessionUseCase.getChatSessionStatus(userId);
 
         String statusName = (status != null) ? status.name() : null;
-        log.info("status : {}",status);
+        log.info("status : {}", status);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "세션 상태 조회 성공", statusName
         ));
@@ -63,15 +63,14 @@ public class ChatSessionController {
      */
     @GetMapping("/messages")
     public ResponseEntity<CommonResponse<ChatMessageListWithTokenDTO>> getMessages(
-            HttpServletRequest request) {
-        Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 채팅 기록 조회 / userid : {}",userId);
-        ChatMessageListWithTokenDTO response = chatSessionService.getMessages(userId);
-        log.info("response : {}",response);
+            HttpServletRequest httpRequest
+    ) {
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
+        log.info("## 채팅 기록 조회 / userid : {}", userId);
+        ChatMessageListWithTokenDTO response = chatSessionUseCase.getChatHistory(userId);
+        log.info("response : {}", response);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "메시지 조회 성공", response
         ));
-
     }
-
 }
