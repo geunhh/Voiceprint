@@ -21,6 +21,6 @@ public class DiaryResponse {
         this.title = diary.getTitle();
         this.content = diary.getContent();
         this.createdAt = diary.getCreatedAt();
-        this.emotion = diary.getEmotion().getName();
+        this.emotion = (diary.getEmotion() != null) ? diary.getEmotion().getName() : "행복";
     }
 }

@@ -44,6 +44,22 @@ public class UserMapper {
                 .build();
     }
 
+    public User toDomainSlim(UserJPAEntity entity) {
+        return User.builder()
+            .id(entity.getId())
+            .providerId(entity.getProviderId())
+            .nickname(entity.getNickname())
+            .authProvider(AuthProvider.valueOf(entity.getAuthProvider().name()))
+            .isDeleted(entity.getIsDeleted())
+            .createdAt(entity.getCreatedAt())
+            .updatedAt(entity.getUpdatedAt())
+            .profileImageId(entity.getProfileImage() != null ? entity.getProfileImage().getId() : null)
+            .lastChatbotId(entity.getLastChatbot() != null ? entity.getLastChatbot().getId() : null)
+            .enableAlarm(entity.getEnableAlarm())
+            .alarmTime(entity.getAlarmTime())
+            .build();
+    }
+
     public UserJPAEntity toEntity(User domain) {
         return UserJPAEntity.builder()
                 .id(domain.getId())

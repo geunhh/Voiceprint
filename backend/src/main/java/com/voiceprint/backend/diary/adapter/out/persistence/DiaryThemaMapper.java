@@ -18,7 +18,7 @@ public class DiaryThemaMapper {
         }
         return DiaryThema.builder()
                 .id(entity.getId())
-                .user(entity.getUser() != null ? userMapper.toDomain(entity.getUser()) : null)
+                .user(entity.getUser() != null ? userMapper.toDomainSlim(entity.getUser()) : null)
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .example(entity.getExample())
