@@ -1,16 +1,26 @@
-package com.voiceprint.backend.service.groups;
+package com.voiceprint.backend.group.application.service;
 
 import com.voiceprint.backend.group.adapter.in.web.dto.InviteAcceptResponseDTO;
 import com.voiceprint.backend.group.adapter.in.web.dto.InviteCodeResponseDTO;
 import com.voiceprint.backend.group.adapter.in.web.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.global.exception.group.*;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.*;
-import com.voiceprint.backend.domain.Repository.*;
+import com.voiceprint.backend.group.application.port.in.groupinvite.AcceptInviteUseCase;
+import com.voiceprint.backend.group.application.port.in.groupinvite.CreateInviteUseCase;
+import com.voiceprint.backend.group.application.port.in.groupinvite.GetInviteInfoUseCase;
+import com.voiceprint.backend.group.application.port.in.groupinvite.SaveAndSendNewMemberUseCase;
+import com.voiceprint.backend.group.application.port.out.GroupInviteRepositoryPort;
+import com.voiceprint.backend.group.application.port.out.GroupRepositoryPort;
+import com.voiceprint.backend.group.application.port.out.GroupUserRepositoryPort;
+import com.voiceprint.backend.group.domain.GroupUser;
+import com.voiceprint.backend.user.application.port.out.UserRepositoryPort;
+
+import com.voiceprint.backend.group.domain.Group;
+import com.voiceprint.backend.group.domain.GroupInvite;
+import com.voiceprint.backend.group.domain.GroupUserId;
 import com.voiceprint.backend.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.backend.notification.domain.Notification;
-import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
-import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
+import com.voiceprint.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,18 +35,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class GroupInviteService {
+public class GroupInviteService implements CreateInviteUseCase, AcceptInviteUseCase, GetInviteInfoUseCase, SaveAndSendNewMemberUseCase {
 
-    private final GroupRepository groupRepository;
-    private final UserRepository userRepository;
-    private final GroupInviteRepository groupInviteRepository;
-    private final GroupUserRepository groupUserRepository;
+    private final GroupRepositoryPort groupRepository;
+    private final UserRepositoryPort userRepository;
+    private final GroupInviteRepositoryPort groupInviteRepository;
+    private final GroupUserRepositoryPort groupUserRepository;
     private final NotificationRepositoryPort notificationPort;
 
     /**
      * 그룹 초대 코드를 생성하는 메소드
      * 유효한 초대 코드가 있을 경우 반환, 없으면 생성 후 반환
      */
+    @Override
     @Transactional(readOnly = false)
     public InviteCodeResponseDTO createInvite(Integer groupId, Integer userId) {
         // 그룹 조회
@@ -44,7 +55,7 @@ public class GroupInviteService {
                 .orElseThrow(() -> new GroupNotFoundException("그룹을 찾을 수 없습니다."));
 
         // 유저 조회
-        UserJPAEntity user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
         log.debug("groupId : {}, userId : {}",groupId,userId);
 
@@ -60,7 +71,7 @@ public class GroupInviteService {
                 .orElseGet(() -> {
                     log.debug("유효한 초대 코드가 존재하지 않습니다. 초대 코드를 새로 생성합니다.");
                     GroupInvite newInvite = GroupInvite.create(group, user);
-                    groupInviteRepository.save(newInvite);
+                    groupInviteRepository.createInvite(groupId, userId);
                     return newInvite;
                 });
 
@@ -71,6 +82,7 @@ public class GroupInviteService {
     /**
      * 그룹 코드에 대한 그룹 정보를 조회하는 메서드
      */
+    @Override
     public InviteInfoReponseDTO getInviteInfo(String code, Integer userId) {
         // 초대 정보 확인
         GroupInvite invite = groupInviteRepository.findByInviteCodeWithGroup(code)
@@ -97,6 +109,7 @@ public class GroupInviteService {
     /**
      * 초대를 수락하는 메서드
      */
+    @Override
     @Transactional
     public InviteAcceptResponseDTO acceptInvite(String code, Integer userId) {
 
@@ -113,7 +126,7 @@ public class GroupInviteService {
         log.info("group : {} and groupId :{}",group, group.getId());
 
         // 유저 조회
-        UserJPAEntity user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
 
         boolean alreadyMember = groupUserRepository.existsByUserIdAndGroupId(userId, group.getId());
@@ -139,20 +152,21 @@ public class GroupInviteService {
         );
     }
 
+    @Override
     @Transactional
     public List<Notification> saveAndSendNewMember(Integer groupId, Integer userId) {
-        UserJPAEntity user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("그룹 정보가 없습니다."));
 
-        List<UserJPAEntity> users = groupUserRepository.findUsersByGroupId(groupId);
+        List<User> users = groupUserRepository.findUsersByGroupId(groupId);
 
         List<Notification> toSaveNotifications = new ArrayList<>();
 
         // 2. 알림 생성 및 전송
-        for (UserJPAEntity member : users) {
+        for (User member : users) {
             if (member.getId().equals(userId)) continue;
 
             //메타 데이터 구성

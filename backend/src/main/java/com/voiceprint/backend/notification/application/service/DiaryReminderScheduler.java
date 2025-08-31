@@ -1,9 +1,9 @@
 package com.voiceprint.backend.notification.application.service;
 
 import com.voiceprint.backend.notification.adapter.in.web.NotificationDTO;
-import com.voiceprint.backend.domain.Entity.Group;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupJpaEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
-import com.voiceprint.backend.domain.Repository.GroupRepository;
+import com.voiceprint.backend.group.adapter.out.persistence.jparepository.GroupRepository;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,14 +50,14 @@ public class DiaryReminderScheduler {
         DayOfWeek today = LocalDateTime.now().getDayOfWeek();
 
         // 그룹 리포지토리로부터 해당 시간에 알람 설정된 그룹들 가져오기
-        List<Group> candidateGroups = groupRepository.findByAlarmTimeAndEnableAlarmTrue(now);
+        List<GroupJpaEntity> candidateGroups = groupRepository.findByAlarmTimeAndEnableAlarmTrue(now);
 
         // 요일 조건 필터링
-        List<Group> targetGroups = candidateGroups.stream()
+        List<GroupJpaEntity> targetGroups = candidateGroups.stream()
                 .filter(g -> g.getAlarmDays() != null && g.getAlarmDays().contains(today))
                 .toList();
 
-        for (Group group : targetGroups) {
+        for (GroupJpaEntity group : targetGroups) {
             List<UserJPAEntity> members = userRepository.findAlarmEnabledUsersByGroup(group); // 알람 켠 멤버만
 
             for (UserJPAEntity user : members) {

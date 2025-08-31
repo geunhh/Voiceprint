@@ -8,7 +8,6 @@ import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.notification.domain.Notification;
 import com.voiceprint.backend.notification.application.service.NotificationService;
 import com.voiceprint.backend.user.application.service.UserService;
-import com.voiceprint.backend.service.groups.GroupInviteService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+// Import the new Use Case interfaces
+import com.voiceprint.backend.group.application.port.in.groupinvite.CreateInviteUseCase;
+import com.voiceprint.backend.group.application.port.in.groupinvite.GetInviteInfoUseCase;
+import com.voiceprint.backend.group.application.port.in.groupinvite.AcceptInviteUseCase;
+import com.voiceprint.backend.group.application.port.in.groupinvite.SaveAndSendNewMemberUseCase;
+
+
 @RestController
 @RequestMapping("/api/v1/group")
 @Slf4j
@@ -25,8 +31,14 @@ import java.util.concurrent.CompletableFuture;
 public class GroupInvitationController {
 
     private final UserService authService;
-    private final GroupInviteService groupInviteService;
     private final NotificationService notificationService;
+
+    // Inject Use Case interfaces
+    private final CreateInviteUseCase createInviteUseCase;
+    private final GetInviteInfoUseCase getInviteInfoUseCase;
+    private final AcceptInviteUseCase acceptInviteUseCase;
+    private final SaveAndSendNewMemberUseCase saveAndSendNewMemberUseCase;
+
 
     /**
      * 그룹 초대 코드 조회 및 생성 API
@@ -40,7 +52,7 @@ public class GroupInvitationController {
         Integer userId = authService.getUserIdFromRequest(request);
 
         log.info("그룹 초대 코드 생성 및 조회 API 호출");
-        InviteCodeResponseDTO response = groupInviteService.createInvite(groupId, userId);
+        InviteCodeResponseDTO response = createInviteUseCase.createInvite(groupId, userId);
         log.debug("초대 코드 : {} ",response.getInviteCode());
 
         return ResponseEntity.ok(new CommonResponse<>(200, "초대 링크 조회 완료", response));
@@ -53,7 +65,7 @@ public class GroupInvitationController {
     ) {
         Integer userId = authService.getUserIdFromRequest(request);
 
-        InviteInfoReponseDTO response = groupInviteService.getInviteInfo(code, userId);
+        InviteInfoReponseDTO response = getInviteInfoUseCase.getInviteInfo(code, userId);
 
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "초대 정보 조회 성공", response
@@ -68,14 +80,13 @@ public class GroupInvitationController {
         Integer userId = authService.getUserIdFromRequest(httprequest);
         log.info("{} 유저가 그룹 초대를 수락하려고 합니다.",userId);
 
-        InviteAcceptResponseDTO response = groupInviteService.acceptInvite(request.getInviteCode(), userId);
+        InviteAcceptResponseDTO response = acceptInviteUseCase.acceptInvite(request.getInviteCode(), userId);
         CompletableFuture.runAsync(() -> {
-            List<Notification> notifications = groupInviteService.saveAndSendNewMember(response.getGroupId(), userId);
+            List<Notification> notifications = saveAndSendNewMemberUseCase.saveAndSendNewMember(response.getGroupId(), userId);
             notificationService.publishAllNotifications(notifications);
         });
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "초대 요청 처리 완료", response
         ));
     }
-
 }

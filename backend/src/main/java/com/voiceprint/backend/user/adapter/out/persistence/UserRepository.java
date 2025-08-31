@@ -1,6 +1,6 @@
 package com.voiceprint.backend.user.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.Group;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,7 +29,7 @@ public interface UserRepository extends JpaRepository<UserJPAEntity, Integer> {
         and gu.user.enableAlarm = true
     """)
     List<UserJPAEntity> findAlarmEnabledUsersByGroup(
-            @Param("group") Group group);
+            @Param("group") GroupJpaEntity group);
 
     @Query("""
         select u from User u

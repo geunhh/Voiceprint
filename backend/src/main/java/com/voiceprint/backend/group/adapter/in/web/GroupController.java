@@ -3,9 +3,6 @@ package com.voiceprint.backend.group.adapter.in.web;
 import com.voiceprint.backend.group.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.dto.CommonResponse;
 import com.voiceprint.backend.user.application.service.UserService;
-import com.voiceprint.backend.diary.application.service.GroupDiaryService;
-import com.voiceprint.backend.service.groups.GroupService;
-import com.voiceprint.backend.service.groups.GroupUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +11,34 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Import the new Use Case interfaces
+import com.voiceprint.backend.group.application.port.in.group.GetGroupMainPageUseCase;
+import com.voiceprint.backend.group.application.port.in.group.GetMyGroupsUseCase;
+import com.voiceprint.backend.group.application.port.in.group.CreateGroupUseCase;
+import com.voiceprint.backend.group.application.port.in.group.UpdateGroupUseCase;
+import com.voiceprint.backend.group.application.port.in.groupuser.PromoteToAdminUseCase;
+import com.voiceprint.backend.group.application.port.in.groupdiary.GetGroupDiariesUseCase; // NEW
+import com.voiceprint.backend.group.application.port.in.groupdiary.GetAllGroupDiariesUseCase; // NEW
+import com.voiceprint.backend.group.application.port.in.groupdiary.GetGroupDiaryDetailUseCase; // NEW
+
+
 @RestController
 @RequestMapping("/api/v1/group")
 @RequiredArgsConstructor
 public class GroupController {
 
-    private final GroupUserService groupUserService;
-    private final GroupService groupService;
     private final UserService authService;
-    private final GroupDiaryService groupDiaryService;
+
+    // Inject Use Case interfaces
+    private final CreateGroupUseCase createGroupUseCase;
+    private final UpdateGroupUseCase updateGroupUseCase;
+    private final GetGroupMainPageUseCase getGroupMainPageUseCase;
+    private final GetMyGroupsUseCase getMyGroupsUseCase;
+    private final PromoteToAdminUseCase promoteToAdminUseCase;
+    private final GetGroupDiariesUseCase getGroupDiariesUseCase; // NEW
+    private final GetAllGroupDiariesUseCase getAllGroupDiariesUseCase; // NEW
+    private final GetGroupDiaryDetailUseCase getGroupDiaryDetailUseCase; // NEW
+
 
     /**
      * 그룹 생성
@@ -32,7 +48,7 @@ public class GroupController {
                                                                            @ModelAttribute GroupCreateRequest requestData) {
 
         Integer userId = authService.getUserIdFromRequest(request);
-        GroupCreateResponse response = groupService.createGroup(userId, requestData);
+        GroupCreateResponse response = createGroupUseCase.createGroup(userId, requestData);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 생성 완료", response));
     }
 
@@ -45,7 +61,7 @@ public class GroupController {
             HttpServletRequest request) {
 
         Integer userId = authService.getUserIdFromRequest(request);
-        GroupMainPageResponse response = groupService.getGroupMainPage(groupId, userId);
+        GroupMainPageResponse response = getGroupMainPageUseCase.getGroupMainPage(groupId, userId);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 메인 페이지 조회 완료", response));
     }
@@ -61,7 +77,7 @@ public class GroupController {
 
         Integer userId = authService.getUserIdFromRequest(request);
 
-        GroupUpdateResponse updatedGroup = groupService.updateGroup(groupId, userId, updateRequest);
+        GroupUpdateResponse updatedGroup = updateGroupUseCase.updateGroup(groupId, userId, updateRequest);
 
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 수정 완료", updatedGroup));
     }
@@ -78,8 +94,8 @@ public class GroupController {
             @RequestParam(defaultValue = "7") Integer size,
             HttpServletRequest request
     ) {
-
-        GroupDiaryListWithCursorDTO result = groupDiaryService.getGroupDiaries(request, groupId, cursor, size);
+        Integer userId = authService.getUserIdFromRequest(request);
+        GroupDiaryListWithCursorDTO result = getGroupDiariesUseCase.getGroupDiaries(groupId, cursor, size, userId);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 내 공유 일기 조회 성공", result));
     }
     /**
@@ -93,8 +109,9 @@ public class GroupController {
             @RequestParam(defaultValue = "7") int size,
             HttpServletRequest request
     ) {
-        CommonResponse<GroupDiaryListWithCursorDTO> result = groupDiaryService.getAllGroupDiaries(request, cursor, size);
-        return ResponseEntity.ok(result);
+        Integer userId = authService.getUserIdFromRequest(request);
+        GroupDiaryListWithCursorDTO result = getAllGroupDiariesUseCase.getAllGroupDiaries(cursor, size, userId);
+        return ResponseEntity.ok(new CommonResponse<>(200, "모든 그룹의 공유일기 조회 성공", result));
     }
 
 
@@ -108,7 +125,7 @@ public class GroupController {
             @PathVariable Integer diaryId
     ) {
         Integer userId = authService.getUserIdFromRequest(request);
-        GroupDiaryDetailResponse response = groupDiaryService.getGroupDiaryDetail(userId, groupId, diaryId);
+        GroupDiaryDetailResponse response = getGroupDiaryDetailUseCase.getGroupDiaryDetail(userId, groupId, diaryId);
         return ResponseEntity.ok(new CommonResponse<>(200, "그룹 일기 상세조회 성공", response));
     }
 
@@ -121,7 +138,7 @@ public class GroupController {
                                                          HttpServletRequest request) {
 
         Integer userId = authService.getUserIdFromRequest(request);
-        return groupUserService.promoteToAdmin(groupId, userId, newUserId);
+        return promoteToAdminUseCase.promoteToAdmin(groupId, userId, newUserId);
     }
     /**
      * 내가 속한 그룹 조회
@@ -129,7 +146,7 @@ public class GroupController {
     @GetMapping("/my")
     public ResponseEntity<CommonResponse<List<MyGroupResponse>>> getMyGroups(HttpServletRequest request) {
         Integer userId = authService.getUserIdFromRequest(request);
-        List<MyGroupResponse> myGroups = groupService.getMyGroups(userId);
+        List<MyGroupResponse> myGroups = getMyGroupsUseCase.getMyGroups(userId);
         return ResponseEntity.ok(new CommonResponse<>(200, "내 그룹 목록 조회 성공", myGroups));
     }
 }

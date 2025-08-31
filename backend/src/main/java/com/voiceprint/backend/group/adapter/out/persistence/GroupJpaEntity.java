@@ -1,6 +1,7 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.group.adapter.out.persistence;
 
 
+import com.voiceprint.backend.domain.Entity.StringListConverter;
 import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,14 +11,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-@Entity
+@Entity(name = "Group")
 @Table(name = "`groups`")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Group {
+public class GroupJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

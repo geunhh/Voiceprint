@@ -1,7 +1,7 @@
 package com.voiceprint.backend.comment.adapter.out.persistence;
 
 import com.voiceprint.backend.comment.domain.Comment;
-import com.voiceprint.backend.domain.Entity.GroupDiary;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupDiaryJpaEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -35,7 +35,7 @@ public class CommentMapper {
             throw new IllegalArgumentException("userId/groupDiaryId는 null일 수 없습니다.");
         }
         UserJPAEntity userRef = em.getReference(UserJPAEntity.class, d.getUserId());
-        GroupDiary diaryRef = em.getReference(GroupDiary.class, d.getGroupDiaryId());
+        GroupDiaryJpaEntity diaryRef = em.getReference(GroupDiaryJpaEntity.class, d.getGroupDiaryId());
         return CommentEntity.builder()
                 .user(userRef)
                 .groupDiary(diaryRef)

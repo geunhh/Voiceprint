@@ -1,18 +1,19 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.group.adapter.out.persistence;
 
+import com.voiceprint.backend.group.domain.GroupUserId;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "GroupUser")
 @Table(name = "groups_users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupUser {
+public class GroupUserJpaEntity {
 
     // 복합키 지정 어노테이션
     @EmbeddedId
@@ -26,7 +27,7 @@ public class GroupUser {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("groupId")
     @JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "fk_gu_group"))
-    private Group group;
+    private GroupJpaEntity group;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)

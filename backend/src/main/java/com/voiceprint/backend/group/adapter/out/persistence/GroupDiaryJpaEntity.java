@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.group.adapter.out.persistence;
 
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
 import jakarta.persistence.*;
@@ -6,14 +6,14 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "GroupDiary")
 @Table(name = "group_diaries")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupDiary {
+public class GroupDiaryJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class GroupDiary {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
+    private GroupJpaEntity group;
 
     @Column(nullable = false, updatable = false)
     @Builder.Default

@@ -10,8 +10,10 @@ import com.voiceprint.backend.comment.domain.Comment;
 import com.voiceprint.backend.global.exception.comment.CommentNotFoundException;
 import com.voiceprint.backend.global.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.*;
-import com.voiceprint.backend.domain.Repository.*;
+import com.voiceprint.backend.group.adapter.out.persistence.jparepository.GroupDiaryRepository;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupJpaEntity;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupDiaryJpaEntity;
+import com.voiceprint.backend.group.adapter.out.persistence.jparepository.GroupUserRepository;
 import com.voiceprint.backend.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.backend.notification.domain.Notification;
 import com.voiceprint.backend.notification.application.service.NotificationService;
@@ -52,8 +54,8 @@ public class CommentService implements CommentUseCase {
         UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User를 찾을 수 없습니다."));
 
-        GroupDiary groupDiary = groupDiaryRepository.getById(groupDiaryId);
-        Group group = groupDiary.getGroup();
+        GroupDiaryJpaEntity groupDiary = groupDiaryRepository.getById(groupDiaryId);
+        GroupJpaEntity group = groupDiary.getGroup();
 
         Comment comment = Comment.builder()
                 .userId(userId)

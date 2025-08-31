@@ -1,6 +1,7 @@
 package com.voiceprint.backend.group.adapter.in.web.dto;
 
-import com.voiceprint.backend.domain.Entity.GroupUser;
+import com.voiceprint.backend.group.domain.Group;
+import com.voiceprint.backend.group.domain.GroupUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,4 +24,20 @@ public class GroupMainPageResponse {
     private LocalDateTime joinedAt;
     private String groupImage;
     private GroupUser.Role role;
+
+    public static GroupMainPageResponse from(Group group, GroupUser currentUserGroupUser, List<UserInfoDTO> groupUserList) {
+        return new GroupMainPageResponse(
+                group.getId(),
+                group.getName(),
+                group.getDescription(),
+                group.getEnableAlarm(),
+                group.getAlarmDays(),
+                group.getAlarmTime(),
+                group.getCreatedAt(),
+                groupUserList,
+                currentUserGroupUser.getJoinedAt(),
+                group.getGroupImage(),
+                currentUserGroupUser.getRole()
+        );
+    }
 }

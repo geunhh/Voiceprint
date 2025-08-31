@@ -1,23 +1,27 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.group.adapter.out.persistence;
 
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "GroupInvite")
 @Getter
 @NoArgsConstructor
-public class GroupInvite {
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class GroupInviteJpaEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     // 그룹
     @ManyToOne(fetch = FetchType.LAZY)
-    private Group group;
+    private GroupJpaEntity group;
 
     // 초대자
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,8 +40,8 @@ public class GroupInvite {
     private LocalDateTime expiredAt;
 
     //== 초대 코드 생성 메서드 ==//
-    public static GroupInvite create(Group group, UserJPAEntity inviter) {
-        GroupInvite invite = new GroupInvite();
+    public static GroupInviteJpaEntity create(GroupJpaEntity group, UserJPAEntity inviter) {
+        GroupInviteJpaEntity invite = new GroupInviteJpaEntity();
         invite.group = group;
         invite.inviter = inviter;
         invite.inviteCode = generateShortUUID();

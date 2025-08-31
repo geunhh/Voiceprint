@@ -1,9 +1,9 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.group.adapter.out.persistence.jparepository;
 
 import com.voiceprint.backend.group.adapter.in.web.dto.UserInfoDTO;
-import com.voiceprint.backend.domain.Entity.Group;
-import com.voiceprint.backend.domain.Entity.GroupUser;
-import com.voiceprint.backend.domain.Entity.GroupUserId;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupJpaEntity;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupUserJpaEntity;
+import com.voiceprint.backend.group.domain.GroupUserId;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,16 +14,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserId> {
+public interface GroupUserRepository extends JpaRepository<GroupUserJpaEntity, GroupUserId> {
 
     /**
      * 그룹 내 ADMIN 역할 사용자 찾기
      */
-    GroupUser findByGroupIdAndRole(Integer groupId, GroupUser.Role role);
+    GroupUserJpaEntity findByGroupIdAndRole(Integer groupId, GroupUserJpaEntity.Role role);
 
-    Optional<GroupUser> findByGroupIdAndUserId(Integer groupId, Integer userId);
+    Optional<GroupUserJpaEntity> findByGroupIdAndUserId(Integer groupId, Integer userId);
 
-    List<GroupUser> findAllByGroupId(Integer groupId);
+    List<GroupUserJpaEntity> findAllByGroupId(Integer groupId);
 
     @Query("SELECT new com.voiceprint.backend.group.adapter.in.web.dto.UserInfoDTO(u.id, p.imageUrl, u.nickname) " +
             "FROM GroupUser gu JOIN gu.user u " +
@@ -38,7 +38,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             """)
     List<UserJPAEntity> findUsersByGroupId(@Param("groupId") Integer groupId);
 
-    boolean existsByGroupAndUser(Group group, UserJPAEntity user);
+    boolean existsByGroupAndUser(GroupJpaEntity group, UserJPAEntity user);
 
     boolean existsByUserIdAndGroupId(Integer userId, Integer groupId);
 
