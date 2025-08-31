@@ -1,9 +1,9 @@
 package com.voiceprint.backend.notification.adapter.in.web;
 
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.notification.application.service.NotificationService;
+import com.voiceprint.backend.notification.application.port.in.NotificationUseCase;
 import com.voiceprint.backend.notification.application.service.SseService;
-import com.voiceprint.backend.user.application.service.UserService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +18,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/api/notifications")
 public class NotificationController {
     private final SseService sseService;
-    private final UserService authService;
-    private final NotificationService notificationService;
+    private final GetUserUseCase authService;
+    private final NotificationUseCase notificationService;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(

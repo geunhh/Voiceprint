@@ -2,7 +2,7 @@ package com.voiceprint.backend.group.adapter.in.web;
 
 import com.voiceprint.backend.group.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.user.application.service.UserService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ import com.voiceprint.backend.group.application.port.in.groupdiary.GetGroupDiary
 @RequiredArgsConstructor
 public class GroupController {
 
-    private final UserService authService;
+    private final GetUserUseCase authService;
 
     // Inject Use Case interfaces
     private final CreateGroupUseCase createGroupUseCase;

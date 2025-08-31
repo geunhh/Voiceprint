@@ -3,6 +3,7 @@ package com.voiceprint.backend.diary.adapter.in.web;
 import com.voiceprint.backend.diary.adapter.in.web.dto.MonthlyEmotionResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.WeeklyEmotionResponseDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
 import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.diary.application.service.EmotionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmotionController {
 
     private final EmotionService emotionService;
-    private final UserService authService;
+    private final GetUserUseCase authService;
 
     @GetMapping("/weekly")
     public ResponseEntity<CommonResponse<WeeklyEmotionResponseDTO>> getWeeklyEmotion(

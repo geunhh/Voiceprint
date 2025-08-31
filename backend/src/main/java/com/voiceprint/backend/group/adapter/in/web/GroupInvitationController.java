@@ -5,9 +5,9 @@ import com.voiceprint.backend.group.adapter.in.web.dto.InviteCodeRequestDTO;
 import com.voiceprint.backend.group.adapter.in.web.dto.InviteCodeResponseDTO;
 import com.voiceprint.backend.group.adapter.in.web.dto.InviteInfoReponseDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
+import com.voiceprint.backend.notification.application.port.in.NotificationUseCase;
 import com.voiceprint.backend.notification.domain.Notification;
-import com.voiceprint.backend.notification.application.service.NotificationService;
-import com.voiceprint.backend.user.application.service.UserService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +30,8 @@ import com.voiceprint.backend.group.application.port.in.groupinvite.SaveAndSendN
 @RequiredArgsConstructor
 public class GroupInvitationController {
 
-    private final UserService authService;
-    private final NotificationService notificationService;
+    private final GetUserUseCase authService;
+    private final NotificationUseCase notificationService;
 
     // Inject Use Case interfaces
     private final CreateInviteUseCase createInviteUseCase;

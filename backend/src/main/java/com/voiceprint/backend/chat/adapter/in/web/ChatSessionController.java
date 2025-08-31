@@ -5,6 +5,7 @@ import com.voiceprint.backend.chat.adapter.in.web.dto.SessionStartRequestDTO;
 import com.voiceprint.backend.chat.application.port.in.ChatSessionUseCase;
 import com.voiceprint.backend.chat.domain.ChatSessionStatus;
 import com.voiceprint.backend.global.dto.CommonResponse;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
 import com.voiceprint.backend.user.application.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChatSessionController {
 
     private final ChatSessionUseCase chatSessionUseCase;
-    private final UserService authService;
+    private final GetUserUseCase authService;
 
     /**
      * 채팅 세션을 시작하는 API
