@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.question.Entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

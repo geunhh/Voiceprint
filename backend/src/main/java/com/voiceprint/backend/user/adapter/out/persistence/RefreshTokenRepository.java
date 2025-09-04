@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.user.adapter.out.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

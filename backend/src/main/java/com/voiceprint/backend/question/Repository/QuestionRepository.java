@@ -1,12 +1,8 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.question.Repository;
 
-import com.voiceprint.backend.domain.Entity.PromptQuestion;
-import com.voiceprint.backend.domain.Entity.TodayQuestion;
+import com.voiceprint.backend.question.Entity.PromptQuestion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
-import java.time.LocalDate;
-import java.util.Optional;
 
 public interface QuestionRepository extends JpaRepository<PromptQuestion, Byte> {
 

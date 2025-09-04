@@ -1,9 +1,9 @@
-package com.voiceprint.backend.service.question;
+package com.voiceprint.backend.question.service.question;
 
 import com.voiceprint.backend.question.dto.QuestionGetResponseDTO;
-import com.voiceprint.backend.domain.Entity.PromptQuestion;
-import com.voiceprint.backend.domain.Repository.QuestionRepository;
-import com.voiceprint.backend.domain.Repository.TodayQuestionRepository;
+import com.voiceprint.backend.question.Entity.PromptQuestion;
+import com.voiceprint.backend.question.Repository.QuestionRepository;
+import com.voiceprint.backend.question.Repository.TodayQuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

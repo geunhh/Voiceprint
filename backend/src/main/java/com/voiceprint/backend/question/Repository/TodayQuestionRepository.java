@@ -1,6 +1,6 @@
-package com.voiceprint.backend.domain.Repository;
+package com.voiceprint.backend.question.Repository;
 
-import com.voiceprint.backend.domain.Entity.TodayQuestion;
+import com.voiceprint.backend.question.Entity.TodayQuestion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

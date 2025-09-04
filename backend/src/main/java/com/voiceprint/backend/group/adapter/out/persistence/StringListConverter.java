@@ -1,4 +1,4 @@
-package com.voiceprint.backend.domain.Entity;
+package com.voiceprint.backend.group.adapter.out.persistence;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

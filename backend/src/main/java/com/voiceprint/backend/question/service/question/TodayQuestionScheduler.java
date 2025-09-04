@@ -1,9 +1,9 @@
-package com.voiceprint.backend.service.question;
+package com.voiceprint.backend.question.service.question;
 
 
-import com.voiceprint.backend.domain.Entity.TodayQuestion;
-import com.voiceprint.backend.domain.Repository.QuestionRepository;
-import com.voiceprint.backend.domain.Repository.TodayQuestionRepository;
+import com.voiceprint.backend.question.Entity.TodayQuestion;
+import com.voiceprint.backend.question.Repository.QuestionRepository;
+import com.voiceprint.backend.question.Repository.TodayQuestionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

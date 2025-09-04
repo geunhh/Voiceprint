@@ -1,7 +1,6 @@
 package com.voiceprint.backend.group.adapter.out.persistence;
 
 
-import com.voiceprint.backend.domain.Entity.StringListConverter;
 import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.*;
