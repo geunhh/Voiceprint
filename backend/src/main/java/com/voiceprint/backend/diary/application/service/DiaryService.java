@@ -38,8 +38,18 @@ public class DiaryService implements DiaryUseCase {
         if (!diary.getUserId().equals(userId.intValue())) {
             throw new RuntimeException("권한이 없습니다."); // Custom Exception으로 교체
         }
-
-        return new DiaryDetailResponseDTO(diary.getId(), diary.getTitle(), diary.getContent(), null, diary.getCreatedAt().toString(), null, diary.getThumbnail());
+        DiaryDetailResponseDTO dto = DiaryDetailResponseDTO.builder()
+                .diaryId(diary.getId())
+                .title(diary.getTitle())
+                .content(diary.getContent())
+                .emotion(null)
+                .createdAt(diary.getCreatedAt().toString())
+                .authorNickname(null)
+                .thumbnail(diary.getThumbnail())
+                .build();
+        log.info("dto : {}", dto);
+//        return new DiaryDetailResponseDTO(diary.getId(), diary.getTitle(), diary.getContent(), null, diary.getCreatedAt().toString(), null, diary.getThumbnail());
+        return dto;
     }
 
     @Override

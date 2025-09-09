@@ -20,6 +20,7 @@ import com.voiceprint.backend.group.application.port.in.group.UpdateGroupUseCase
 import com.voiceprint.backend.group.application.port.in.group.GetGroupMainPageUseCase;
 import com.voiceprint.backend.group.application.port.in.group.GetMyGroupsUseCase;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,7 @@ public class GroupService implements CreateGroupUseCase, UpdateGroupUseCase, Get
                 .user(createUser)  // 사용자 ID 설정
                 .group(savedGroup) // GroupUser 리팩토링 시 순수 Group 객체 사용
                 .role(GroupUser.Role.ADMIN)   // 생성자는 ADMIN으로 설정
+                .joinedAt(LocalDateTime.now())
                 .build();
 
         // 그룹 유저 저장

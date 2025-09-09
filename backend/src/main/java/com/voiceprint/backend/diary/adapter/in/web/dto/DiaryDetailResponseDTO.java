@@ -1,10 +1,12 @@
 package com.voiceprint.backend.diary.adapter.in.web.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+@Builder
 public class DiaryDetailResponseDTO {
     private Integer diaryId;
     private String title;

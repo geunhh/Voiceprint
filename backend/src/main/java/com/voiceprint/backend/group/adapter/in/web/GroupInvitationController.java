@@ -74,10 +74,10 @@ public class GroupInvitationController {
 
     @PostMapping("/invite/accept")
     public ResponseEntity<CommonResponse<InviteAcceptResponseDTO>> acceptInvite(
-            HttpServletRequest httprequest,
+            HttpServletRequest httpRequest,
             @RequestBody InviteCodeRequestDTO request
     ) {
-        Integer userId = authService.getUserIdFromRequest(httprequest);
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
         log.info("{} 유저가 그룹 초대를 수락하려고 합니다.",userId);
 
         InviteAcceptResponseDTO response = acceptInviteUseCase.acceptInvite(request.getInviteCode(), userId);

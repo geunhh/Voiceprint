@@ -30,14 +30,13 @@ public class GroupInvitePersistenceAdapter implements GroupInviteRepositoryPort 
     }
 
     @Override
-    public GroupInvite createInvite(Integer groupId, Integer inviterId) {
-        // 영
-        GroupJpaEntity groupRef = em.getReference(GroupJpaEntity.class, groupId);
-        UserJPAEntity inviterRef = em.getReference(UserJPAEntity.class, inviterId);
+    public GroupInvite createInvite(GroupInvite groupInvite) {
+        GroupJpaEntity groupRef = em.getReference(GroupJpaEntity.class, groupInvite.getGroup().getId());
+        UserJPAEntity inviterRef = em.getReference(UserJPAEntity.class, groupInvite.getInviter().getId());
 
-        GroupInviteJpaEntity newInvite = GroupInviteJpaEntity.create(groupRef, inviterRef);
+        GroupInviteJpaEntity entityToSave = groupInviteMapper.toEntity(groupInvite, groupRef, inviterRef);
 
-        GroupInviteJpaEntity savedEntity = groupInviteRepository.save(newInvite);
+        GroupInviteJpaEntity savedEntity = groupInviteRepository.save(entityToSave);
         return groupInviteMapper.toDomain(savedEntity);
     }
 

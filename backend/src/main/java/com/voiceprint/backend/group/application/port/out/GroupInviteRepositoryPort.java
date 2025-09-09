@@ -13,7 +13,7 @@ public interface GroupInviteRepositoryPort {
     @Deprecated
     GroupInvite save(GroupInvite groupInvite);
 
-    GroupInvite createInvite(Integer groupId, Integer inviterId);
+    GroupInvite createInvite(GroupInvite groupInvite);
 
     Optional<GroupInvite> findFirstByGroupIdAndExpiredAtAfter(Integer groupId, LocalDateTime now);
 

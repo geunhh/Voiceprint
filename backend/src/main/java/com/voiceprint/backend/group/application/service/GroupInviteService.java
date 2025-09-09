@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class GroupInviteService implements CreateInviteUseCase, AcceptInviteUseC
                 .orElseGet(() -> {
                     log.debug("유효한 초대 코드가 존재하지 않습니다. 초대 코드를 새로 생성합니다.");
                     GroupInvite newInvite = GroupInvite.create(group, user);
-                    groupInviteRepository.createInvite(groupId, userId);
+                                        groupInviteRepository.createInvite(newInvite);
                     return newInvite;
                 });
 
@@ -84,10 +85,16 @@ public class GroupInviteService implements CreateInviteUseCase, AcceptInviteUseC
      */
     @Override
     public InviteInfoReponseDTO getInviteInfo(String code, Integer userId) {
+        log.info("getinvite method {}", code);
         // 초대 정보 확인
-        GroupInvite invite = groupInviteRepository.findByInviteCodeWithGroup(code)
-                .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
-
+        GroupInvite invite;
+        try {
+            invite = groupInviteRepository.findByInviteCodeWithGroup(code)
+                    .orElseThrow(() -> new InviteNotFoundException("초대 코드를 찾을 수 없습니다."));
+        } catch (Exception e){
+            log.error("Error fetching invite info : {} ", code, e); // 예외 로깅
+            throw e;
+        }
         // 유효성 검사
         if (!invite.isUsable()) {
             throw new InviteExpiredException("초대 코드가 만료되었거나 더 이상 유효하지 않습니다.");
@@ -142,6 +149,7 @@ public class GroupInviteService implements CreateInviteUseCase, AcceptInviteUseC
                 .group(group)
                 .user(user)
                 .role(GroupUser.Role.MEMBER)
+                .joinedAt(LocalDateTime.now())
                 .build();
 
         groupUserRepository.save(groupUser);

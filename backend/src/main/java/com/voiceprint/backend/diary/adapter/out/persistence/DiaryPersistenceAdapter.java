@@ -66,18 +66,18 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<DiaryResponse> findTop5DtoByUserIdOrderByCreatedAtDesc(Integer userId) {
-        String jpql = "SELECT new com.voiceprint.backend.user.adapter.in.web.dto.DiaryResponse(d.id, d.title, d.content, d.createdAt, e.name) " +
-                      "FROM Diary d JOIN d.emotion e " +
-                      "WHERE d.user.id = :userId " +
-                      "ORDER BY d.createdAt DESC";
-
-        return em.createQuery(jpql, DiaryResponse.class)
-                 .setParameter("userId", userId)
-                 .setMaxResults(5)
-                 .getResultList();
-    }
+//    @Override
+//    public List<DiaryResponse> findTop5DtoByUserIdOrderByCreatedAtDesc(Integer userId) {
+//        String jpql = "SELECT new com.voiceprint.backend.user.adapter.in.web.dto.DiaryResponse(d.id, d.title, d.content, d.createdAt, e.name) " +
+//                      "FROM Diary d JOIN d.emotion e " +
+//                      "WHERE d.user.id = :userId " +
+//                      "ORDER BY d.createdAt DESC";
+//
+//        return em.createQuery(jpql, DiaryResponse.class)
+//                 .setParameter("userId", userId)
+//                 .setMaxResults(5)
+//                 .getResultList();
+//    }
 
     @Override
     public List<Diary> findByUserIdAndDateRange(Integer userId, LocalDateTime start, LocalDateTime end) {
