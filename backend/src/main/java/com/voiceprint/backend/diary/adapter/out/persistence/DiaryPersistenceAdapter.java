@@ -5,7 +5,6 @@ import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.diary.domain.Diary;
 import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.user.adapter.in.web.dto.DiaryResponse;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +39,8 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
                     .orElse(null);
         }
 
-        DiaryEntity entity = diaryMapper.toEntity(diary, user, emotionEntity);
-        DiaryEntity savedEntity = diaryRepository.save(entity);
+        DiaryJpaEntity entity = diaryMapper.toEntity(diary, user, emotionEntity);
+        DiaryJpaEntity savedEntity = diaryRepository.save(entity);
         return diaryMapper.toDomain(savedEntity);
     }
 

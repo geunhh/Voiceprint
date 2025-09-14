@@ -1,6 +1,6 @@
 package com.voiceprint.backend.group.adapter.out.persistence;
 
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryJpaEntity;
 import com.voiceprint.backend.group.adapter.out.persistence.jparepository.GroupDiaryRepository;
 import com.voiceprint.backend.group.adapter.out.persistence.mapper.GroupDiaryMapper;
 import com.voiceprint.backend.group.application.port.out.GroupDiaryRepositoryPort;
@@ -34,7 +34,7 @@ public class GroupDiaryPersistenceAdapter implements GroupDiaryRepositoryPort {
 
     @Override
     public GroupDiary link(Integer diaryId, Integer groupId, LocalDateTime sharedAt) {
-        DiaryEntity diaryRef = em.getReference(DiaryEntity.class, diaryId);
+        DiaryJpaEntity diaryRef = em.getReference(DiaryJpaEntity.class, diaryId);
         GroupJpaEntity groupRef = em.getReference(GroupJpaEntity.class, groupId);
 
         GroupDiaryJpaEntity entity = GroupDiaryJpaEntity.builder()

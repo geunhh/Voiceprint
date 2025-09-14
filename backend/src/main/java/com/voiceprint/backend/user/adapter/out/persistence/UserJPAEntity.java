@@ -1,7 +1,7 @@
 package com.voiceprint.backend.user.adapter.out.persistence;
 
 import com.voiceprint.backend.chat.adapter.out.persistence.ChatbotJPAEntity;
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryJpaEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryThemaJpaEntity;
 import com.voiceprint.backend.notification.adapter.out.persistence.NotificationJpaEntity;
 import jakarta.persistence.*;
@@ -76,7 +76,7 @@ public class UserJPAEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<DiaryEntity> diaries = new ArrayList<>();
+    private List<DiaryJpaEntity> diaries = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_chatbot_id")

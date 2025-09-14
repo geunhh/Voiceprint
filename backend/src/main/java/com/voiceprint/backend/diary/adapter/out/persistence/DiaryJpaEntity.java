@@ -14,7 +14,7 @@ import java.util.List;
 @Entity(name = "Diary") // JPQL 엔티티명 = Diary
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DiaryEntity {
+public class DiaryJpaEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -61,9 +61,9 @@ public class DiaryEntity {
     private LocalDateTime createdAt;
 
     //==생성 메서드==//
-    public static DiaryEntity createDiary(
+    public static DiaryJpaEntity createDiary(
             UserJPAEntity user, EmotionJPAEntity emotion, String title, String content, String thumbnail, String prompt, List<ChatMessage> messages) {
-        DiaryEntity diaryEntity = new DiaryEntity();
+        DiaryJpaEntity diaryEntity = new DiaryJpaEntity();
         diaryEntity.user = user;
         diaryEntity.emotion = emotion;
         diaryEntity.title = title;

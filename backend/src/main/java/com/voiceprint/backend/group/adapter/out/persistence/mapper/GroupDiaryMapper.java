@@ -1,6 +1,6 @@
 package com.voiceprint.backend.group.adapter.out.persistence.mapper;
 
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.adapter.out.persistence.DiaryJpaEntity;
 import com.voiceprint.backend.diary.adapter.out.persistence.DiaryMapper;
 import com.voiceprint.backend.group.adapter.out.persistence.GroupDiaryJpaEntity;
 import com.voiceprint.backend.group.adapter.out.persistence.GroupJpaEntity;
@@ -28,7 +28,7 @@ public class GroupDiaryMapper {
                 .build();
     }
 
-    public GroupDiaryJpaEntity toEntity(GroupDiary domain, DiaryEntity diaryEntity, GroupJpaEntity groupEntity) {
+    public GroupDiaryJpaEntity toEntity(GroupDiary domain, DiaryJpaEntity diaryEntity, GroupJpaEntity groupEntity) {
         if (domain == null) {
             return null;
         }
