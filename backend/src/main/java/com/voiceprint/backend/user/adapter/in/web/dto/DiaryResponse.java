@@ -1,6 +1,6 @@
 package com.voiceprint.backend.user.adapter.in.web.dto;
 
-import com.voiceprint.backend.diary.adapter.out.persistence.DiaryEntity;
+import com.voiceprint.backend.diary.domain.Diary;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,11 +16,11 @@ public class DiaryResponse {
     private LocalDateTime createdAt;
     private String emotion;
 
-    public DiaryResponse(DiaryEntity diaryEntity) {
-        this.diaryId = diaryEntity.getId();
-        this.title = diaryEntity.getTitle();
-        this.content = diaryEntity.getContent();
-        this.createdAt = diaryEntity.getCreatedAt();
-        this.emotion = diaryEntity.getEmotion().getName();
+    public DiaryResponse(Diary diary) {
+        this.diaryId = diary.getId();
+        this.title = diary.getTitle();
+        this.content = diary.getContent();
+        this.createdAt = diary.getCreatedAt();
+        this.emotion = (diary.getEmotion() != null) ? diary.getEmotion().getName() : "행복";
     }
 }

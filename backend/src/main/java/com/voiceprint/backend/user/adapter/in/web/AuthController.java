@@ -5,7 +5,7 @@ import com.voiceprint.backend.user.adapter.in.web.dto.ProfileResponse;
 import com.voiceprint.backend.user.adapter.in.web.dto.TokenResponse;
 import com.voiceprint.backend.user.adapter.in.web.dto.UserResponse;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 public class AuthController {
-    private final AuthService authService;
+    private final UserService authService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @PatchMapping("/profile")

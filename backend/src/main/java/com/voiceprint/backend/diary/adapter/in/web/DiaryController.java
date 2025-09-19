@@ -6,11 +6,13 @@ import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryMontlyListDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.SharedDiaryRequest;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.domain.Entity.Notification;
+import com.voiceprint.backend.group.application.port.in.groupdiary.SaveSharedDiaryUseCase;
+import com.voiceprint.backend.notification.domain.Notification;
 import com.voiceprint.backend.diary.application.port.in.DiaryUseCase;
-import com.voiceprint.backend.service.alarm.NotificationService;
-import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.diary.application.service.GroupDiaryService;
+import com.voiceprint.backend.notification.application.service.NotificationService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
+import com.voiceprint.backend.user.application.service.UserService;
+import com.voiceprint.backend.group.application.service.GroupDiaryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +28,8 @@ import java.util.List;
 public class DiaryController {
 
     private final DiaryUseCase diaryUseCase;
-    private final AuthService authService;
-    private final GroupDiaryService groupDiaryService;
+    private final GetUserUseCase authService;
+    private final SaveSharedDiaryUseCase saveSharedDiaryUseCase;
     private final NotificationService notificationService;
 
     /**
@@ -91,7 +93,7 @@ public class DiaryController {
             HttpServletRequest httpRequest) {
         // 이 메서드는 아직 리팩토링하지 않은 GroupDiaryService를 사용하므로 그대로 둡니다.
         Integer userId = authService.getUserIdFromRequest(httpRequest);
-        List<Notification> notifications = groupDiaryService.saveSharedDiary(diaryId, userId, requestBody.getGroupIds());
+        List<Notification> notifications = saveSharedDiaryUseCase.saveSharedDiary(diaryId, userId, requestBody.getGroupIds());
         notificationService.publishAllNotifications(notifications);
         return ResponseEntity.ok(new CommonResponse<>(200, "다이어리 공유 성공", null));
     }

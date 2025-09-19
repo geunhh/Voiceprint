@@ -4,9 +4,9 @@ import com.voiceprint.backend.diary.domain.Emotion;
 import org.springframework.stereotype.Component;
 
 @Component
-class EmotionMapper {
+public class EmotionMapper {
 
-    Emotion toDomain(EmotionJPAEntity entity) {
+    public Emotion toDomain(EmotionJPAEntity entity) {
         if (entity == null) return null;
         return Emotion.builder()
                 .id(entity.getId())
@@ -15,7 +15,7 @@ class EmotionMapper {
                 .build();
     }
 
-    EmotionJPAEntity toEntity(Emotion domain) {
+    public EmotionJPAEntity toEntity(Emotion domain) {
         if (domain == null) return null;
         return EmotionJPAEntity.create(
                 domain.getName(),

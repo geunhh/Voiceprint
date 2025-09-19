@@ -72,7 +72,7 @@ services:
     env_file:
       - ./mysql/.env
     volumes:
-      - ./mysql-data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
     networks: [voiceprint-network]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping"] # mysql이 healthy 한 지 판단

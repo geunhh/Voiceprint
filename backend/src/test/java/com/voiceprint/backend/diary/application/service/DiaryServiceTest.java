@@ -1,9 +1,8 @@
 package com.voiceprint.backend.diary.application.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
+import com.voiceprint.backend.chat.domain.ChatMessage;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryDetailResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryListWithCursorDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryMontlyListDTO;
@@ -29,11 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * DiaryService 단위 테스트 ( 헥사고날 아키텍처의 Application Service 레이어)
- * - 외부 의존성(RepositoryPort, ObjectMapper)을 Mockito로 모킹.
- * -> 순수 JVM 환경에서 서비스 흐름 검증
- */
 @ExtendWith(MockitoExtension.class)
 class DiaryServiceTest {
 
@@ -43,11 +37,9 @@ class DiaryServiceTest {
     @Mock
     private ObjectMapper objectMapper;
 
-    // 테스트 대상
     @InjectMocks
     private DiaryService diaryService;
 
-    // 공통 태스트 데이터
     private Integer testUserId;
     private Integer testDiaryId;
     private Diary testDiary;
@@ -59,7 +51,6 @@ class DiaryServiceTest {
         testDiaryId = 100;
         testEmotion = Emotion.builder().id((byte)1).name("Happy").color("#FF0000").build();
 
-        // 서비스 레이어에서 사용하는 도메인 Diary
         testDiary = Diary.builder()
                 .id(testDiaryId)
                 .userId(testUserId)
@@ -67,7 +58,8 @@ class DiaryServiceTest {
                 .content("Test Diary Content")
                 .thumbnail("test_thumb.png")
                 .prompt("Test Prompt")
-                .messages("{\"messages\":[{\"sender\":\"user\",\"message\":\"hello\"}]}")
+                .messages(Arrays.asList(ChatMessage.builder().role("user").content("hi hi").build(),
+                                        ChatMessage.builder().role("assistant").content("hi there").build()))
                 .isDeleted(false)
                 .emotion(testEmotion)
                 .createdAt(LocalDateTime.now())
@@ -76,13 +68,10 @@ class DiaryServiceTest {
 
     @Test
     void getDiaryDetail_success() {
-        // GIVEN: 리포지토리가 일기를 정상 반환
         when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.of(testDiary));
 
-        // WHEN: 서비스 호출
         DiaryDetailResponseDTO result = diaryService.getDiaryDetail(testUserId, testDiaryId);
 
-        // THEN: 매핑된 결과/필드 검증 + 리포지토리 호출 검증
         assertThat(result).isNotNull();
         assertThat(result.getDiaryId()).isEqualTo(testDiaryId);
         assertThat(result.getTitle()).isEqualTo("Test Diary Title");
@@ -91,10 +80,8 @@ class DiaryServiceTest {
 
     @Test
     void getDiaryDetail_diaryNotFound() {
-        // GIVEN: 일기 미존재
         when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.empty());
 
-        // WHEN & THEN: 서비스가 도메인 예외를 던져야 함
         assertThrows(DiaryNotFoundException.class, () -> {
             diaryService.getDiaryDetail(testUserId, testDiaryId);
         });
@@ -103,11 +90,9 @@ class DiaryServiceTest {
 
     @Test
     void getDiaryDetail_unauthorized() {
-        // GIVEN: 다른 사용자가 조회
         Integer anotherUserId = 2;
         when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.of(testDiary));
 
-        // WHEN & THEN: 권한 불일치 → 런타임 예외(메시지 확인)
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             diaryService.getDiaryDetail(anotherUserId, testDiaryId);
         });
@@ -117,35 +102,28 @@ class DiaryServiceTest {
 
     @Test
     void getUserDiaries_successWithPagination() {
-        // GIVEN: size+1 전략을 쓰는 페이징을 가정
-        // - 서비스에 size=2를 넘기면, 내부에서 repo는 3개(size+1)를 요청한다.
         Diary diary1 = Diary.builder().id(101).userId(testUserId).title("D1").content("C1").createdAt(LocalDateTime.now().minusDays(2)).build();
         Diary diary2 = Diary.builder().id(102).userId(testUserId).title("D2").content("C2").createdAt(LocalDateTime.now().minusDays(1)).build();
         Diary diary3 = Diary.builder().id(103).userId(testUserId).title("D3").content("C3").createdAt(LocalDateTime.now()).build();
 
-        // 리포가 3개 반환(정렬: id desc 가정 → 103, 102, 101)
         when(diaryRepositoryPort.findMyDiaries(eq(testUserId), any(), eq(3)))
-                .thenReturn(Arrays.asList(diary3, diary2, diary1)); // Ordered by ID desc
+                .thenReturn(Arrays.asList(diary3, diary2, diary1));
 
-        // WHEN: size=2 요청
         DiaryListWithCursorDTO result = diaryService.getUserDiaries(testUserId, null, 2);
 
-        // THEN: 2개만 노출되고(next page 존재), nextCursor는 마지막 노출 항목의 id(=102)
         assertThat(result).isNotNull();
         assertThat(result.getDiaries()).hasSize(2);
         assertThat(result.getDiaries().get(0).getDiaryId()).isEqualTo(103);
         assertThat(result.getDiaries().get(1).getDiaryId()).isEqualTo(102);
-        assertThat(result.getNextCursor()).isEqualTo(102); // nextCursor should be the ID of the last item in the returned list
+        assertThat(result.getNextCursor()).isEqualTo(102);
         verify(diaryRepositoryPort, times(1)).findMyDiaries(eq(testUserId), any(), eq(3));
     }
 
     @Test
     void getUserDiaries_successWithoutPagination() {
-        // GIVEN: 리포가 정확히 size(=2)만 반환 → 다음 페이지 없음
         Diary diary1 = Diary.builder().id(101).userId(testUserId).title("D1").content("C1").createdAt(LocalDateTime.now().minusDays(2)).build();
         Diary diary2 = Diary.builder().id(102).userId(testUserId).title("D2").content("C2").createdAt(LocalDateTime.now().minusDays(1)).build();
 
-        // Mock repository to return exactly requested size
         when(diaryRepositoryPort.findMyDiaries(eq(testUserId), any(), eq(3)))
                 .thenReturn(Arrays.asList(diary2, diary1));
 
@@ -153,7 +131,7 @@ class DiaryServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getDiaries()).hasSize(2);
-        assertThat(result.getNextCursor()).isNull(); // No next page
+        assertThat(result.getNextCursor()).isNull();
         verify(diaryRepositoryPort, times(1)).findMyDiaries(eq(testUserId), any(), eq(3));
     }
 
@@ -200,21 +178,17 @@ class DiaryServiceTest {
     }
 
     @Test
-    void getChatRecordFromDiary_success() throws JsonProcessingException {
-        ChatMessageResponseDTO chatMessage = new ChatMessageResponseDTO("user", "hello");
-        List<ChatMessageResponseDTO> expectedMessages = Collections.singletonList(chatMessage);
-
+    void getChatRecordFromDiary_success() {
         when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.of(testDiary));
-        when(objectMapper.readValue(eq(testDiary.getMessages()), any(TypeReference.class)))
-                .thenReturn(expectedMessages);
 
         List<ChatMessageResponseDTO> result = diaryService.getChatRecordFromDiary(testUserId, testDiaryId);
 
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.getFirst().getContent()).isEqualTo("hello");
+        assertThat(result).hasSize(testDiary.getMessages().size());
+        assertThat(result.get(0).getRole()).isEqualTo(testDiary.getMessages().get(0).getRole());
+        assertThat(result.get(0).getContent()).isEqualTo(testDiary.getMessages().get(0).getContent());
+
         verify(diaryRepositoryPort, times(1)).findDetailById(testDiaryId);
-        verify(objectMapper, times(1)).readValue(eq(testDiary.getMessages()), any(TypeReference.class));
     }
 
     @Test
@@ -226,7 +200,7 @@ class DiaryServiceTest {
         });
         assertThat(exception.getMessage()).isEqualTo("일기를 찾을 수 없습니다.");
         verify(diaryRepositoryPort, times(1)).findDetailById(testDiaryId);
-        verifyNoInteractions(objectMapper); // ObjectMapper should not be called
+        verifyNoInteractions(objectMapper);
     }
 
     @Test
@@ -242,17 +216,4 @@ class DiaryServiceTest {
         verifyNoInteractions(objectMapper);
     }
 
-    @Test
-    void getChatRecordFromDiary_jsonParsingError() throws JsonProcessingException {
-        when(diaryRepositoryPort.findDetailById(testDiaryId)).thenReturn(Optional.of(testDiary));
-        when(objectMapper.readValue(eq(testDiary.getMessages()), any(TypeReference.class)))
-                .thenThrow(new JsonProcessingException("Invalid JSON") {});
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            diaryService.getChatRecordFromDiary(testUserId, testDiaryId);
-        });
-        assertThat(exception.getMessage()).contains("채팅 메시지 파싱에 실패했습니다.");
-        verify(diaryRepositoryPort, times(1)).findDetailById(testDiaryId);
-        verify(objectMapper, times(1)).readValue(eq(testDiary.getMessages()), any(TypeReference.class));
-    }
 }

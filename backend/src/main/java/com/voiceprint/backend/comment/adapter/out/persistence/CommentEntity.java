@@ -1,7 +1,7 @@
 package com.voiceprint.backend.comment.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.GroupDiary;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupDiaryJpaEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,11 +27,11 @@ public class CommentEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_comment_user"))
-    private User user;
+    private UserJPAEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_diary_id", foreignKey = @ForeignKey(name = "fk_comment_groupDiary"))
-    private GroupDiary groupDiary;
+    private GroupDiaryJpaEntity groupDiary;
 
     @Column(name = "content", nullable = false, length = 255)
     private String content;
@@ -55,8 +55,8 @@ public class CommentEntity {
     }
 
     @Builder
-    private CommentEntity(User user,
-                          GroupDiary groupDiary,
+    private CommentEntity(UserJPAEntity user,
+                          GroupDiaryJpaEntity groupDiary,
                           String content,
                           boolean isDeleted,
                           LocalDateTime createdAt,

@@ -2,8 +2,8 @@ package com.voiceprint.backend.global.filter;
 
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
 import com.voiceprint.backend.user.application.service.JWTUtil;
-import com.voiceprint.backend.domain.Entity.User;
-import com.voiceprint.backend.domain.Repository.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -51,7 +51,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 return;
             }
 
-            User user = userRepository.findByProviderId(providerId)
+            UserJPAEntity user = userRepository.findByProviderId(providerId)
                     .orElseThrow(() -> new IllegalStateException("사용자 정보를 찾을 수 없습니다."));
 
             CustomOAuth2User customUser = new CustomOAuth2User(user);

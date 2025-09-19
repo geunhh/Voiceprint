@@ -1,6 +1,6 @@
 package com.voiceprint.backend.group.adapter.in.web.dto;
 
-import com.voiceprint.backend.domain.Entity.Group;
+import com.voiceprint.backend.group.domain.Group;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -43,9 +43,13 @@ public class ChatPromptFactory implements PromptFactory {
     public Prompt buildChatPrompt(String userId, String userText) {
         String sessionKey = session_key + ":" + userId;
         String messageKey = message_key + ":" + userId;
+        log.info("session key : {}",sessionKey);
+        log.info("message key : {}",messageKey);
 
         // 1) 세션 메타데이터 로드
         Map<Object, Object> session = redis.opsForHash().entries(sessionKey);
+        log.info("session : {}",session);
+
         if (session == null || session.isEmpty())
             throw new IllegalStateException("세션 없음 or userId invalid");
 
@@ -54,13 +58,24 @@ public class ChatPromptFactory implements PromptFactory {
             throw new IllegalStateException("챗봇 토큰(대화 길이) 초과");
 
         String systemPrompt = (String) session.get("chatPrompt");
+        log.info("systemPrompt : {}",systemPrompt);
 
         // 2) 히스토리 로드 (JSON -> ChatTurn)
-        List<Object> raw = redis.opsForList().range(messageKey,0,-1);
+        List<Object> raw = null; //. 뭐가 문제인거시야
+        try {
+            raw = redis.opsForList().range(messageKey,0,-1);
+        } catch (Exception e) {
+            log.error("Redis에서 대화 기록을 가져오는 중 오류 발생", e);
+            throw e;
+        }
+        log.info("raw : {}", raw );
         List<Message> msgs = new ArrayList<>();
+
+        log.info("msgs : {}",msgs);
 
         if (systemPrompt != null && !systemPrompt.isBlank())
             msgs.add(new SystemMessage(systemPrompt));
+        log.info("msgs : {}",msgs);
 
         if (raw != null) {
             for (Object o : raw ) {
@@ -78,12 +93,14 @@ public class ChatPromptFactory implements PromptFactory {
 
         // 3) 신규 유저 메시지 넣기.
         msgs.add(new UserMessage(userText));
+        log.info("msgs : {}",msgs);
 
         //4) 모델 옵션
         OpenAiChatOptions options = OpenAiChatOptions.builder()
                 .model("gpt-4.1-mini")
                 .temperature(0.4)
                 .build();
+        log.info("options : {}",options);
 
         return new Prompt(msgs, options);
     }

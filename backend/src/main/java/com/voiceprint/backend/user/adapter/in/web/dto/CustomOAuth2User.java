@@ -1,6 +1,6 @@
 package com.voiceprint.backend.user.adapter.in.web.dto;
 
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,11 +13,11 @@ import java.util.Map;
 public class CustomOAuth2User implements OAuth2User {
 
     @Getter
-    private final User user;
+    private final UserJPAEntity user;
     private final Collection<? extends GrantedAuthority> authorities;
     private final Map<String, Object> attributes;
 
-    public CustomOAuth2User(User user) {
+    public CustomOAuth2User(UserJPAEntity user) {
         this.user = user;
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
         this.attributes = Map.of(

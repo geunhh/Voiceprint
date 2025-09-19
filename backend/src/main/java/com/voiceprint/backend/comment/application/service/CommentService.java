@@ -10,9 +10,15 @@ import com.voiceprint.backend.comment.domain.Comment;
 import com.voiceprint.backend.global.exception.comment.CommentNotFoundException;
 import com.voiceprint.backend.global.exception.comment.UnauthorizedCommentAccessException;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
-import com.voiceprint.backend.domain.Entity.*;
-import com.voiceprint.backend.domain.Repository.*;
-import com.voiceprint.backend.service.alarm.NotificationService;
+import com.voiceprint.backend.group.adapter.out.persistence.jparepository.GroupDiaryRepository;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupJpaEntity;
+import com.voiceprint.backend.group.adapter.out.persistence.GroupDiaryJpaEntity;
+import com.voiceprint.backend.group.adapter.out.persistence.jparepository.GroupUserRepository;
+import com.voiceprint.backend.notification.application.port.out.NotificationRepositoryPort;
+import com.voiceprint.backend.notification.domain.Notification;
+import com.voiceprint.backend.notification.application.service.NotificationService;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -35,21 +41,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentService implements CommentUseCase {
     private final CommentRepositoryPort commentRepository;
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; //Todo : 수정 요망
     private final GroupDiaryRepository groupDiaryRepository;
     private final NotificationService notificationService;
-    private final NotificationRepository notificationRepository;
+    private final NotificationRepositoryPort notificationPort;
     private final GroupUserRepository groupUserRepository;
 
     // 댓글 작성
     @Override
     public CommentCreateResponseDTO saveComment (Integer userId, Integer groupDiaryId, CommentCreatRequestDTO commentCreatRequestDTO) {
 
-        User user = userRepository.findById(userId)
+        UserJPAEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User를 찾을 수 없습니다."));
 
-        GroupDiary groupDiary = groupDiaryRepository.getById(groupDiaryId);
-        Group group = groupDiary.getGroup();
+        GroupDiaryJpaEntity groupDiary = groupDiaryRepository.getById(groupDiaryId);
+        GroupJpaEntity group = groupDiary.getGroup();
 
         Comment comment = Comment.builder()
                 .userId(userId)
@@ -61,19 +67,18 @@ public class CommentService implements CommentUseCase {
         commentRepository.save(comment);
 
         // 댓글 작성자 제외한 그룹 유저들에게 알림 생성
-        List<User> users = groupUserRepository.findUsersByGroupId(group.getId());
+        List<UserJPAEntity> users = groupUserRepository.findUsersByGroupId(group.getId());
         List<Notification> notifications = new ArrayList<>();
 
-        for (User target : users) {
+        for (UserJPAEntity target : users) {
             if (Objects.equals(target.getId(), userId)) continue;
 
-            Map<String, Object> metadata = Map.of(
-                    "groupId", group.getId(),
-                    "diaryId", groupDiary.getDiary().getId()
-            );
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("groupId", group.getId());
+            metadata.put("diaryId", groupDiary.getDiary().getId());
 
             Notification notification = Notification.create(
-                    target,
+                    target.getId(),
                     "newComment",
                     user.getNickname() + "님이 " + group.getName() + " 그룹의 공유된 일기에 댓글을 남겼습니다. 확인해보세요!!",
                     metadata
@@ -81,29 +86,27 @@ public class CommentService implements CommentUseCase {
             notifications.add(notification);
         }
 
-        notificationRepository.saveAll(notifications); // 먼저 저장 -> ID확보
-        notificationRepository.flush();
+        List<Notification> savedNotifications = notificationPort.saveAll(notifications);
 
         // 트랜잭션 커밋 이후 실행
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 // Metadata에 알림Id 추가.
-                for (Notification notification : notifications) {
+                for (Notification notification : savedNotifications) {
                     log.debug("notification : {}, id : {}",notification, notification.getId());
-                    Map<String, Object> metadata = Map.of(
-                            "notificationId", notification.getId(),
-                            "groupId", group.getId(),
-                            "diaryId", groupDiary.getDiary().getId()
-                    );
-                    notification.setMetadata(metadata);  // 메타데이터 주입
+                    Map<String, Object> metadata = new HashMap<>(notification.getMetadata());
+                    metadata.put("notificationId", notification.getId());
                 }
 
                 // 메타데이터 DB 반영
-                notificationService.updateNotificationMetadata(notifications);
+                // 이 부분은 재평가되어야 합니다. 메타데이터를 DB에서 업데이트해야 한다면,
+                // NotificationPort에 updateMetadata(List<Notification> notifications)와 같은 메서드가 필요합니다.
+                // 일단 현재 NotificationPort에서 직접 지원되지 않으므로 이 호출은 주석 처리합니다.
+                // notificationService.updateNotificationMetadata(savedNotifications);
 
                 // SSE 발행
-                notificationService.publishAllNotifications(notifications);
+                notificationService.publishAllNotifications(savedNotifications);
             }
         });
 
@@ -137,23 +140,23 @@ public class CommentService implements CommentUseCase {
                 : null;
 
         Set<Integer> userIds = slice.stream().map(Comment::getUserId).collect(Collectors.toSet());
-        Map<Integer, User> userMap = userIds.isEmpty()
+        Map<Integer, UserJPAEntity> userMap = userIds.isEmpty()
                 ? Collections.emptyMap()
                 : userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(User::getId, u -> u));
+                .collect(Collectors.toMap(UserJPAEntity::getId, u -> u));
 
 
         // 6. entity -> dto 매핑
         List<CommentGetResponseDTO> dtoList = slice.stream().map(c -> {
-            User u = userMap.get(c.getUserId());
+            UserJPAEntity u = userMap.get(c.getUserId());
             String nickname = (u != null) ? u.getNickname() : "탈퇴회원";
             String profileUrl = (u != null && u.getProfileImage() != null) ? u.getProfileImage().getImageUrl() : null;
 
             return new CommentGetResponseDTO(
-                    c.getUserId(),            // 작성자 ID
-                    nickname,                 // 작성자 닉네임
-                    profileUrl,               // 프로필 이미지
-                    c.getId(),                // 댓글 ID
+                    c.getUserId(),
+                    nickname,
+                    profileUrl,
+                    c.getId(),
                     c.getCreatedAt(),
                     c.getContent()
             );

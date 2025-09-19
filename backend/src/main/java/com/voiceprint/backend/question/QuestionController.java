@@ -3,7 +3,7 @@ package com.voiceprint.backend.question;
 
 import com.voiceprint.backend.question.dto.QuestionGetResponseDTO;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.question.QuestionService;
+import com.voiceprint.backend.question.service.question.QuestionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

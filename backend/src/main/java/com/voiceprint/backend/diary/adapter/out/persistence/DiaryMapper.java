@@ -1,6 +1,6 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.diary.domain.Diary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ public class DiaryMapper {
 
     private final EmotionMapper emotionMapper;
 
-    public Diary toDomain(DiaryEntity entity) {
+    public Diary toDomain(DiaryJpaEntity entity) {
         return Diary.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
@@ -26,9 +26,9 @@ public class DiaryMapper {
                 .build();
     }
 
-    public DiaryEntity toEntity(Diary domain, User user, EmotionJPAEntity emotion) {
+    public DiaryJpaEntity toEntity(Diary domain, UserJPAEntity user, EmotionJPAEntity emotion) {
         // The User and Emotion entities are fetched in the adapter and passed here.
-        return DiaryEntity.createDiary(
+        return DiaryJpaEntity.createDiary(
             user,
             emotion,
             domain.getTitle(),

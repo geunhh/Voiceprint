@@ -2,7 +2,7 @@ package com.voiceprint.backend.user.adapter.in.web;
 
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
 import com.voiceprint.backend.user.application.service.JWTUtil;
-import com.voiceprint.backend.domain.Repository.RefreshTokenRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.RefreshTokenRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

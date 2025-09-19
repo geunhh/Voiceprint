@@ -1,7 +1,5 @@
 package com.voiceprint.backend.diary.application.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.chat.adapter.in.web.dto.ChatMessageResponseDTO;
 import com.voiceprint.backend.diary.adapter.in.web.dto.DiaryDetailResponseDTO;
@@ -25,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class DiaryService implements DiaryUseCase {
 
@@ -39,8 +38,18 @@ public class DiaryService implements DiaryUseCase {
         if (!diary.getUserId().equals(userId.intValue())) {
             throw new RuntimeException("권한이 없습니다."); // Custom Exception으로 교체
         }
-
-        return new DiaryDetailResponseDTO(diary.getId(), diary.getTitle(), diary.getContent(), null, diary.getCreatedAt().toString(), null, diary.getThumbnail());
+        DiaryDetailResponseDTO dto = DiaryDetailResponseDTO.builder()
+                .diaryId(diary.getId())
+                .title(diary.getTitle())
+                .content(diary.getContent())
+                .emotion(null)
+                .createdAt(diary.getCreatedAt().toString())
+                .authorNickname(null)
+                .thumbnail(diary.getThumbnail())
+                .build();
+        log.info("dto : {}", dto);
+//        return new DiaryDetailResponseDTO(diary.getId(), diary.getTitle(), diary.getContent(), null, diary.getCreatedAt().toString(), null, diary.getThumbnail());
+        return dto;
     }
 
     @Override
@@ -79,15 +88,16 @@ public class DiaryService implements DiaryUseCase {
     public List<ChatMessageResponseDTO> getChatRecordFromDiary(Integer userId, Integer diaryId) {
         Diary diary = diaryRepositoryPort.findDetailById(diaryId)
                 .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
+        log.info("diary : {}, {}",diary,diary.getMessages());
 
         if (!diary.getUserId().equals(userId)) {
             throw new RuntimeException("권한이 없습니다.");
         }
-
-        try {
-            return objectMapper.readValue(diary.getMessages(), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("채팅 메시지 파싱에 실패했습니다.", e);
-        }
+        // ChatMessageListConverter로 간소화.
+        return diary.getMessages().stream()
+                .map(chatMessage -> new ChatMessageResponseDTO(
+                        chatMessage.getRole(), chatMessage.getContent()
+                ))
+                .collect(Collectors.toList());
     }
 }

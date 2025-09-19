@@ -1,11 +1,13 @@
 package com.voiceprint.backend.diary.adapter.out.persistence;
 
-import com.voiceprint.backend.domain.Repository.UserRepository;
-import com.voiceprint.backend.domain.Entity.User;
+import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
+import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.diary.domain.Diary;
 import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
 import com.voiceprint.backend.global.exception.user.UserNotFoundException;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
@@ -16,27 +18,29 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
 
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
     private final EmotionRepository emotionRepository;
     private final DiaryMapper diaryMapper;
+    private final EntityManager em;
 
     @Override
     public Diary save(Diary diary) {
         // Fetch User and Emotion entities
-        User user = userRepository.findById(diary.getUserId())
+        UserJPAEntity user = userRepository.findById(diary.getUserId())
             .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         EmotionJPAEntity emotionEntity = null;
         if (diary.getEmotion() != null && diary.getEmotion().getId() != null) {
-             emotionEntity = emotionRepository.findById(emotionEntity.getId())
+             emotionEntity = emotionRepository.findById(diary.getEmotion().getId())
                     .orElse(null);
         }
 
-        DiaryEntity entity = diaryMapper.toEntity(diary, user, emotionEntity);
-        DiaryEntity savedEntity = diaryRepository.save(entity);
+        DiaryJpaEntity entity = diaryMapper.toEntity(diary, user, emotionEntity);
+        DiaryJpaEntity savedEntity = diaryRepository.save(entity);
         return diaryMapper.toDomain(savedEntity);
     }
 
@@ -61,6 +65,19 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public List<DiaryResponse> findTop5DtoByUserIdOrderByCreatedAtDesc(Integer userId) {
+//        String jpql = "SELECT new com.voiceprint.backend.user.adapter.in.web.dto.DiaryResponse(d.id, d.title, d.content, d.createdAt, e.name) " +
+//                      "FROM Diary d JOIN d.emotion e " +
+//                      "WHERE d.user.id = :userId " +
+//                      "ORDER BY d.createdAt DESC";
+//
+//        return em.createQuery(jpql, DiaryResponse.class)
+//                 .setParameter("userId", userId)
+//                 .setMaxResults(5)
+//                 .getResultList();
+//    }
+
     @Override
     public List<Diary> findByUserIdAndDateRange(Integer userId, LocalDateTime start, LocalDateTime end) {
         return diaryRepository.findByUserIdAndDateRange(userId, start, end)
@@ -82,6 +99,19 @@ public class DiaryPersistenceAdapter implements DiaryRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-    
+    @Override
+    public List<Diary> findTop5ByUserIdOrderByCreatedAtDesc(Integer userId) {
+        log.info("여긴가?");
+        return diaryRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(diaryMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Diary> findById(Integer diaryId) {
+        return diaryRepository.findById(diaryId).map(diaryMapper::toDomain);
+    }
+
 
 }

@@ -1,10 +1,15 @@
 package com.voiceprint.backend.chat.adapter.in.web;
 
-import com.voiceprint.backend.chat.adapter.in.web.dto.*;
+import com.voiceprint.backend.chat.adapter.in.web.dto.ChatTextRequestDTO;
+import com.voiceprint.backend.chat.adapter.in.web.dto.ChatTextResponseDTO;
+import com.voiceprint.backend.chat.adapter.in.web.dto.TempDiaryResponseDTO;
+import com.voiceprint.backend.chat.adapter.in.web.dto.TempDiaryUpdateRequestDTO;
+import com.voiceprint.backend.chat.adapter.in.web.dto.UpdateDiaryResult;
+import com.voiceprint.backend.chat.application.port.in.ChatUseCase;
+import com.voiceprint.backend.chat.application.port.in.GenerateDiaryUseCase;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.auth.AuthService;
-import com.voiceprint.backend.chat.application.service.ChatServcie;
-import com.voiceprint.backend.chat.application.service.ChatSessionService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
+import com.voiceprint.backend.user.application.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,26 +26,26 @@ import java.util.Map;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    private final ChatServcie chatServcie;
-    private final ChatSessionService chatSessionService;
-    private final AuthService authService;
+    private final ChatUseCase chatUseCase;
+    private final GenerateDiaryUseCase generateDiaryUseCase;
+    private final GetUserUseCase authService;
+
     /**
      * Text 채팅 API
      */
     @PostMapping("/text")
     public ResponseEntity<CommonResponse<?>> chat(
             @RequestBody @Valid ChatTextRequestDTO request,
-            HttpServletRequest httprequest
-            ){
-        Integer userId = authService.getUserIdFromRequest(httprequest);
-        log.info("## 채팅 / userid : {}",userId);
-        ChatTextResponseDTO response = chatServcie.processChatV1(userId, request.getMessage());
-        log.info("답변 : {}",response.getResponse());
+            HttpServletRequest httpRequest
+    ) {
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
+        log.info("## 채팅 / userid : {}", userId);
+        ChatTextResponseDTO response = chatUseCase.processChat(userId, request.getMessage());
+        log.info("답변 : {}", response.getResponse());
 
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "성공", response
         ));
-
     }
 
     /**
@@ -48,12 +53,11 @@ public class ChatController {
      */
     @PostMapping("/end")
     public ResponseEntity<CommonResponse<String>> endChatSession(
-            HttpServletRequest request) {
-
+            HttpServletRequest request
+    ) {
         Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 채팅 세션 종료 / userid : {}",userId);
-        // 비동기 처리
-        chatSessionService.endSession2(userId);
+        log.info("## 채팅 세션 종료 / userid : {}", userId);
+        generateDiaryUseCase.endChatSessionAndGenerateDiary(userId);
         return ResponseEntity.ok(new CommonResponse<>(
                 200, "세션 종료 성공", "일기 생성을 시작했습니다. (생성중입니다)"));
     }
@@ -65,22 +69,20 @@ public class ChatController {
     public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> getTempDiary(
             HttpServletRequest request
     ) {
-
         Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 임시 일기 조회 / userid : {}",userId);
-        TempDiaryResponseDTO response = chatSessionService.getTempDiary(userId);
-        log.info("## 일기 : {} ",response.getDiary());
-        return ResponseEntity.ok(new CommonResponse<>(200, "임시 일기 조회",response));
+        log.info("## 임시 일기 조회 / userid : {}", userId);
+        TempDiaryResponseDTO response = generateDiaryUseCase.getTemporaryDiary(userId);
+        log.info("## 일기 : {} ", response.getDiary());
+        return ResponseEntity.ok(new CommonResponse<>(200, "임시 일기 조회", response));
     }
 
     @PostMapping("/diary/temp/retry")
     public ResponseEntity<CommonResponse<String>> retryTempDiary(
             HttpServletRequest request
     ) {
-
         Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 임시 일기 재생성 / userid : {}",userId);
-        chatSessionService.retryTempDiaryGeneration(userId);
+        log.info("## 임시 일기 재생성 / userid : {}", userId);
+        generateDiaryUseCase.retryDiaryGeneration(userId);
 
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
@@ -95,12 +97,11 @@ public class ChatController {
     @PatchMapping("/diary/temp/update")
     public ResponseEntity<CommonResponse<TempDiaryResponseDTO>> updateTempDiary(
             @RequestBody @Valid TempDiaryUpdateRequestDTO request,
-            HttpServletRequest httprequest
+            HttpServletRequest httpRequest
     ) {
-//        Long userId = 1L;
-        Integer userId = authService.getUserIdFromRequest(httprequest);
-        log.info("## 임시 채팅 수정 / userid : {}",userId);
-        UpdateDiaryResult result = chatSessionService.updateTempDiary(userId, request);
+        Integer userId = authService.getUserIdFromRequest(httpRequest);
+        log.info("## 임시 채팅 수정 / userid : {}", userId);
+        UpdateDiaryResult result = generateDiaryUseCase.updateTemporaryDiary(userId, request);
 
         if (!result.isChanged()) {
             return ResponseEntity.ok(new CommonResponse<>(
@@ -118,8 +119,8 @@ public class ChatController {
             HttpServletRequest request
     ) {
         Integer userId = authService.getUserIdFromRequest(request);
-        log.info("## 일기 확정!! / userid : {}",userId);
-        Integer diaryId = chatSessionService.confirmDiary(userId);
+        log.info("## 일기 확정!! / userid : {}", userId);
+        Integer diaryId = generateDiaryUseCase.confirmDiary(userId);
 
         Map<String, Integer> data = Map.of("diaryId", diaryId);
         return ResponseEntity.ok(new CommonResponse<>(

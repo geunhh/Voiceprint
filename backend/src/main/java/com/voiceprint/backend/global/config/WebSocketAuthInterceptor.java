@@ -1,6 +1,7 @@
 package com.voiceprint.backend.global.config;
 
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
+import com.voiceprint.backend.user.application.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
@@ -17,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
-    private final AuthService authService;
+    private final GetUserUseCase authService;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,

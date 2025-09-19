@@ -3,8 +3,10 @@ package com.voiceprint.backend.comment.adapter.in.web;
 import com.voiceprint.backend.comment.adapter.in.web.dto.CommentCreatRequestDTO;
 import com.voiceprint.backend.comment.adapter.in.web.dto.CommentCreateResponseDTO;
 import com.voiceprint.backend.comment.adapter.in.web.dto.CommentListWithCursorDTO;
+import com.voiceprint.backend.comment.application.port.in.CommentUseCase;
 import com.voiceprint.backend.global.dto.CommonResponse;
-import com.voiceprint.backend.service.auth.AuthService;
+import com.voiceprint.backend.user.application.port.in.GetUserUseCase;
+import com.voiceprint.backend.user.application.service.UserService;
 import com.voiceprint.backend.comment.application.service.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/comment")
 public class CommentController {
-    private final AuthService authService;
-    private final CommentService commentService;
+    private final GetUserUseCase authService;
+    private final CommentUseCase commentService;
 
-    public CommentController(AuthService authService,
+    public CommentController(UserService authService,
                              CommentService commentService) {
         this.authService = authService;
         this.commentService = commentService;
