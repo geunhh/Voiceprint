@@ -1,0 +1,10 @@
+server:
+  port: 8000
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true               # Eureka에 등록된 서비스를 기반으로 자동으로 라우팅 맵을 생성
+          lower-case-service-id: true # 서비스 ID를 소문자로 변환하여 URL 경로로 사용 (e.g. /backend-msa)

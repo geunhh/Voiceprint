@@ -1,0 +1,6 @@
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers: kafka:9092      # docker-compose-msa.yml에 정의된 Kafka 서비스 주소
+      group-id: voiceprint-notification # 이 컨슈머 그룹의 고유 ID
+      auto-offset-reset: earliest        # 처리하지 못한 메시지가 있다면 가장 처음부터 다시 읽음

@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
     
   mysql:
-    container_name: mysql
+    container_name: mysql_vp
     # image: jokiheum/voiceprint-mysql:latest
     build: 
       context: ./mysql
