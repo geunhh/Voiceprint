@@ -4,6 +4,14 @@ server:
 spring:
   application:
     name: discovery-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          enabled: false
+security:
+  basic:
+    enabled: false
 
 eureka:
   client:
