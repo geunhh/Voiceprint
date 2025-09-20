@@ -1,4 +1,4 @@
-package com.voiceprint.notification;
+package com.voiceprint.notification.adapter.in;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;

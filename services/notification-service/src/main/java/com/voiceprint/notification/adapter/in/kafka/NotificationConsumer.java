@@ -1,6 +1,5 @@
-package com.voiceprint.notification;
+package com.voiceprint.notification.adapter.in.kafka;
 
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
