@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: config-service
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        git:
+          enabled: false # Git 백엔드 명시적으로 비활성화
