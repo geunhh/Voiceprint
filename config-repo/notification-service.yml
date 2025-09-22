@@ -1,12 +1,18 @@
 server:
   port: 8081
 spring:
-
-  # kafka:
-    # consumer:
-      # bootstrap-servers: localhost:9092
-      # group-id: voiceprint-notification
-      # auto-offset-reset: earliest
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: redis_pw123
+  kafka:
+    consumer:
+      bootstrap-servers: kafka:9092
+      group-id: voiceprint-notification
+      auto-offset-reset: earliest
+    listener:
+      missing-topics-fatal: false
   datasource:
     url: jdbc:h2:mem:notificationdb;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
@@ -19,3 +25,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 임시키
+session:
+  key: "dummy-session-key"
+message:
+  key: "dummy-message-key"

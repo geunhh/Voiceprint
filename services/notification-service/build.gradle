@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.6'
+	id 'org.springframework.boot' version '3.3.5' // 버전 이슈..
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -14,32 +14,39 @@ java {
 	}
 }
 
-repositories {
-	mavenCentral()
+
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 ext {
-	set('springCloudVersion', "2025.0.0")
+	set('springCloudVersion', "2023.0.3")
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springframework.kafka:spring-kafka'
-//	runtimeOnly 'com.mysql:mysql-connector-j'
 	runtimeOnly 'com.h2database:h2'
 
 	// 롬복
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-	// Redis 의존성 추가
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	testImplementation 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'

@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  # FE (from docker-compose.yml)
+  frontend:
+    container_name: frontend
+    # image: jokiheum/voiceprint-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "81:80"
+    env_file:
+      - ./frontend/.env
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks: [voiceprint_net] # Changed network
+    restart: unless-stopped
+
   # 1. Kafka (Zookeeper-less KRaft mode)
   kafka:
     image: bitnami/kafka:latest
@@ -16,59 +34,154 @@ services:
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CLUSTER_ID: "a9d5b1b2-b1b2-4b1b-8b1b-d5b1b2a9d5b1"
+      - KAFKA_CLUSTER_ID="a9d5b1b2-b1b2-4b1b-8b1b-d5b1b2a9d5b1"
     networks:
       - voiceprint_net
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # 2. Discovery Service (Eureka)
   discovery-service:
     build: ./services/discovery-service
     ports:
-      - "8761:8761"
+      - "8762:8761"
     networks:
       - voiceprint_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s # Modified from 30s
 
   # 3. Config Service
   config-service:
     build: ./services/config-service
     ports:
-      - "8888:8888"
+      - "8889:8888"
     environment:
-      - CONFIG_REPO_PATH=/config-repo
+      - SPRING_PROFILES_ACTIVE=native
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo
     volumes:
       - ./config-repo:/config-repo
     networks:
       - voiceprint_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s # Modified from 30s
 
   # 4. Gateway Service
   gateway-service:
     build: ./services/gateway-service
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
-      - discovery-service
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
     networks:
       - voiceprint_net
 
   # 5. Backend Service (MSA)
   backend-msa:
-    build: ./services/backend-msa
+    build:
+      context: .
+      dockerfile: ./services/backend-msa/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
-      - discovery-service
-      - kafka
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./services/backend-msa/.env
+    environment:
+      MYSQL_HOST: mysql_vp
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: voiceprint_db
+      MYSQL_USER: voiceprint_user
+      MYSQL_PASSWORD: thisisneverthat
     networks:
       - voiceprint_net
 
   # 6. Notification Service
   notification-service:
-    build: ./services/notification-service
+    build:
+      context: .
+      dockerfile: ./services/notification-service/Dockerfile
     depends_on:
-      - discovery-service
-      - kafka
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - voiceprint_net
+
+  # MySQL Service (from docker-compose.yml)
+  mysql:
+    container_name: mysql_vp
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    ports:
+      - "3307:3306" #로컬에서 3306 이미 사용중.
+    env_file:
+      - ./mysql/.env
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks: [voiceprint_net] # Changed network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"] # mysql이 healthy 한 지 판단
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Redis Service (from docker-compose.yml)
+  redis:
+    container_name: redis
+    image: redis:8
+    ports:
+      - "6379:6379"
+    env_file:
+      - ./redis/.env
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command:
+      - /bin/sh
+      - -c
+      - redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    networks: [voiceprint_net] # Changed network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" ping"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+    name: mysql-data
 
 networks:
   voiceprint_net:

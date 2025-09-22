@@ -14,7 +14,7 @@ FROM openjdk:21-jdk
 
 WORKDIR /app
 
-COPY --from=build /home/gradle/src/build/libs/*SNAPSHOT.jar app.jar
+COPY --from=build /home/gradle/src/services/backend-msa/build/libs/backend-msa-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 

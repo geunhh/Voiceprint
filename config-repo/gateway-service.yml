@@ -17,18 +17,21 @@ spring:
                 preLogger: true
                 postLogger: true 
           routes:
-            - id: backend_route
-              uri: lb://BACKEND-MSA  # 'lb://' 는 Eureka를 통한 로드 밸런싱 의미.
-              predicates: 
-                - Path=/api/backend/**
-              filters:
-                - RewritePath=/api/backend/(?<segment>.*), /$\{segment} # 경로에서 /api/backend 제거
-            
             
             - id: notification_route
               uri: lb://notification-service  # 'lb://' 는 Eureka를 통한 로드 밸런싱 의미.
               predicates: 
-                - Path=/api/notification/**
-              filters:
-                - RewritePath=/api/notification/(?<segment>.*), /$\{segment} # 경로에서 /api/notifications/...를 서비스의 /xyz로 재작성
-          
+                - Path=/api/notifications/**
+            
+            - id: backend_catch_all
+              uri: lb://backend-msa
+              predicates:
+                - Path=/api/**
+
+eureka:
+  client:
+    webclient:
+      enabled: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+    
