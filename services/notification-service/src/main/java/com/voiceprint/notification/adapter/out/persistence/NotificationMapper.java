@@ -1,22 +1,15 @@
 package com.voiceprint.notification.adapter.out.persistence;
 
-import com.voiceprint.notification.adapter.out.persistence.NotificationJpaEntity;
 import com.voiceprint.notification.domain.Notification;
-import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
-import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class NotificationMapper {
-
-    private final UserRepository userRepository;
 
     public Notification toDomain(NotificationJpaEntity entity) {
         return Notification.builder()
                 .id(entity.getId())
-                .userId(entity.getUser() != null ? entity.getUser().getId() : null)
+                .userId(entity.getUserId()) //userId
                 .type(entity.getType())
                 .message(entity.getMessage())
                 .metadata(entity.getMetadata())
@@ -29,12 +22,8 @@ public class NotificationMapper {
         NotificationJpaEntity entity = new NotificationJpaEntity();
         entity.setId(domain.getId());
 
-        UserJPAEntity userJpaEntity = null;
-        if (domain.getUserId() != null) {
-            userJpaEntity = userRepository.findById(domain.getUserId())
-                                          .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + domain.getUserId()));
-        }
-        entity.setUser(userJpaEntity);
+
+        entity.setUserId(domain.getUserId());
         entity.setType(domain.getType());
         entity.setMessage(domain.getMessage());
         entity.setMetadata(domain.getMetadata());

@@ -22,9 +22,8 @@ public class NotificationJpaEntity {
     private Long id;
 
     // 수신 유저
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Integer userid;            // id로 변경
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;            // id로 변경
 
     // 알림 타입 (ex. reminder, new_comment, new_post 등)
     @Column(length = 20, nullable = false)
@@ -51,13 +50,13 @@ public class NotificationJpaEntity {
     //== 생성 메서드 ==//
 
     public static NotificationJpaEntity create(
-            Integer userid,
+            Integer userId,
             String type,
             String message,
             Map<String, Object> metadata
     ) {
         NotificationJpaEntity notification = new NotificationJpaEntity();
-        notification.userid = userid;
+        notification.userId = userId;
         notification.type = type;
         notification.message = message;
         notification.metadata = metadata;

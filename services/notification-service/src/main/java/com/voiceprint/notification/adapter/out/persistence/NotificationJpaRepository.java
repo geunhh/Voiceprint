@@ -12,9 +12,9 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationJpa
 
 
     @Query("""
-        SELECT  n from Notification n
-        where n.user.id = :userId
-        and n.isRead = false 
+        SELECT n from Notification n
+        where n.userId = :userId
+        and n.isRead = false
         and (:cursor is null or n.id < :cursor)
         order by n.id desc
         """)

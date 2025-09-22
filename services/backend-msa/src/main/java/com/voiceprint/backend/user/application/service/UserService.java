@@ -12,6 +12,7 @@ import com.voiceprint.backend.user.domain.ProfileImage;
 import com.voiceprint.backend.user.domain.User;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import com.voiceprint.backend.global.kafka.KafkaProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
     private final RefreshTokenRepository refreshTokenRepository;
     private final ProfileImageRepositoryPort profileImageRepository;
     private final DiaryRepositoryPort diaryRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Override
     @Transactional(readOnly = true)
@@ -264,11 +266,25 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
         User updatedUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
+        // Kafka 메시지 전송
+        String message = String.format(
+                "{      \"eventType\": \"USER_PROFILE_UPDATED\", " +
+                        "\"userId\": %d, " +
+                        "\"nickname\": \"%s\", " +
+                        "\"updatedAt\": \"%s\"" +
+                "}",
+                updatedUser.getId(),
+                updatedUser.getNickname(),
+                updatedUser.getProfileImageId(),
+                java.time.Instant.now().toString());
+        kafkaProducerService.sendMessage("user-events", message);
+
         return new ProfileUpdateResponse(updatedUser.getId(), updatedUser.getNickname(), updatedUser.getProfileImageId());
     }
+
+    // 유저 알림 여부 확인 메서드
     @Override
     @Transactional(readOnly = true)
-    // 유저 알림 여부 확인 메서드
     public AlarmSettingsResponseDTO isReminderEnabled(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보 없음"));
@@ -287,6 +303,17 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
     public Boolean updateReminderSetting(Boolean enableAlarms, Integer userId) {
         // DB 업데이트 로직은 포트를 통해 어댑터에 위임
         userRepository.updateEnableAlarm(userId, enableAlarms);
+        // Kafka 메시지 전송
+        String message = String.format(
+                "{\"eventType\": \"USER_NOTIFICATION_PREFERENCES_UPDATED\", " +
+                        "\"userId\": %d, " +
+                        "\"enableAlarms\": %b, " +
+                        "\"updatedAt\": \"%s\"}",
+                userId,
+                enableAlarms,
+                java.time.Instant.now().toString());
+        kafkaProducerService.sendMessage("user-events", message);
+
         return enableAlarms;
     }
 
@@ -305,6 +332,15 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
 
             // DB 업데이트 로직은 포트를 통해 어댑터에 위임
             userRepository.updateAlarmTime(userId, time);
+
+            // Kafka 메시지 전송
+            String message = String.format(
+                    "{\"eventType\": \"USER_NOTIFICATION_PREFERENCES_UPDATED\", " +
+                            "\"userId\": %d, " +
+                            "\"alarmTime\": \"%s\", " +
+                            "\"updatedAt\": \"%s\"}",
+                    userId, time.toString(), java.time.Instant.now().toString());
+            kafkaProducerService.sendMessage("user-events", message);
 
             return time.toString();
 

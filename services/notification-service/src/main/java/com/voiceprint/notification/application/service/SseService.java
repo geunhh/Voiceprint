@@ -1,7 +1,6 @@
 package com.voiceprint.notification.application.service;
 
 import com.voiceprint.notification.adapter.in.web.NotificationDTO;
-import com.voiceprint.backend.global.logger.ConnectionPoolMonitor;
 import com.voiceprint.notification.adapter.out.sse.SseEmitterManager;
 import com.voiceprint.notification.application.port.in.SseUseCase;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +17,12 @@ import java.util.Set;
 @Slf4j
 public class SseService implements SseUseCase {
     private final SseEmitterManager emitterManager;
-    private final ConnectionPoolMonitor connectionPoolMonitor;
 
     // 클라이언트가 구독 요청할 때 호출
     @Override
     public SseEmitter subscribe(Integer userId) {
 
-        connectionPoolMonitor.logHikariStatus();
+//        connectionPoolMonitor.logHikariStatus();
         return emitterManager.add(userId);
     }
 
