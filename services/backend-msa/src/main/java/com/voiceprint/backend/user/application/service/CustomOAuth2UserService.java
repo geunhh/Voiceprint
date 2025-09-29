@@ -1,5 +1,6 @@
 package com.voiceprint.backend.user.application.service;
 
+import com.voiceprint.backend.global.event.UserEvent;
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
 import com.voiceprint.backend.user.adapter.in.web.dto.GoogleResponse;
 import com.voiceprint.backend.user.adapter.in.web.dto.KakaoResponse;
@@ -9,7 +10,7 @@ import com.voiceprint.backend.user.adapter.out.persistence.ProfileImageJPAEntity
 import com.voiceprint.backend.user.adapter.out.persistence.ProfileImageRepository;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
-import com.voiceprint.backend.global.kafka.KafkaProducerService;
+import com.voiceprint.backend.global.kafka.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -27,7 +28,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
     private final ProfileImageRepository profileImageRepository;
-    private final KafkaProducerService kafkaProducerService;
+    private final EventPublisher eventPublisher;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
@@ -67,14 +68,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .build();
 
                     UserJPAEntity savedUser = userRepository.save(newUser);
-                    // Kafka 메시지 전송
-                    String message = String.format(
-                            "{  \"eventType\": \"USER_REGISTERED\", " +
-                                    "\"userId\": %d, " +
-                                    "\"nickname\": \"%s\", " +
-                                    "\"createdAt\": \"%s\"}",
-                            savedUser.getId(), savedUser.getNickname(), savedUser.getCreatedAt().toString());
-                    kafkaProducerService.sendMessage("user-events", message);
+
+                    // UserEvent 발행
+                    UserEvent evt = new UserEvent();
+                    evt.setEventType("USER_REGISTERED");
+                    evt.setUserId(savedUser.getId());
+                    eventPublisher.publishUserEvent(evt);
+
                     return savedUser;
                 });
 

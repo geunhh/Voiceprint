@@ -93,7 +93,8 @@ public class GroupDiaryService implements SaveSharedDiaryUseCase, GetGroupDiarie
 
             // GroupDiary 도메인 객체 생성
             GroupDiary groupDiary = GroupDiary.create(diary, group);
-            groupDiaryRepositoryPort.save(groupDiary, diary);
+//            groupDiaryRepositoryPort.save(groupDiary, diary);
+            groupDiaryRepositoryPort.link(diary.getId(), group.getId(), LocalDateTime.now());
 
             // 1. 그룹 유저 조회
             List<GroupUser> usersInGroup = groupUserRepositoryPort.findAllByGroupId(groupId);
@@ -119,11 +120,11 @@ public class GroupDiaryService implements SaveSharedDiaryUseCase, GetGroupDiarie
                 );
                 toSaveNotifications.add(notification);
             }
-
-            // 알림 저장 & flush
-            notificationPort.saveAll(toSaveNotifications);
-            log.debug("## 그룹일기 및 Notificaiton 저장 완료");
         }
+        // 알림 저장 & flush
+        notificationPort.saveAll(toSaveNotifications);
+        log.debug("## 그룹일기 및 Notificaiton 저장 완료");
+
         return toSaveNotifications;
     }
 
