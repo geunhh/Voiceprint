@@ -1,6 +1,8 @@
 package com.voiceprint.notification.application.service;
 
 import com.voiceprint.notification.adapter.out.RedisPublisher;
+import com.voiceprint.notification.adapter.out.persistence.ProcessedEvent;
+import com.voiceprint.notification.adapter.out.persistence.ProcessedEventJPARepository;
 import com.voiceprint.notification.application.port.in.NotificationUseCase;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.notification.domain.Notification;
@@ -30,18 +32,32 @@ public class NotificationEventService implements NotificationUseCase {
     private final NotificationRepositoryPort notificationPort;
     private final RedisPublisher redisPublisher;
     private final UserNotificationPreferenceRepository userNotificationPreferenceRepository;
+    private final ProcessedEventJPARepository processedEventRepository;
 
     @Override
     public void handleNotificationEvent(NotificationEvent event) {
+
+        final String eventId = event.getEventId();
+        if (eventId == null || eventId.isBlank()) {
+            throw new IllegalArgumentException("missing eventId");
+        }
+
+        // 1) 이미 처리했으면 스킵 (중복 알람 방지)
+        if (processedEventRepository.existsById(eventId)) {
+            log.info("Skip duplicate event: {}", eventId);
+            return;
+        }
+
+        // 2) 비즈니스 처리.
         Notification notification = Notification.create(
                 event.getRecipientId(),
                 event.getType(),
                 event.getMessage(),
                 event.getMetadata()
         );
-        
         Notification savedNotification = notificationPort.save(notification);
 
+        // 3) 커밋 후 Redis publish
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -56,6 +72,9 @@ public class NotificationEventService implements NotificationUseCase {
                 redisPublisher.publishNotification(redisDto);
             }
         });
+
+        // 4) 성공 후 멱등 마킹
+        processedEventRepository.save(ProcessedEvent.of(eventId));
     }
 
     @Override

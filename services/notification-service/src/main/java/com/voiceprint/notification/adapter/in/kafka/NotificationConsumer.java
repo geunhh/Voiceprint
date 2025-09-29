@@ -2,14 +2,16 @@ package com.voiceprint.notification.adapter.in.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.voiceprint.notification.adapter.out.persistence.ProcessedEvent;
+import com.voiceprint.notification.adapter.out.persistence.ProcessedEventJPARepository;
 import com.voiceprint.notification.application.port.in.NotificationUseCase;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.voiceprint.notification.dto.NotificationEvent;
 import java.time.LocalTime;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -20,25 +22,36 @@ public class NotificationConsumer {
 
     private final NotificationUseCase notificationUseCase;
     private final ObjectMapper objectMapper;
+    private final ProcessedEventJPARepository processedEventRepository;
+
+    // 그룹원 추가, 그룹일기 작성, 댓글 작성 알람 등...
+    @KafkaListener(
+            topics = "send-notification",
+            groupId = "voiceprint-notification",
+            containerFactory = "kafkaListenerContainerFactory")
+    public void consume(ConsumerRecord<String, String> record) throws JsonProcessingException {
+        NotificationEvent e = objectMapper.readValue(record.value(), NotificationEvent.class);
 
 
-    @KafkaListener(topics = "send-notification", groupId = "voiceprint-notification")
-    public void consume(String message) {
+        String eventId = (e.getEventId() != null && !e.getEventId().isBlank())
+                ? e.getEventId() : record.key();
+        if (eventId == null || eventId.isBlank()) throw new IllegalArgumentException("missing eventId");
 
-        log.info("Consumed message : {}", message);
-        try {
-            NotificationEvent event = objectMapper.readValue(message, NotificationEvent.class);
-            notificationUseCase.handleNotificationEvent(event);
-            log.info("Successfully processed notification evetn for user : {}",event.getRecipientId());
-        } catch (JsonProcessingException e) {
-            log.error("Failed to deserialize notification event : {}",message);
-        } catch (Exception e) {
-            log.error("Failed to process notification Exception : {}",message, e);
+        // 멱등 체크(성공 후 저장 버전)
+        if (processedEventRepository.existsById(eventId)) {
+            log.info("이미 등록된 eventId : {}",eventId);
+            return;
         }
+
+
+        // 비즈니스 처리
+        notificationUseCase.handleNotificationEvent(e); // 지금은 서비스에 다 때려넣어도 OK
 
 
     }
 
+    // 유저 정보 변경 시..
+    // 이건 DB 분리 후에 정리합시다요로롱.
     @KafkaListener(topics = "user-events", groupId = "voiceprint-notification")
     public void consumeUserEvents(String message) {
         log.info("Consumed user event message: {}", message);

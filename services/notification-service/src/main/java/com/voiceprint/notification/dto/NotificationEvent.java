@@ -1,18 +1,15 @@
 package com.voiceprint.notification.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationEvent {
-    private Integer recipientId; // The ID of the user who should receive the notification
+    private String eventId; // The ID of the user who should receive the notification
+    private Integer recipientId;
     private String type;
     private String message;
     private Map<String, Object> metadata;
