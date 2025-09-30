@@ -27,6 +27,9 @@ dependencies {
 	// actuator (상태 확인용)
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+	// 프로메테우스
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+
 	// Config Client (Config Server에서 설정 가져오기)
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 

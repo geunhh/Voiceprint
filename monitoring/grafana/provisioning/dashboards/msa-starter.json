@@ -1,0 +1,34 @@
+{
+    "title": "MSA Starter",
+    "timezone": "browser",
+    "panels": [
+      {
+        "type": "stat",
+        "title": "Total QPS",
+        "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count[1m]))" }]
+      },
+      {
+        "type": "gauge",
+        "title": "Error Rate (%)",
+        "targets": [{
+          "expr": "100 * sum(rate(http_server_requests_seconds_count{outcome=~\"CLIENT_ERROR|SERVER_ERROR\"}[5m])) / sum(rate(http_server_requests_seconds_count[5m]))"
+        }]
+      },
+      {
+        "type": "timeSeries",
+        "title": "Gateway P95 Latency (s)",
+        "targets": [{
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{app=\"gateway\"}[5m])))"
+        }]
+      },
+      {
+        "type": "timeSeries",
+        "title": "JVM Heap Usage",
+        "targets": [{
+          "expr": "jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes"
+        }]
+      }
+    ],
+    "schemaVersion": 38,
+    "version": 1
+  }

@@ -194,11 +194,44 @@ services:
       interval: 5s
       retries: 10
     restart: unless-stopped
+  
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - voiceprint_net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - voiceprint_net
+
+
 
 volumes:
   mysql-data:
     name: mysql-data
+  prom_data:
+  grafana_data:
 
 networks:
   voiceprint_net:
     driver: bridge
+    # external : true

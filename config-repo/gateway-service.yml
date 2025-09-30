@@ -4,6 +4,10 @@ server:
 spring:
   cloud:
     gateway:
+      # 게이트웨이 자체 메트릭 활성화
+      metrics:
+        enabled: true
+        
       discovery:
         locator:
           enabled: true               # Eureka에 등록된 서비스를 기반으로 자동으로 라우팅 맵을 생성
@@ -34,4 +38,22 @@ eureka:
       enabled: true
     service-url:
       defaultZone: http://discovery-service:8761/eureka/
-    
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: gateway
+    distribution:
+      # P95/P99 보려면 히스토그램 켜야 함 (우리가 쿼리 쓰는 bucket 지표 생성)
+      percentiles-histogram:
+        http.server.requests: true

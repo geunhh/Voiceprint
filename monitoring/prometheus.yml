@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'gateway-service' # 쿼리에서 필터할 이름
+    metrics_path: /actuator/prometheus  # SpringBoot Actuator가 노출하는 엔드포인트
+    static_configs:
+      - targets: ['gateway-service:8000']
+        labels: { app: 'gateway', tier: 'edge' }
+
+  - job_name: 'backend-msa'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['backend-msa:8080']
+        labels: { app: 'core', tier: 'svc' }
+
+  - job_name: 'notification-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['notification-service:8081']
+        labels: { app: 'alarm', tier: 'svc' }
