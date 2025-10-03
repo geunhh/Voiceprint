@@ -1,8 +1,11 @@
 package com.voiceprint.backend.user.application.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.diary.application.port.out.DiaryRepositoryPort;
 import com.voiceprint.backend.global.event.UserEvent;
+import com.voiceprint.backend.global.outbox.OutboxEventJpaEntity;
+import com.voiceprint.backend.global.outbox.OutboxEventRepository;
 import com.voiceprint.backend.user.adapter.in.web.dto.*;
 import com.voiceprint.backend.global.exception.user.*;
 import com.voiceprint.backend.user.adapter.out.persistence.RefreshTokenRepository;
@@ -13,16 +16,17 @@ import com.voiceprint.backend.user.domain.ProfileImage;
 import com.voiceprint.backend.user.domain.User;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import com.voiceprint.backend.global.kafka.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +41,8 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
     private final RefreshTokenRepository refreshTokenRepository;
     private final ProfileImageRepositoryPort profileImageRepository;
     private final DiaryRepositoryPort diaryRepository;
-    private final EventPublisher eventPublisher;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -267,11 +272,35 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
         User updatedUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
-        // UserEvent 발행
-        UserEvent evt = new UserEvent();
-        evt.setEventType("USER_PROFILE_UPDATED");
-        evt.setUserId(updatedUser.getId());
-        eventPublisher.publishUserEvent(evt);
+//        // UserEvent 발행
+//        UserEvent evt = new UserEvent();
+//        evt.setEventType("USER_PROFILE_UPDATED");
+//        evt.setUserId(updatedUser.getId());
+//        eventPublisher.publishUserEvent(evt);
+
+        // Outbox 이벤트를 생성하고 저장
+        try {
+            UserEvent eventPayload = new UserEvent();
+            eventPayload.setEventType("USER_PROFILE_UPDATE");
+            eventPayload.setUserId(updatedUser.getId());
+
+            String payloadJson = objectMapper.writeValueAsString(eventPayload);
+
+            OutboxEventJpaEntity outboxEvent = OutboxEventJpaEntity.builder()
+                    .eventId(UUID.randomUUID().toString())
+                    .aggregateType("User")
+                    .aggregateId(updatedUser.getId().toString())
+                    .eventType("USER_PROFILE_UPDATE")
+                    .payload(payloadJson)
+                    .occurredAt(LocalDateTime.now())
+                    .partitionKey(updatedUser.getId().toString())
+                    .build();
+
+            outboxEventRepository.save(outboxEvent);
+
+        } catch (Exception e) {
+            log.error("Outbox event creation failed for user {}", updatedUser.getId(), e);
+        }
 
         return new ProfileUpdateResponse(updatedUser.getId(),
                 updatedUser.getNickname(),
@@ -290,7 +319,6 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
         } else {
             return new AlarmSettingsResponseDTO(null, user.getAlarmTime());
         }
-
     }
 
     /**
@@ -301,12 +329,29 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
         // DB 업데이트 로직은 포트를 통해 어댑터에 위임
         userRepository.updateEnableAlarm(userId, enableAlarms);
 
-        // UserEvent 발행
-        UserEvent evt = new UserEvent();
-        evt.setEventType("USER_NOTIFICATION_PREFERENCES_UPDATED");
-        evt.setUserId(userId);
-        evt.setEnableAlarms(enableAlarms);
-        eventPublisher.publishUserEvent(evt);
+        // Outbox 이벤트를 생성하고 저장
+        try {
+            UserEvent eventPayload = new UserEvent();
+            eventPayload.setEventType("USER_NOTIFICATION_PREFERENCES_UPDATED");
+            eventPayload.setUserId(userId);
+            eventPayload.setEnableAlarms(enableAlarms);
+
+            String payloadJson = objectMapper.writeValueAsString(eventPayload);
+
+            OutboxEventJpaEntity outboxEvent = OutboxEventJpaEntity.builder()
+                .eventId(UUID.randomUUID().toString())
+                .aggregateType("User")
+                .aggregateId(userId.toString())
+                .eventType("USER_NOTIFICATION_PREFERENCES_UPDATED")
+                .payload(payloadJson)
+                .occurredAt(LocalDateTime.now())
+                .partitionKey(userId.toString())
+                .build();
+
+            outboxEventRepository.save(outboxEvent);
+        } catch (Exception e) {
+            log.error("Outbox event creation failed for user {}", userId, e);
+        }
 
         return enableAlarms;
     }
@@ -326,13 +371,35 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
 
             // DB 업데이트 로직은 포트를 통해 어댑터에 위임
             userRepository.updateAlarmTime(userId, time);
+            // Outbox 이벤트를 생성하고 저장
+            try {
 
-            // UserEvent 발행
-            UserEvent evt = new UserEvent();
-            evt.setEventType("USER_NOTIFICATION_PREFERENCES_UPDATED");
-            evt.setUserId(userId);
-            evt.setAlarmTime(time.toString()); // "HH:mm[:ss]"
-            eventPublisher.publishUserEvent(evt);
+                String newEventId = UUID.randomUUID().toString();
+                LocalDateTime newNow = LocalDateTime.now();
+
+                UserEvent eventPayload = new UserEvent();
+                eventPayload.setEventType("USER_NOTIFICATION_PREFERENCES_UPDATED");
+                eventPayload.setEventId(newEventId);
+                eventPayload.setUserId(userId);
+                eventPayload.setAlarmTime(time.toString()); // "HH:mm[:ss]"
+                eventPayload.setOccurredAt(newNow.toString());
+
+                String payloadJson = objectMapper.writeValueAsString(eventPayload);
+
+                OutboxEventJpaEntity outboxEvent = OutboxEventJpaEntity.builder()
+                    .eventId(newEventId)
+                    .aggregateType("User")
+                    .aggregateId(userId.toString())
+                    .eventType("USER_NOTIFICATION_PREFERENCES_UPDATED")
+                    .payload(payloadJson)
+                    .occurredAt(newNow)
+                    .partitionKey(userId.toString())
+                    .build();
+
+                outboxEventRepository.save(outboxEvent);
+            } catch (Exception e) {
+                log.error("Outbox event creation failed for user {}", userId, e);
+            }
 
             return time.toString();
 

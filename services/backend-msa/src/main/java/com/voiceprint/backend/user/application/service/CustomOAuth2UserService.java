@@ -1,6 +1,9 @@
 package com.voiceprint.backend.user.application.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voiceprint.backend.global.event.UserEvent;
+import com.voiceprint.backend.global.outbox.OutboxEventJpaEntity;
+import com.voiceprint.backend.global.outbox.OutboxEventRepository;
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
 import com.voiceprint.backend.user.adapter.in.web.dto.GoogleResponse;
 import com.voiceprint.backend.user.adapter.in.web.dto.KakaoResponse;
@@ -12,6 +15,7 @@ import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.global.kafka.EventPublisher;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -20,14 +24,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Service
 @Transactional
+@Slf4j
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
     private final ProfileImageRepository profileImageRepository;
+    private final ObjectMapper objectMapper;
+    private final OutboxEventRepository outboxEventRepository;
+
     private final EventPublisher eventPublisher;
 
     @Override
@@ -69,11 +78,28 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
                     UserJPAEntity savedUser = userRepository.save(newUser);
 
-                    // UserEvent 발행
-                    UserEvent evt = new UserEvent();
-                    evt.setEventType("USER_REGISTERED");
-                    evt.setUserId(savedUser.getId());
-                    eventPublisher.publishUserEvent(evt);
+                    // Outbox 이벤트를 생성하고 저장
+                    try {
+                        UserEvent eventPayload = new UserEvent();
+                        eventPayload.setEventType("USER_REGISTERED");
+                        eventPayload.setUserId(savedUser.getId());
+
+                        String payloadJson = objectMapper.writeValueAsString(eventPayload);
+
+                        OutboxEventJpaEntity outboxEvent = OutboxEventJpaEntity.builder()
+                            .eventId(UUID.randomUUID().toString())
+                            .aggregateType("User")
+                            .aggregateId(savedUser.getId().toString())
+                            .eventType("USER_REGISTERED")
+                            .payload(payloadJson)
+                            .occurredAt(LocalDateTime.now())
+                            .partitionKey(savedUser.getId().toString())
+                            .build();
+
+                        outboxEventRepository.save(outboxEvent);
+                    } catch (Exception e) {
+                        log.error("Outbox event creation failed for new user: {}", e.getMessage());
+                    }
 
                     return savedUser;
                 });
