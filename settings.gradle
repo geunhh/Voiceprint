@@ -1,0 +1,29 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url "https://repo.spring.io/release" }
+        maven { url "https://repo.spring.io/milestone" }
+        google()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url "https://repo.spring.io/release" }
+        maven { url "https://repo.spring.io/milestone" }
+        google()
+    }
+}
+
+rootProject.name = "Voiceprint"
+
+include("services:discovery-service")
+include("services:gateway-service")
+include("services:backend-msa")
+include("services:notification-service")
+include("services:config-service")
+include("services:common-auth")
+// 필요하면 다른 서비스도 include

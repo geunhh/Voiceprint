@@ -22,6 +22,8 @@ mysql-data/
 
 # Gradle
 .gradle
+gradle/*
+gradlew*
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

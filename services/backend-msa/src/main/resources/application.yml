@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: backend-msa
+  config:
+    import: "configserver:http://config-service:8888"

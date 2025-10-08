@@ -1,0 +1,18 @@
+package com.voiceprint.backend.group.adapter.in.web.dto;
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class GroupCreateResponse {
+    private Integer groupId;
+    private String name;
+    private String description;
+    private String groupImage;
+    private String role;
+    private Boolean enableAlarm;
+    private String alarmTime;
+    private String alarmDays;
+}

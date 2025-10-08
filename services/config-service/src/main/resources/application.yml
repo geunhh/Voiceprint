@@ -1,0 +1,17 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-service
+  
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:/config-repo/ # 컨테이너 내부의 마운트된 config-repo 디렉토리 사용
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/

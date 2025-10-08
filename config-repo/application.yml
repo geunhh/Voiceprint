@@ -1,0 +1,18 @@
+eureka:
+    client:
+        webclient:
+            enabled: true
+        service-url:
+            defaultZone: http://discovery-service:8761/eureka/
+        register-with-eureka: true
+        fetch-registry: true
+
+server:
+  forward-headers-strategy: framework
+
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:/config-repo/

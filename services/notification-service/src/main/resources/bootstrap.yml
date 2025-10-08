@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: notification-service
+  cloud:
+    config:
+      uri: http://config-service:8888 # Assuming config-service is running on 8888
+      fail-fast: true # Fail fast if config server is not available
