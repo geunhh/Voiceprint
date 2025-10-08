@@ -1,7 +1,7 @@
 package com.voiceprint.notification.adapter.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voiceprint.notification.adapter.in.web.NotificationDTO;
+import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.notification.domain.Notification;
 import com.voiceprint.notification.adapter.out.sse.SseEmitterManager;

@@ -1,6 +1,6 @@
 package com.voiceprint.notification.application.port.in;
 
-import com.voiceprint.notification.adapter.in.web.NotificationDTO;
+import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Set;

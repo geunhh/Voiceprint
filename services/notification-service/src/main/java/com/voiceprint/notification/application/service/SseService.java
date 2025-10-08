@@ -1,6 +1,6 @@
 package com.voiceprint.notification.application.service;
 
-import com.voiceprint.notification.adapter.in.web.NotificationDTO;
+import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import com.voiceprint.notification.adapter.out.sse.SseEmitterManager;
 import com.voiceprint.notification.application.port.in.SseUseCase;
 import lombok.RequiredArgsConstructor;

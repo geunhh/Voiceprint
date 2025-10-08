@@ -2,7 +2,7 @@ package com.voiceprint.notification.adapter.out;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voiceprint.notification.dto.NotificationDTO;
+import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

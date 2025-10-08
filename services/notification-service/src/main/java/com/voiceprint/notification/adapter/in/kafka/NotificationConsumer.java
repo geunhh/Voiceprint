@@ -2,10 +2,8 @@ package com.voiceprint.notification.adapter.in.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voiceprint.notification.adapter.out.persistence.ProcessedEvent;
 import com.voiceprint.notification.adapter.out.persistence.ProcessedEventJPARepository;
-import com.voiceprint.notification.application.port.in.NotificationUseCase;
-import com.voiceprint.notification.dto.NotificationEvent;
+import com.voiceprint.notification.application.port.in.NotificationEventHandlerPort;
 import java.time.LocalTime;
 import java.util.Map;
 
@@ -20,7 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NotificationConsumer {
 
-    private final NotificationUseCase notificationUseCase;
+    private final NotificationEventHandlerPort notificationEventHandlerPort;
     private final ObjectMapper objectMapper;
     private final ProcessedEventJPARepository processedEventRepository;
 
@@ -45,7 +43,7 @@ public class NotificationConsumer {
 
 
         // 비즈니스 처리
-        notificationUseCase.handleNotificationEvent(e); // 지금은 서비스에 다 때려넣어도 OK
+        notificationEventHandlerPort.handleNotificationEvent(e); // 지금은 서비스에 다 때려넣어도 OK
 
 
     }
@@ -70,13 +68,13 @@ public class NotificationConsumer {
                 case "USER_REGISTERED":
                     String nickname = (String) eventMap.get("nickname");
                     String email = (String) eventMap.get("email");
-                    notificationUseCase.handleUserRegisteredEvent(userId, nickname, email);
+                    notificationEventHandlerPort.handleUserRegisteredEvent(userId, nickname, email);
                     break;
                 // 유저 프로필 업데이트
                 case "USER_PROFILE_UPDATED":
                     String updatedNickname = (String) eventMap.get("nickname");
                     String updatedEmail = (String) eventMap.get("email");
-                    notificationUseCase.handleUserProfileUpdatedEvent(userId, updatedNickname, updatedEmail);
+                    notificationEventHandlerPort.handleUserProfileUpdatedEvent(userId, updatedNickname, updatedEmail);
                     break;
                 // 유저 알람 정보 갱신
                 case "USER_NOTIFICATION_PREFERENCES_UPDATED":
@@ -86,7 +84,7 @@ public class NotificationConsumer {
                     if (alarmTimeString != null) {
                         alarmTime = LocalTime.parse(alarmTimeString);
                     }
-                    notificationUseCase.handleUserNotificationPreferencesUpdatedEvent(userId, enableAlarms, alarmTime);
+                    notificationEventHandlerPort.handleUserNotificationPreferencesUpdatedEvent(userId, enableAlarms, alarmTime);
                     break;
                 default:
                     log.warn("Unknown user event type: {}", eventType);

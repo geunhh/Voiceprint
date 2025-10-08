@@ -1,33 +1,31 @@
 package com.voiceprint.notification.application.service;
 
+import com.voiceprint.notification.adapter.in.kafka.NotificationEvent;
+import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import com.voiceprint.notification.adapter.out.RedisPublisher;
 import com.voiceprint.notification.adapter.out.persistence.ProcessedEvent;
 import com.voiceprint.notification.adapter.out.persistence.ProcessedEventJPARepository;
-import com.voiceprint.notification.application.port.in.NotificationUseCase;
+import com.voiceprint.notification.application.port.in.NotificationEventHandlerPort;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.notification.domain.Notification;
-import com.voiceprint.notification.dto.NotificationDTO;
-import com.voiceprint.notification.dto.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalTime;
 import java.util.List;
 import com.voiceprint.notification.adapter.out.persistence.UserNotificationPreferenceJpaEntity;
 import com.voiceprint.notification.adapter.out.persistence.UserNotificationPreferenceRepository;
-import java.time.LocalTime;
 import java.util.Map;
 
 @Service
-@Primary // This will be the primary implementation of NotificationUseCase
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class NotificationEventService implements NotificationUseCase {
+public class NotificationEventService implements NotificationEventHandlerPort {
 
     private final NotificationRepositoryPort notificationPort;
     private final RedisPublisher redisPublisher;
@@ -51,7 +49,7 @@ public class NotificationEventService implements NotificationUseCase {
         // 2) 비즈니스 처리.
         Notification notification = Notification.create(
                 event.getRecipientId(),
-                event.getType(),
+                event.getEventType(),
                 event.getMessage(),
                 event.getMetadata()
         );
@@ -75,16 +73,6 @@ public class NotificationEventService implements NotificationUseCase {
 
         // 4) 성공 후 멱등 마킹
         processedEventRepository.save(ProcessedEvent.of(eventId));
-    }
-
-    @Override
-    public void markNotification(Integer userId, Long notificationId) {
-
-    }
-
-    @Override
-    public void publishAllNotifications(List<Notification> notifications) {
-
     }
 
     @Override
