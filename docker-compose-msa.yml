@@ -65,6 +65,10 @@ services:
     build: ./services/discovery-service
     ports:
       - "8762:8761"
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      - SERVER_PORT=8761
     networks:
       - voiceprint_net
     healthcheck:
@@ -103,6 +107,8 @@ services:
         condition: service_healthy
       config-service:
         condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
     networks:
       - voiceprint_net
 
@@ -151,6 +157,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
+      - SPRING_JWT_SECRET=vmfhaltmskdlstkfkdgodyrolroqkfwkalskdjqwkjdnkasjlqsssa
     networks:
       - voiceprint_net
 

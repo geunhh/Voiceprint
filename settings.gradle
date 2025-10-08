@@ -25,4 +25,5 @@ include("services:gateway-service")
 include("services:backend-msa")
 include("services:notification-service")
 include("services:config-service")
+include("services:common-auth")
 // 필요하면 다른 서비스도 include

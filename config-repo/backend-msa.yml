@@ -122,10 +122,10 @@ logging:
   level:
     root: INFO
     org:
-      hibernate: TRACE
+      hibernate: INFO
     com:
       voiceprint:
-        backend: TRACE
+        backend: INFO
 
 # Custom properties
 ai-websocket:

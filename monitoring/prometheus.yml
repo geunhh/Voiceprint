@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 15s      # 15초마다 데이터 스크랩
   evaluation_interval: 15s
 
 scrape_configs:

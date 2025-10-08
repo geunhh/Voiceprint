@@ -7,6 +7,9 @@ eureka:
         register-with-eureka: true
         fetch-registry: true
 
+server:
+  forward-headers-strategy: framework
+
 spring:
   cloud:
     config:

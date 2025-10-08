@@ -1,5 +1,10 @@
+# Test comment
 server:
   port: 8000 # 여기로 다 받음. 그 뒤에 분배
+
+logging:
+  level:
+    com.voiceprint.gateway: TRACE
 
 spring:
   cloud:
@@ -12,25 +17,53 @@ spring:
         locator:
           enabled: true               # Eureka에 등록된 서비스를 기반으로 자동으로 라우팅 맵을 생성
           lower-case-service-id: true # 서비스 ID를 소문자로 변환하여 URL 경로로 사용 (e.g. /backend-msa)
-      server:
-        webflux:
-          default-filters:
-            - name: GlobalLoggerFilter
-              args:
-                baseMessage: Spring Cloud Gateway WebFlux Global Filter
-                preLogger: true
-                postLogger: true 
-          routes:
-            
-            - id: notification_route
-              uri: lb://notification-service  # 'lb://' 는 Eureka를 통한 로드 밸런싱 의미.
-              predicates: 
-                - Path=/api/notifications/**
-            
-            - id: backend_catch_all
-              uri: lb://backend-msa
-              predicates:
-                - Path=/api/**
+      default-filters:
+        - name: GlobalLoggerFilter
+          args:
+            baseMessage: Spring Cloud Gateway WebFlux Global Filter
+            preLogger: true
+            postLogger: true
+      routes:
+        - id: notification_route
+          uri: lb://notification-service  # 'lb://' 는 Eureka를 통한 로드 밸런싱 의미.
+          predicates:
+            - Path=/api/notifications/**
+
+        - id: backend_catch_all
+          uri: lb://backend-msa
+          predicates:
+            - Path=/api/**
+#          filters: # Added filters section
+#            - "RewritePath=/api/(?<segment>.*),/${segment}" # Rewrites /api/v1/group/diaries to /v1/group/diaries
+
+        - id: backend-msa-oauth2-authorization
+          uri: lb://backend-msa
+          predicates:
+            - Path=/oauth2/authorization/**
+
+        - id: backend-msa-oauth2-callback
+          uri: lb://backend-msa
+          predicates:
+            - Path=/backend-msa/login/oauth2/code/**
+
+      # 전역 CQRS
+      globalcors: # Added global CORS configuration
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              # 로컬 프론트가 81포트로 뜸(도커에서 81:80 매핑) → 정확히 이 Origin 허용
+              - "http://localhost:81"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: ["*"]
+            exposedHeaders: ["*"]
+            allowCredentials: true
+            maxAge: 3600
 
 eureka:
   client:
