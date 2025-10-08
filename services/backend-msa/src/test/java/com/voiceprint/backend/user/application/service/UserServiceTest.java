@@ -11,6 +11,7 @@ import com.voiceprint.backend.user.domain.ProfileImage;
 import com.voiceprint.backend.user.domain.User;
 import com.voiceprint.backend.diary.domain.Diary;
 import com.voiceprint.backend.diary.domain.Emotion;
+import com.voiceprint.common.auth.JWTUtil;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -2,7 +2,7 @@ package com.voiceprint.backend.global.config;
 
 import com.voiceprint.backend.user.adapter.in.web.OAuth2SuccessHandler;
 import com.voiceprint.backend.global.filter.JWTFilter;
-import com.voiceprint.backend.user.application.service.JWTUtil;
+import com.voiceprint.common.auth.JWTUtil;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import com.voiceprint.backend.user.application.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,30 +33,32 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
-
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
-                        CorsConfiguration configuration = new CorsConfiguration();
-                        configuration.setAllowedOrigins(List.of(
-                                "https://k12b106.p.ssafy.io",
-                                "http://localhost:63342", //Todo: 개발 후에 제거하기
-                                "http://localhost:5173",
-                                "http://localhost:81"));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
-
-                
-                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                        return configuration;
-                    }
-                }));
+        // Gateway로 이관. //Todo: 제거 예정.
+//        http
+//                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+//
+//                    @Override
+//                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+//
+//                        CorsConfiguration configuration = new CorsConfiguration();
+//                        configuration.setAllowedOrigins(List.of(
+//                                "https://k12b106.p.ssafy.io",
+//                                "http://localhost:63342", //Todo: 개발 후에 제거하기
+//                                "http://localhost:5173",
+//                                "http://localhost:81",
+//                                "http://localhost:80"));
+//                        configuration.setAllowedMethods(Collections.singletonList("*"));
+//                        configuration.setAllowCredentials(true);
+//                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+//                        configuration.setMaxAge(3600L);
+//
+//
+//                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
+//                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+//
+//                        return configuration;
+//                    }
+//                }));
         //csrf disable
         http
                 .csrf((auth) -> auth.disable());

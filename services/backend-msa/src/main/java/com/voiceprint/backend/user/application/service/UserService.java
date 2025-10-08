@@ -14,6 +14,7 @@ import com.voiceprint.backend.user.application.port.out.ProfileImageRepositoryPo
 import com.voiceprint.backend.user.application.port.out.UserRepositoryPort;
 import com.voiceprint.backend.user.domain.ProfileImage;
 import com.voiceprint.backend.user.domain.User;
+import com.voiceprint.common.auth.JWTUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -106,7 +107,7 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
         User user = userOptional.get();
 
         // 5. 새로운 액세스 토큰과 리프레시 토큰 생성
-        String newAccessToken = jwtUtil.createAccessToken(user.getProviderId());
+        String newAccessToken = jwtUtil.createAccessToken(user.getProviderId(), userId);
         String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
         // 6. Redis에 새로운 리프레시 토큰 저장
@@ -272,12 +273,6 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
         User updatedUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
-//        // UserEvent 발행
-//        UserEvent evt = new UserEvent();
-//        evt.setEventType("USER_PROFILE_UPDATED");
-//        evt.setUserId(updatedUser.getId());
-//        eventPublisher.publishUserEvent(evt);
-
         // Outbox 이벤트를 생성하고 저장
         try {
             UserEvent eventPayload = new UserEvent();
@@ -331,20 +326,25 @@ public class UserService implements GetProfileImagesUseCase, GetProfileUseCase, 
 
         // Outbox 이벤트를 생성하고 저장
         try {
+            String newEventId = UUID.randomUUID().toString();
+            LocalDateTime newNow = LocalDateTime.now();
+
             UserEvent eventPayload = new UserEvent();
+            eventPayload.setEventId(newEventId);
             eventPayload.setEventType("USER_NOTIFICATION_PREFERENCES_UPDATED");
             eventPayload.setUserId(userId);
+            eventPayload.setOccurredAt(newNow.toString());
             eventPayload.setEnableAlarms(enableAlarms);
 
             String payloadJson = objectMapper.writeValueAsString(eventPayload);
 
             OutboxEventJpaEntity outboxEvent = OutboxEventJpaEntity.builder()
-                .eventId(UUID.randomUUID().toString())
+                .eventId(newEventId)
                 .aggregateType("User")
                 .aggregateId(userId.toString())
                 .eventType("USER_NOTIFICATION_PREFERENCES_UPDATED")
                 .payload(payloadJson)
-                .occurredAt(LocalDateTime.now())
+                .occurredAt(newNow)
                 .partitionKey(userId.toString())
                 .build();
 

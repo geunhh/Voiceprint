@@ -1,7 +1,7 @@
 package com.voiceprint.backend.global.filter;
 
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
-import com.voiceprint.backend.user.application.service.JWTUtil;
+import com.voiceprint.common.auth.JWTUtil;
 import com.voiceprint.backend.user.adapter.out.persistence.UserJPAEntity;
 import com.voiceprint.backend.user.adapter.out.persistence.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;

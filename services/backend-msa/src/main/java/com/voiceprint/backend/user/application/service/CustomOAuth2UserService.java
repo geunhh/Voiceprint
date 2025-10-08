@@ -80,19 +80,25 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
                     // Outbox 이벤트를 생성하고 저장
                     try {
+                        String newEventId = UUID.randomUUID().toString();
+                        LocalDateTime newNow = LocalDateTime.now();
+
                         UserEvent eventPayload = new UserEvent();
                         eventPayload.setEventType("USER_REGISTERED");
+                        eventPayload.setEventId(newEventId);
+                        eventPayload.setUserId(savedUser.getId());
+                        eventPayload.setOccurredAt(newNow.toString());
                         eventPayload.setUserId(savedUser.getId());
 
                         String payloadJson = objectMapper.writeValueAsString(eventPayload);
 
                         OutboxEventJpaEntity outboxEvent = OutboxEventJpaEntity.builder()
-                            .eventId(UUID.randomUUID().toString())
+                            .eventId(newEventId)
                             .aggregateType("User")
                             .aggregateId(savedUser.getId().toString())
                             .eventType("USER_REGISTERED")
                             .payload(payloadJson)
-                            .occurredAt(LocalDateTime.now())
+                            .occurredAt(newNow)
                             .partitionKey(savedUser.getId().toString())
                             .build();
 

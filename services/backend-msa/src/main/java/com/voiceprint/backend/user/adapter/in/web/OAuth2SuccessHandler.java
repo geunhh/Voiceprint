@@ -1,7 +1,7 @@
 package com.voiceprint.backend.user.adapter.in.web;
 
 import com.voiceprint.backend.user.adapter.in.web.dto.CustomOAuth2User;
-import com.voiceprint.backend.user.application.service.JWTUtil;
+import com.voiceprint.common.auth.JWTUtil;
 import com.voiceprint.backend.user.adapter.out.persistence.RefreshTokenRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -32,7 +32,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
             String providerId = user.getUsername();
             Integer userId = user.getUserId();
-            String accessToken = jwtUtil.createAccessToken(providerId);
+            String accessToken = jwtUtil.createAccessToken(providerId, userId);
             String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
 
             // Redis에 리프레시 토큰 저장
