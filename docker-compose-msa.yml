@@ -4,7 +4,6 @@ services:
   # FE (from docker-compose.yml)
   frontend:
     container_name: frontend
-    # image: jokiheum/voiceprint-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -16,46 +15,48 @@ services:
       - TZ=Asia/Seoul
     volumes:
       - /etc/localtime:/etc/localtime:ro
-    networks: [voiceprint_net] # Changed network
+    networks: [voiceprint_net]
     restart: unless-stopped
 
-  # 1. Kafka (Zookeeper-less KRaft mode)
+  # 1. Kafka (KRaft mode)
   kafka:
     image: bitnami/kafka:latest
     ports:
       - "9092:9092"
     environment:
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller       # KRaft 모드 : 브로커 + 컨트롤러
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092 # 컨테이너 간 접속용(서비스명 kafka)
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CLUSTER_ID="a9d5b1b2-b1b2-4b1b-8b1b-d5b1b2a9d5b1"
+      - KAFKA_CLUSTER_ID="a9d5b1b2-b1b2-4b1b-8b1b-d5b1b2a9d5b1" # Kraft클러스터 ID(필수)
     networks:
       - voiceprint_net
     healthcheck:
+      # 토픽 리스트 명령이 성공하면 healthy
       test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
 
+  # Kafka UI
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     ports:
-      - "8082:8080"  # host:container
+      - "8082:8080"
     environment:
       - KAFKA_CLUSTERS_0_NAME=voiceprint
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
       - KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=PLAINTEXT
     depends_on:
       kafka:
-        condition: service_healthy
+        condition: service_healthy # 브로커 헬스체크 성공 후 UI 띄움
     networks:
       - voiceprint_net
     restart: unless-stopped
@@ -65,7 +66,7 @@ services:
     build: ./services/discovery-service
     ports:
       - "8762:8761"
-    environment:
+    environment: # Todo: 제거해!
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
       - EUREKA_CLIENT_FETCH_REGISTRY=false
       - SERVER_PORT=8761
@@ -85,7 +86,7 @@ services:
       - "8889:8888"
     environment:
       - SPRING_PROFILES_ACTIVE=native
-      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo #Todo: git으로 관리하는 것도 고려해보자 언젠가
     volumes:
       - ./config-repo:/config-repo
     networks:
@@ -109,6 +110,8 @@ services:
         condition: service_healthy
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
+    volumes:
+      - ./logs/gateway:/app/logs
     networks:
       - voiceprint_net
 
@@ -132,12 +135,14 @@ services:
         condition: service_healthy
     env_file:
       - ./services/backend-msa/.env
-    environment:
+    environment:  # Todo: 제거하기.
       MYSQL_HOST: mysql_vp
       MYSQL_PORT: 3306
       MYSQL_DATABASE: voiceprint_db
       MYSQL_USER: voiceprint_user
       MYSQL_PASSWORD: thisisneverthat
+    volumes:
+      - ./logs/backend:/app/logs
     networks:
       - voiceprint_net
 
@@ -157,9 +162,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
+    environment: # Todo : 제거하기.
       - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
       - SPRING_JWT_SECRET=vmfhaltmskdlstkfkdgodyrolroqkfwkalskdjqwkjdnkasjlqsssa
+    volumes:
+      - ./logs/notification:/app/logs
     networks:
       - voiceprint_net
 
@@ -203,29 +210,57 @@ services:
       interval: 5s
       retries: 10
     restart: unless-stopped
-  
+
+  # Prometheus
   prometheus:
     image: prom/prometheus
     container_name: prometheus
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prom_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro   # 스크랩 타입 정의
+      - prom_data:/prometheus   # TSDB 보존.
     ports:
       - "9090:9090"
     networks:
       - voiceprint_net
 
+  # Loki
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yml
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yml:ro  # 저장소/인덱스 설정 포함
+      - ./monitoring/loki/data:/loki                                     # 로컬 디스크 저장 (개발)
+    ports:
+      - "3100:3100"  # Grafana → Loki 연결 및 로컬 디버그용
+    networks: [ voiceprint_net ]
+    restart: unless-stopped
+
+  # Promtail
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - ./logs:/var/log  # 호스트의 앱 로그를 모아두는 디렉터리. 각 서비스가 여기에 파일로그를 쓰도록 마운트.
+    depends_on:
+      - loki
+    networks: [ voiceprint_net ]
+    restart: unless-stopped
+
+  # Grafana
   grafana:
     image: grafana/grafana
     container_name: grafana
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_USER=admin      # 초기 관리자 계정.
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - grafana_data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana     # 데이터(대시보드/사용자) 영구화
+      # 프로비저닝: 컨테이너 시작 시 자동으로 DataSource/Dashboard를 불러옴.
       - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
       - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
-
     ports:
       - "3000:3000"
     restart: unless-stopped
