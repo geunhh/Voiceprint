@@ -209,6 +209,26 @@ services:
       retries: 10
     restart: unless-stopped
 
+  mysql_notification:
+    container_name: mysql_notification
+    build:
+      context: ./mysql_notification
+      dockerfile: Dockerfile
+    ports:
+      - "3308:3306"
+    env_file:
+      - ./mysql_notification/.env
+    volumes:
+      - ./mysql_notification/init:/docker-entrypoint-initdb.d
+      - mysql_notification-data:/var/lib/mysql
+    networks: [voiceprint_net]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   # Redis Service (from docker-compose.yml)
   redis:
     container_name: redis
@@ -292,6 +312,8 @@ volumes:
   kafka_data:
   mysql-data:
     name: mysql-data
+  mysql_notification-data:
+    name: mysql_notification-data
   prom_data:
   grafana_data:
 
