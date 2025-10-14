@@ -10,6 +10,8 @@ import com.voiceprint.notification.application.port.out.NotificationRepositoryPo
 import com.voiceprint.notification.domain.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -34,13 +36,14 @@ public class NotificationEventService implements NotificationEventHandlerPort {
 
     @Override
     public void handleNotificationEvent(NotificationEvent event) {
-
+        // 0) 입력 검증 (비재시도 -> 즉시 DLT)
         final String eventId = event.getEventId();
         if (eventId == null || eventId.isBlank()) {
             throw new IllegalArgumentException("missing eventId");
         }
 
-        // 1) 이미 처리했으면 스킵 (중복 알람 방지)
+
+        // 1) 멱등 체크. 이미 처리했으면 스킵 (중복 알람 방지)
         if (processedEventRepository.existsById(eventId)) {
             log.info("Skip duplicate event: {}", eventId);
             return;
@@ -53,6 +56,7 @@ public class NotificationEventService implements NotificationEventHandlerPort {
                 event.getMessage(),
                 event.getMetadata()
         );
+
         Notification savedNotification = notificationPort.save(notification);
 
         // 3) 커밋 후 Redis publish
@@ -95,7 +99,15 @@ public class NotificationEventService implements NotificationEventHandlerPort {
 
     @Override
     public void handleUserNotificationPreferencesUpdatedEvent(Integer userId, Boolean enableAlarms, LocalTime alarmTime) {
-        // 사용자 알림 설정 업데이트
+        // 1) 입력 검증 (비재시도)
+        if (userId == null) {
+
+            throw new IllegalArgumentException("userId is required");
+        }
+        if (enableAlarms != null && Boolean.TRUE.equals(enableAlarms) && alarmTime == null) {
+            throw new IllegalArgumentException("alarmTime is required when enableAlarms=true");
+        }
+        // 2) 조회 & 사용자 알림 설정 업데이트
         UserNotificationPreferenceJpaEntity preference = userNotificationPreferenceRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     // 알림 설정이 없는 경우 새로 생성 (예: 기존 사용자인데 알림 설정이 없었던 경우)
@@ -103,16 +115,33 @@ public class NotificationEventService implements NotificationEventHandlerPort {
                             .userId(userId)
                             .enableAlarms(true) // 기본값
                             .alarmTime(LocalTime.of(21, 0)) // 기본값
-                            .build();
-                });
+                            .build();});
 
-        if (enableAlarms != null) {
+        // 3) 변경사항만 반영
+        boolean changed = false;
+        if (enableAlarms != null && !enableAlarms.equals(preference.getEnableAlarms())) {
             preference.setEnableAlarms(enableAlarms);
+            changed = true;
         }
-        if (alarmTime != null) {
+        if (alarmTime != null && !alarmTime.equals(preference.getAlarmTime())) {
             preference.setAlarmTime(alarmTime);
+            changed = true;
         }
-        userNotificationPreferenceRepository.save(preference);
-        log.info("User notification preferences updated event handled: userId={}, enableAlarms={}, alarmTime={}", userId, enableAlarms, alarmTime);
-    }
+        if (!changed) {
+            log.info("No changes for user {} (enableAlarms={}, alarmTime={})",
+                    userId, preference.getEnableAlarms(), preference.getAlarmTime());
+            return;     // 불필요한 저장 방지
+        }
+
+        // 4) 저장 + 예외 분류
+        try {
+            userNotificationPreferenceRepository.save(preference);
+            log.info("User notification preferences updated event handled: userId={}, enableAlarms={}, alarmTime={}", userId, enableAlarms, alarmTime);
+        } catch (DataIntegrityViolationException e) {
+            //스키마/제약 위반
+            throw new IllegalArgumentException("Preference violates constraints", e);
+        } catch (TransientDataAccessException e) {
+            // 연결/타임아웃/락 등 일시장애 -> 재시도 대상
+            throw e;
+        }    }
 }

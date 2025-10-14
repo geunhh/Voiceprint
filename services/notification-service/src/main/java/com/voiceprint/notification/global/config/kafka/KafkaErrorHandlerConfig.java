@@ -1,6 +1,7 @@
 package com.voiceprint.notification.global.config.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,11 +9,15 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.serializer.DeserializationException;
-import org.springframework.util.backoff.FixedBackOff;
 
 @Configuration
+@RequiredArgsConstructor
 public class KafkaErrorHandlerConfig {
+
+    private final KafkaTemplate<Object, Object> kafkaTemplate;
+
 
     @Bean
     public CommonErrorHandler commonErrorHandler(KafkaTemplate<Object, Object> kafkaTemplate) {
@@ -22,12 +27,23 @@ public class KafkaErrorHandlerConfig {
                 (record, ex) -> new TopicPartition(record.topic() + ".DLT", record.partition())
         );
 
-        // 2초 간격 3회 재시도, 그 후 DLT
-        DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, new FixedBackOff(2000L, 3L));
+        /**
+         * BackOff 전략 : 1s - 2s - 4s ... 최대 60초,
+         */
+        ExponentialBackOffWithMaxRetries backoff = new ExponentialBackOffWithMaxRetries(5);
+        backoff.setInitialInterval(1_000L);
+        backoff.setMultiplier(2.0);
+        backoff.setMaxInterval(60_000L);
 
-        // 역직렬화/JSON 파싱 실패는 재시도하지 말고 즉시 DLT
-        handler.addNotRetryableExceptions(DeserializationException.class, JsonProcessingException.class);
+        DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, backoff);
 
+        // 비재시도 : 역직렬화/JSON 파싱 실패는 재시도하지 말고 즉시 DLT
+        handler.addNotRetryableExceptions(
+                DeserializationException.class,
+                JsonProcessingException.class,  // 스키마 에러
+                IllegalArgumentException.class  // eventId/userId 누락 등 검증 실패
+                // 그외.. 권한 정도?
+        );
         return handler;
     }
 }

@@ -48,8 +48,9 @@ public class NotificationConsumer {
 
     }
 
-    // 유저 정보 변경 시..
-    // 이건 DB 분리 후에 정리합시다요로롱.
+    /**
+     * 유저 생성 및 데이터 변경에 대한 이벤트를 수신하는 Listener
+     */
     @KafkaListener(topics = "user-events", groupId = "voiceprint-notification")
     public void consumeUserEvents(String message) {
         log.info("Consumed user event message: {}", message);
@@ -60,7 +61,8 @@ public class NotificationConsumer {
 
             if (userId == null) {
                 log.error("User event message missing userId: {}", message);
-                return;
+                // 비 재시도 ->DLT
+                throw new IllegalArgumentException("missing userId");
             }
 
             switch (eventType) {
