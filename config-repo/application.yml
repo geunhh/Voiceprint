@@ -16,3 +16,7 @@ spring:
       server:
         native:
           search-locations: file:/config-repo/
+
+logging:
+  file:
+    path: /app/logs

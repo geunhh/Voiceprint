@@ -60,6 +60,7 @@ spring:
               - PUT
               - DELETE
               - OPTIONS
+              - PATCH
             allowedHeaders: ["*"]
             exposedHeaders: ["*"]
             allowCredentials: true

@@ -75,3 +75,6 @@ HELP.md
 
 # application.properies
 # backend/src/main/resources/application.properties
+
+# Monitoring Data
+monitoring/loki/data/

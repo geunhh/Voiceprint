@@ -74,6 +74,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
         UserJPAEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("유저 정보가 없습니다."));
         userEntity.setEnableAlarm(enable);
+        userRepository.save(userEntity);
     }
 
     @Override
