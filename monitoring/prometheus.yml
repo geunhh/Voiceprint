@@ -20,3 +20,8 @@ scrape_configs:
     static_configs:
       - targets: ['notification-service:8081']
         labels: { app: 'alarm', tier: 'svc' }
+
+  - job_name: 'mysql-notification'
+    static_configs:
+      - targets: ['mysql-notification-exporter:9104']
+        labels: { db: 'notification', role: 'primary' }

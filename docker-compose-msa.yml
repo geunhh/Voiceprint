@@ -229,6 +229,23 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # notificationDB exporter
+  mysql-notification-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-notification-exporter
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: "exporter_password_notif"
+    command:
+      - "--mysqld.address=mysql_notification:3306"
+      - "--mysqld.username=exporter"
+    depends_on:
+      mysql_notification:
+        condition: service_healthy
+    ports:
+      - "9105:9104"
+    networks: [voiceprint_net]
+    restart: unless-stopped
+
   # Redis Service (from docker-compose.yml)
   redis:
     container_name: redis
