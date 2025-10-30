@@ -267,6 +267,25 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    container_name: redis-exporter
+    env_file:
+      - ./redis/.env
+    command:
+      - '--web.listen-address=:9121'
+      - '--web.telemetry-path=/metrics'
+      - '--redis.addr=redis://:redis_pw123@redis:6379' # 왜 .env에서 안 가져와지냐
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
+    restart: unless-stopped
+
+
   # Prometheus
   prometheus:
     image: prom/prometheus

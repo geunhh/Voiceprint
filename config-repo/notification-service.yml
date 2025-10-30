@@ -35,6 +35,10 @@ management:
     web:
       exposure:
         include: health,info,metrics,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 # 임시키
 session:
