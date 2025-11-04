@@ -13,11 +13,11 @@ import com.voiceprint.notification.application.port.in.NotificationQueryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +40,38 @@ public class NotificationService implements NotificationCommandPort, Notificatio
      */
     @Override
     public void sendAndSave(UserNotificationPreferenceJpaEntity user, NotificationDTO dto) {
+        Notification notification = Notification.create(
+                user.getUserId(),
+                dto.getType(),
+                dto.getMessage(),
+                dto.getMetadata()
+        );
+        Notification savedNotification = notificationPort.save(notification);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                NotificationDTO inputDto = new NotificationDTO(
+                        dto.getType(),
+                        dto.getMessage(),
+                        Map.of(
+                                "notificationId", savedNotification.getId(),
+                                "userId", user.getId()
+                        )
+                );
+                redisPublisher.publishNotification(inputDto);
+            }
+        });
+    }
+
+    /**
+     * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
+     *
+     * Transaction 전파를 REQUIRES_NEW로 명시 : 커밋과 publish 단건으로 즉시 처리됨.
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void sendAndSaveWithNewTransaction(UserNotificationPreferenceJpaEntity user, NotificationDTO dto) {
         Notification notification = Notification.create(
                 user.getUserId(),
                 dto.getType(),
