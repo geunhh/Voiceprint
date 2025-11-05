@@ -10,7 +10,7 @@ RUN chmod +x gradlew
 RUN ./gradlew clean build -x test --no-daemon
 
 # Spring Boot 앱 실행
-FROM openjdk:21-jdk
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
