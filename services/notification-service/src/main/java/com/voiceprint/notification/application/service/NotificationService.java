@@ -3,21 +3,24 @@ package com.voiceprint.notification.application.service;
 import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import com.voiceprint.notification.adapter.in.web.dto.NotificationListWithCursorDTO;
 import com.voiceprint.notification.adapter.out.RedisPublisher;
-import com.voiceprint.notification.adapter.out.persistence.ProcessedEventJPARepository;
-import com.voiceprint.notification.adapter.out.persistence.UserNotificationPreferenceJpaEntity;
-import com.voiceprint.notification.adapter.out.persistence.UserNotificationPreferenceRepository;
+import com.voiceprint.notification.adapter.out.persistence.*;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.notification.domain.Notification;
 import com.voiceprint.notification.application.port.in.NotificationCommandPort;
 import com.voiceprint.notification.application.port.in.NotificationQueryPort;
+import com.voiceprint.notification.dto.BatchResult;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +35,60 @@ public class NotificationService implements NotificationCommandPort, Notificatio
 
     private final NotificationRepositoryPort notificationPort;
     private final RedisPublisher redisPublisher;
-    private final UserNotificationPreferenceRepository userNotificationPreferenceRepository;
-    private final ProcessedEventJPARepository processedEventRepository;
+    private final NotificationMapper notificationMapper;
+    private final RedisTemplate<String, Object> redisTemplate;            // Redis 상태 조회용 (세션 상태 등)
+    private final NotificationMessageFactory notificationMessageFactory;  // status 기반 알림 메시지 생성
+
+    private static final String SESSION_KEY_PREFIX = "session";
+    @PersistenceContext
+    EntityManager em;
+
+    //1000개 배치 단위로 별도 트랜잭션
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BatchResult processBatchWithNewTransaction(List<UserNotificationPreferenceJpaEntity> batch) {
+
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        for (UserNotificationPreferenceJpaEntity user : batch) {
+            try {
+                // (1) 여기로 Redis 상태 조회 로직을 옮기거나,
+                //     혹은 DTO 를 바깥에서 만들어서 넘겨줘도 됨.
+                Integer userId = user.getUserId();
+                String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
+
+                String status = "NOT_EXIST";
+                Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
+
+                if (Boolean.TRUE.equals(hasStatus)) {
+                    Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
+                    status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
+                }
+
+                NotificationDTO payload = notificationMessageFactory.createNotification(status);
+                if (payload == null) {
+                    skipped++;
+                    continue;
+                }
+
+                // (2) 기존의 배치용 메소드 재사용
+                sendAndSaveWithBatch(user, payload);
+                sent++;
+
+            } catch (Exception e) {
+                log.error("Error processing user {} during notification batch", user.getUserId(), e);
+                errors.add("userId=" + user.getUserId() + ", err=" + e.getMessage());
+            }
+        }
+
+        // 이 메소드가 끝날 때 트랜잭션 커밋:
+        // - em.flush() 자동 호출
+        // - 여기까지 persist 된 알림들이 한 번에 INSERT
+        // - 이 트랜잭션에서 registerSynchronization 한 afterCommit 콜백들 실행 → Redis publish
+
+        return new BatchResult(sent, skipped, errors);
+    }
 
     /**
      * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
@@ -59,6 +114,56 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                                 "userId", user.getId()
                         )
                 );
+                redisPublisher.publishNotification(inputDto);
+            }
+        });
+    }
+
+    // 배치 경계에서 호출할 flush/clear
+    public void flushAndClear() {
+        em.flush();  // 쌓여있는 INSERT/UPDATE를 DB로 실제 전송
+        em.clear();  // 1차 캐시 비우기 (메모리 절약)
+    }
+
+    /**
+     * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
+     *
+     * 배치 처리할 경우, 즉시 getId 가 되지 않기에 처리한 로직
+     */
+    @Override
+    public void sendAndSaveWithBatch(UserNotificationPreferenceJpaEntity user, NotificationDTO dto) {
+        Notification notification = Notification.create(
+                user.getUserId(),
+                dto.getType(),
+                dto.getMessage(),
+                dto.getMetadata()
+        );
+        NotificationJpaEntity entity = notificationMapper.toJpaEntity(notification);
+
+        em.persist(entity); // JPA가 INSERT 쿼리 쌓아둠 (의도)
+
+        final Integer userId = user.getUserId();
+        final String type = dto.getType();
+        final String message = dto.getMessage();
+        final Map<String, Object> metadata = dto.getMetadata();
+
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                Map<String, Object> meta = new HashMap<>();
+                if (metadata != null) {
+                    meta.putAll(metadata);
+                }
+                meta.put("notificationId", entity.getId());
+                meta.put("userId", userId);
+
+                NotificationDTO inputDto = new NotificationDTO(
+                        type,
+                        message,
+                        meta
+                );
+
                 redisPublisher.publishNotification(inputDto);
             }
         });
@@ -172,4 +277,6 @@ public class NotificationService implements NotificationCommandPort, Notificatio
     public void updateNotificationMetadata(List<Notification> notifications) {
         log.warn("updateNotificationMetadata method needs implementation using NotificationPort.");
     }
+
+
 }

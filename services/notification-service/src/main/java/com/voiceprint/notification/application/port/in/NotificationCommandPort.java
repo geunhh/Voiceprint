@@ -9,6 +9,8 @@ import java.util.List;
 public interface NotificationCommandPort {
     void sendAndSave(UserNotificationPreferenceJpaEntity user, NotificationDTO dto);
 
+    void sendAndSaveWithBatch(UserNotificationPreferenceJpaEntity user, NotificationDTO dto);
+
     void sendAndSaveWithNewTransaction(UserNotificationPreferenceJpaEntity user, NotificationDTO dto);
 
     void markNotification(Integer userId, Long notificationId);

@@ -36,7 +36,7 @@ public class TestController {
 
         List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
 
-        var result = testService.trigger(testTime, limit, onlyUserIds);
+        var result = testService.triggerV3(testTime, limit, onlyUserIds);
         return ResponseEntity.ok(result);
     }
 

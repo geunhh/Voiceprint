@@ -26,6 +26,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+      # JPA batch.
+      jdbc:
+        batch_size: 1000           # 한 번에 전송할 레코드 수
+      order_inserts: true          # 같은 테이블 insert끼리 모아서 정렬
+      order_updates: true          # 같은 테이블 update끼리 모아서 정렬
+
   h2:
     console:
       enabled: false
