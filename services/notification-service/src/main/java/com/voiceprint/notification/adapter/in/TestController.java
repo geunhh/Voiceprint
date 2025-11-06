@@ -24,8 +24,40 @@ public class TestController {
      * POST /api/notifications/test?time=06:30&limit=500
      * POST /api/notifications/test?time=06:30&userIds=1,2,3
      */
-    @PostMapping("/alarm")
-    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger(
+    @PostMapping("/alarmV2")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger2(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV2(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/alarmV1")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger1(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV1(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/alarmV3")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger3(
             @RequestParam(value = "time", required = false) String time,
             @RequestParam(value = "limit", required = false) Integer limit,
             @RequestParam(value = "userIds", required = false) String userIdsCsv
@@ -48,6 +80,8 @@ public class TestController {
                 .map(Integer::parseInt)
                 .toList();
     }
+
+
 
     /**
      * 알림 테스트용 API

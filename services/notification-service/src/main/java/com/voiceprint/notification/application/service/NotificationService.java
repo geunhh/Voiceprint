@@ -39,17 +39,22 @@ public class NotificationService implements NotificationCommandPort, Notificatio
     private final RedisTemplate<String, Object> redisTemplate;            // Redis 상태 조회용 (세션 상태 등)
     private final NotificationMessageFactory notificationMessageFactory;  // status 기반 알림 메시지 생성
 
+    private final NotificationPerfMonitor perfMonitor;                    // 성능 측정용
+
     private static final String SESSION_KEY_PREFIX = "session";
+
     @PersistenceContext
     EntityManager em;
 
-    //1000개 배치 단위로 별도 트랜잭션
+    // --- V3용: 1000개 배치 단위로 REQUIRES_NEW ---
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BatchResult processBatchWithNewTransaction(List<UserNotificationPreferenceJpaEntity> batch) {
 
         int sent = 0;
         int skipped = 0;
         List<String> errors = new ArrayList<>();
+
+        long batchStart = System.currentTimeMillis();
 
         for (UserNotificationPreferenceJpaEntity user : batch) {
             try {
@@ -58,13 +63,17 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                 Integer userId = user.getUserId();
                 String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
 
+                long rStart = System.nanoTime();
+
                 String status = "NOT_EXIST";
                 Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
-
                 if (Boolean.TRUE.equals(hasStatus)) {
                     Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
                     status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
                 }
+
+                long rEnd = System.nanoTime();
+                perfMonitor.addRedisGet(rEnd - rStart);
 
                 NotificationDTO payload = notificationMessageFactory.createNotification(status);
                 if (payload == null) {
@@ -86,6 +95,10 @@ public class NotificationService implements NotificationCommandPort, Notificatio
         // - em.flush() 자동 호출
         // - 여기까지 persist 된 알림들이 한 번에 INSERT
         // - 이 트랜잭션에서 registerSynchronization 한 afterCommit 콜백들 실행 → Redis publish
+
+        long batchEnd = System.currentTimeMillis();
+        log.info("[BATCH][V3] size={} took={}ms, sent={}, skipped={}",
+                batch.size(), (batchEnd - batchStart), sent, skipped);
 
         return new BatchResult(sent, skipped, errors);
     }
@@ -140,7 +153,11 @@ public class NotificationService implements NotificationCommandPort, Notificatio
         );
         NotificationJpaEntity entity = notificationMapper.toJpaEntity(notification);
 
+        // === db insert 측정
+        long saveStart = System.nanoTime();
         em.persist(entity); // JPA가 INSERT 쿼리 쌓아둠 (의도)
+        long saveEnd = System.nanoTime();
+        perfMonitor.addDbInsert(saveEnd - saveStart);
 
         final Integer userId = user.getUserId();
         final String type = dto.getType();
@@ -163,8 +180,10 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                         message,
                         meta
                 );
-
+                long pubStart = System.nanoTime();
                 redisPublisher.publishNotification(inputDto);
+                long pubEnd = System.nanoTime();
+                perfMonitor.addRedisPublish(pubEnd - pubStart);
             }
         });
     }
@@ -183,7 +202,12 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                 dto.getMessage(),
                 dto.getMetadata()
         );
+
+        // DB insert 시간 측정
+        long saveStart = System.nanoTime();
         Notification savedNotification = notificationPort.save(notification);
+        long saveEnd = System.nanoTime();
+        perfMonitor.addDbInsert(saveEnd - saveStart);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -196,7 +220,11 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                                 "userId", user.getId()
                         )
                 );
+
+                long pubStart = System.nanoTime();
                 redisPublisher.publishNotification(inputDto);
+                long pubEnd = System.nanoTime();
+                perfMonitor.addRedisPublish(pubEnd - pubStart);
             }
         });
     }

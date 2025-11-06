@@ -30,6 +30,7 @@ public class NotificationTestService {
     private final NotificationService notificationService;                // 실제 알림 저장 및 전송 처리
     private final NotificationMessageFactory notificationMessageFactory;  // status 기반 알림 메시지 생성
     private final RedisTemplate<String, Object> redisTemplate;            // Redis 상태 조회용 (세션 상태 등)
+    private final NotificationPerfMonitor perfMonitor;
 
     private static final String SESSION_KEY_PREFIX = "session";
     private static final int BATCH_SIZE = 1000;
@@ -37,17 +38,21 @@ public class NotificationTestService {
     @Transactional(readOnly = false)
     public NotifyTestResult triggerV3(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
 
-        List<UserNotificationPreferenceJpaEntity> targets;
+        perfMonitor.reset();
+        long totalStartMs = System.currentTimeMillis();
 
+        long dbReadStart = System.nanoTime();
+        List<UserNotificationPreferenceJpaEntity> targets;
         if (onlyUserIds != null && !onlyUserIds.isEmpty()) {
             targets = prefRepo.findByEnableAlarmsTrueAndAlarmTimeAndUserIdIn(testTime, onlyUserIds);
         } else {
             targets = prefRepo.findByEnableAlarmsTrueAndAlarmTime(testTime);
         }
-
         if (limit != null && limit > 0 && targets.size() > limit) {
             targets = targets.subList(0, limit);
         }
+        long dbReadEnd = System.nanoTime();
+        perfMonitor.addDbRead(dbReadEnd - dbReadStart);
 
         int total = targets.size();
         int sent = 0;
@@ -74,6 +79,10 @@ public class NotificationTestService {
         // 마지막 잔여분 처리
         notificationService.flushAndClear();
 
+        long totalEndMs = System.currentTimeMillis();
+        long totalMs = totalEndMs - totalStartMs;
+
+        perfMonitor.logSummary("V3", totalMs, total, sent, skipped);
         return new NotifyTestResult(testTime, total, sent, skipped, errors);
     }
     /**
@@ -84,6 +93,10 @@ public class NotificationTestService {
      */
     @Transactional(readOnly = false)
     public NotifyTestResult triggerV2(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
+        perfMonitor.reset();
+
+        long totalStartMs = System.currentTimeMillis();
+        long dbReadStart = System.nanoTime();
 
         List<UserNotificationPreferenceJpaEntity> targets;
 
@@ -96,18 +109,22 @@ public class NotificationTestService {
         if (limit != null && limit > 0 && targets.size() > limit) {
             targets = targets.subList(0, limit);
         }
+        long dbReadEnd = System.nanoTime();
+        perfMonitor.addDbRead(dbReadEnd - dbReadStart);
 
         int total = targets.size();
         int sent = 0;
         int skipped = 0;
         List<String> errors = new ArrayList<>();
-
         int processed = 0;
 
         for (UserNotificationPreferenceJpaEntity user : targets) {
             try {
                 Integer userId = user.getUserId();
                 String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
+
+                // --- Redis 상태 조회 시간 측정 ---
+                long rStart = System.nanoTime();
 
                 String status = "NOT_EXIST";
                 Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
@@ -116,13 +133,15 @@ public class NotificationTestService {
                     Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
                     status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
                 }
+                long rEnd = System.nanoTime();
+                perfMonitor.addRedisGet(rEnd - rStart);
 
                 NotificationDTO payload = notificationMessageFactory.createNotification(status);
-
                 if (payload == null) {
                     skipped++;
                     continue;
                 }
+
 
                 // JPA Batch 버전: persist만 쌓아두고, afterCommit에서 Redis 발행
                 notificationService.sendAndSaveWithBatch(user, payload);
@@ -143,6 +162,11 @@ public class NotificationTestService {
         // 마지막 잔여분 처리
         notificationService.flushAndClear();
 
+        long totalEndMs = System.currentTimeMillis();
+        long totalMs = totalEndMs - totalStartMs;
+
+        perfMonitor.logSummary("V2", totalMs, total, sent, skipped);
+
         return new NotifyTestResult(testTime, total, sent, skipped, errors);
     }
 
@@ -160,6 +184,10 @@ public class NotificationTestService {
     @Transactional(readOnly = false)
     public NotifyTestResult triggerV1(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
 
+        perfMonitor.reset();
+        long totalStartMs = System.currentTimeMillis();
+
+        long dbReadStart = System.nanoTime();
         List<UserNotificationPreferenceJpaEntity> targets;
 
         // 🎯 특정 유저 리스트가 주어졌다면, 해당 유저들만 대상으로 필터링
@@ -168,14 +196,15 @@ public class NotificationTestService {
         }
         // 🕒 아니면 지정된 시간대(alarmTime) 기준으로 전체 조회
         else {
-//            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTime(testTime);
-            targets = prefRepo.findByEnableAlarmsTrue();
+            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTime(testTime);
         }
-
         // ⚙️ limit 지정 시 상한선 적용
         if (limit != null && limit > 0 && targets.size() > limit) {
             targets = targets.subList(0, limit);
         }
+
+        long dbReadEnd = System.nanoTime();
+        perfMonitor.addDbRead(dbReadEnd - dbReadStart);
 
         int total = targets.size(); // 조회된 유저 수
         int sent = 0;               // 실제 발송 완료 수
@@ -188,6 +217,9 @@ public class NotificationTestService {
                 Integer userId = user.getUserId();
                 String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
 
+                // Redis GET 구간 측정
+                long rStart = System.nanoTime();
+
                 // Redis에서 세션 상태 확인
                 String status = "NOT_EXIST";
                 Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
@@ -196,6 +228,9 @@ public class NotificationTestService {
                     Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
                     status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
                 }
+
+                long rEnd = System.nanoTime();
+                perfMonitor.addRedisGet(rEnd - rStart);
 
                 // Redis 상태(status)에 따라 알림 메시지 생성
                 NotificationDTO payload = notificationMessageFactory.createNotification(status);
@@ -206,10 +241,9 @@ public class NotificationTestService {
                     continue;
                 }
 
-                // 실제 알림 저장 및 전송
-//                notificationService.sendAndSaveWithNewTransaction(user, payload);
-                notificationService.sendAndSave(user, payload);
-                sent++; //
+                // --- REQUIRES_NEW 트랜잭션(저장 + 커밋 + afterCommit publish) 전체 시간 ---
+                notificationService.sendAndSaveWithNewTransaction(user, payload);
+                sent++;
 
             } catch (Exception e) {
                 // 예외 발생 시 개별 유저 단위로만 로깅 및 계속 진행
@@ -217,6 +251,12 @@ public class NotificationTestService {
                 log.error("error: {}",e.getMessage());
             }
         }
+
+
+        long totalEndMs = System.currentTimeMillis();
+        long totalMs = totalEndMs - totalStartMs;
+
+        perfMonitor.logSummary("V1", totalMs, total, sent, skipped);
 
         // 🧾 실행 결과 요약 반환
         return new NotifyTestResult(testTime, total, sent, skipped, errors);
