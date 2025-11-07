@@ -262,6 +262,108 @@ public class NotificationTestService {
         return new NotifyTestResult(testTime, total, sent, skipped, errors);
     }
 
+    @Transactional(readOnly = false)
+    public NotifyTestResult triggerV4(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
+
+        perfMonitor.reset();
+        long totalStartMs = System.currentTimeMillis();
+
+        long dbReadStart = System.nanoTime();
+        List<UserNotificationPreferenceJpaEntity> targets;
+        if (onlyUserIds != null && !onlyUserIds.isEmpty()) {
+            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTimeAndUserIdIn(testTime, onlyUserIds);
+        } else {
+            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTime(testTime);
+        }
+        if (limit != null && limit > 0 && targets.size() > limit) {
+            targets = targets.subList(0, limit);
+        }
+        long dbReadEnd = System.nanoTime();
+        perfMonitor.addDbRead(dbReadEnd - dbReadStart);
+
+        int total = targets.size();
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        // === 1000개씩 끊어서 Batch 처리 ===
+        for (int i = 0; i < targets.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, targets.size());
+            List<UserNotificationPreferenceJpaEntity> batch = targets.subList(i, end);
+
+            try {
+                BatchResult r = notificationService.processBatchRedisOnly(batch);
+                sent += r.getSent();
+                skipped += r.getSkipped();
+                errors.addAll(r.getErrors());
+            } catch (Exception e) {
+                // 이 배치(1000개) 전체가 롤백된 경우
+                errors.add("batch[" + i + "~" + (end - 1) + "] failed : " + e.getMessage());
+                log.error("Error processing batch {}-{}", i, end - 1, e);
+            }
+        }
+
+        // 마지막 잔여분 처리
+        notificationService.flushAndClear();
+
+        long totalEndMs = System.currentTimeMillis();
+        long totalMs = totalEndMs - totalStartMs;
+
+        perfMonitor.logSummary("V3", totalMs, total, sent, skipped);
+        return new NotifyTestResult(testTime, total, sent, skipped, errors);
+    }
+
+    @Transactional(readOnly = false)
+    public NotifyTestResult triggerV5(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
+
+        perfMonitor.reset();
+        long totalStartMs = System.currentTimeMillis();
+
+        long dbReadStart = System.nanoTime();
+        List<UserNotificationPreferenceJpaEntity> targets;
+        if (onlyUserIds != null && !onlyUserIds.isEmpty()) {
+            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTimeAndUserIdIn(testTime, onlyUserIds);
+        } else {
+            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTime(testTime);
+        }
+        if (limit != null && limit > 0 && targets.size() > limit) {
+            targets = targets.subList(0, limit);
+        }
+        long dbReadEnd = System.nanoTime();
+        perfMonitor.addDbRead(dbReadEnd - dbReadStart);
+
+        int total = targets.size();
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        // === 1000개씩 끊어서 Batch 처리 ===
+        for (int i = 0; i < targets.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, targets.size());
+            List<UserNotificationPreferenceJpaEntity> batch = targets.subList(i, end);
+
+            try {
+                BatchResult r = notificationService.processBatchRedisAndDbNoPublish(batch);
+                sent += r.getSent();
+                skipped += r.getSkipped();
+                errors.addAll(r.getErrors());
+            } catch (Exception e) {
+                // 이 배치(1000개) 전체가 롤백된 경우
+                errors.add("batch[" + i + "~" + (end - 1) + "] failed : " + e.getMessage());
+                log.error("Error processing batch {}-{}", i, end - 1, e);
+            }
+        }
+
+        // 마지막 잔여분 처리
+        notificationService.flushAndClear();
+
+        long totalEndMs = System.currentTimeMillis();
+        long totalMs = totalEndMs - totalStartMs;
+
+        perfMonitor.logSummary("V3", totalMs, total, sent, skipped);
+        return new NotifyTestResult(testTime, total, sent, skipped, errors);
+    }
+
     /**
      * 📊 테스트 결과 요약 DTO
      * - 요청 시각

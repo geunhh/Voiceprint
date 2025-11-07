@@ -46,6 +46,95 @@ public class NotificationService implements NotificationCommandPort, Notificatio
     @PersistenceContext
     EntityManager em;
 
+    // V3 실험 B: Redis GET + DB insert만 (publish 제거) //TODO :테스트용
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BatchResult processBatchRedisAndDbNoPublish(List<UserNotificationPreferenceJpaEntity> batch) {
+
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        for (UserNotificationPreferenceJpaEntity user : batch) {
+            try {
+                Integer userId = user.getUserId();
+                String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
+
+                // Redis GET 계측
+                long rStart = System.nanoTime();
+                String status = "NOT_EXIST";
+                Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
+                if (Boolean.TRUE.equals(hasStatus)) {
+                    Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
+                    status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
+                }
+                long rEnd = System.nanoTime();
+                perfMonitor.addRedisGet(rEnd - rStart);
+
+                NotificationDTO payload = notificationMessageFactory.createNotification(status);
+                if (payload == null) {
+                    skipped++;
+                    continue;
+                }
+
+                // DB insert (publish 없음)
+                sendAndSaveWithBatchNoPublish(user, payload);
+                sent++;
+
+            } catch (Exception e) {
+                log.error("Error processing user {} during V3-Redis+DbNoPub", user.getUserId(), e);
+                errors.add("userId=" + user.getUserId() + ", err=" + e.getMessage());
+            }
+        }
+
+        return new BatchResult(sent, skipped, errors);
+    }
+
+
+    // V3 실험 A: Redis GET만 있는 버전 : TODO: 테스트용
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BatchResult processBatchRedisOnly(List<UserNotificationPreferenceJpaEntity> batch) {
+
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        for (UserNotificationPreferenceJpaEntity user : batch) {
+            try {
+                Integer userId = user.getUserId();
+                String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
+
+                long rStart = System.nanoTime();
+
+                String status = "NOT_EXIST";
+                Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
+                if (Boolean.TRUE.equals(hasStatus)) {
+                    Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
+                    status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
+                }
+
+                long rEnd = System.nanoTime();
+                perfMonitor.addRedisGet(rEnd - rStart);
+
+                // DTO 만들긴 하는데 DB 저장은 안 함
+                NotificationDTO payload = notificationMessageFactory.createNotification(status);
+                if (payload == null) {
+                    skipped++;
+                    continue;
+                }
+
+                // DB insert / publish 없음
+                sent++;
+
+            } catch (Exception e) {
+                log.error("Error processing user {} during V3-RedisOnly", user.getUserId(), e);
+                errors.add("userId=" + user.getUserId() + ", err=" + e.getMessage());
+            }
+        }
+
+        return new BatchResult(sent, skipped, errors);
+    }
+
+
     // --- V3용: 1000개 배치 단위로 REQUIRES_NEW ---
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BatchResult processBatchWithNewTransaction(List<UserNotificationPreferenceJpaEntity> batch) {
@@ -71,7 +160,6 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                     Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
                     status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
                 }
-
                 long rEnd = System.nanoTime();
                 perfMonitor.addRedisGet(rEnd - rStart);
 
@@ -137,6 +225,25 @@ public class NotificationService implements NotificationCommandPort, Notificatio
         em.flush();  // 쌓여있는 INSERT/UPDATE를 DB로 실제 전송
         em.clear();  // 1차 캐시 비우기 (메모리 절약)
     }
+
+    // publish 없는 배치 insert 전용
+    public void sendAndSaveWithBatchNoPublish(UserNotificationPreferenceJpaEntity user, NotificationDTO dto) {
+        Notification notification = Notification.create(
+                user.getUserId(),
+                dto.getType(),
+                dto.getMessage(),
+                dto.getMetadata()
+        );
+        NotificationJpaEntity entity = notificationMapper.toJpaEntity(notification);
+
+        long saveStart = System.nanoTime();
+        em.persist(entity);
+        long saveEnd = System.nanoTime();
+        perfMonitor.addDbInsert(saveEnd - saveStart);
+
+        // afterCommit 등록 안 함 => Redis publish 없음
+    }
+
 
     /**
      * 알림 생성 + DB 저장 + Redis Pub/Sub 전송
