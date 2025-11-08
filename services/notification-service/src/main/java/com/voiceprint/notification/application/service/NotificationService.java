@@ -279,7 +279,7 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                 if (metadata != null) {
                     meta.putAll(metadata);
                 }
-                meta.put("notificationId", entity.getId());
+//                meta.put("notificationId", entity.getId()); // JPA -> JDBCTemplate 변경 예정
                 meta.put("userId", userId);
 
                 NotificationDTO inputDto = new NotificationDTO(
