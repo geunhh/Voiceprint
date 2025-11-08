@@ -104,6 +104,25 @@ public class TestController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * JDBC Batch.
+     */
+    @PostMapping("/alarmV6")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger6(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV6(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
     private List<Integer> parseCsvToInts(String csv) {
         if (csv == null || csv.isBlank()) return List.of();
         return Arrays.stream(csv.split(","))

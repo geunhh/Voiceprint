@@ -56,9 +56,9 @@ public class RedisSubscriber implements MessageListener {
 
         if (emitterManager.hasEmitter(userId)) {
             emitterManager.sendTo(userId, dto.getType(), dto); // SSE 전송
-            log.info("[RedisSubscriber] 실시간 알림 전송 완료: userId={}, type={}", userId, dto.getType());
+            log.debug("[RedisSubscriber] 실시간 알림 전송 완료: userId={}, type={}", userId, dto.getType());
         } else {
-            log.info("알림을 전달할 구독자가 접속중이 아닙니다. {}", userId);
+            log.debug("알림을 전달할 구독자가 접속중이 아닙니다. {}", userId);
         }
     }
 }

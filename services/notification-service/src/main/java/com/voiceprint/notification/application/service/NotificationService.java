@@ -2,6 +2,7 @@ package com.voiceprint.notification.application.service;
 
 import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import com.voiceprint.notification.adapter.in.web.dto.NotificationListWithCursorDTO;
+import com.voiceprint.notification.adapter.out.AsyncNotificationPublisher;
 import com.voiceprint.notification.adapter.out.RedisPublisher;
 import com.voiceprint.notification.adapter.out.persistence.*;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
@@ -38,13 +39,109 @@ public class NotificationService implements NotificationCommandPort, Notificatio
     private final NotificationMapper notificationMapper;
     private final RedisTemplate<String, Object> redisTemplate;            // Redis 상태 조회용 (세션 상태 등)
     private final NotificationMessageFactory notificationMessageFactory;  // status 기반 알림 메시지 생성
-
+    private final NotificationJdbcRepository notificationJdbcRepository;
+    private final AsyncNotificationPublisher asyncNotificationPublisher; // @Async로 Redis publish
     private final NotificationPerfMonitor perfMonitor;                    // 성능 측정용
 
     private static final String SESSION_KEY_PREFIX = "session";
 
     @PersistenceContext
     EntityManager em;
+
+
+    // JDBC 배치 기반 알림 처리.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BatchResult processBatchWithJdbc(List<UserNotificationPreferenceJpaEntity> batch) {
+
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        List<NotificationJpaEntity> entities = new ArrayList<>();
+        List<NotificationDTO> publishDtos = new ArrayList<>();
+
+        long batchStart = System.currentTimeMillis();
+
+        for (UserNotificationPreferenceJpaEntity user : batch) {
+            try {
+                Integer userId = user.getUserId();
+                String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
+
+                // 1) Redis에서 상태 조회
+                long rStart = System.nanoTime();
+                String status = "NOT_EXIST";
+                Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
+                if (Boolean.TRUE.equals(hasStatus)) {
+                    Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
+                    status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
+                }
+                long rEnd = System.nanoTime();
+                perfMonitor.addRedisGet(rEnd - rStart);
+
+                // 2) status 기반으로 알림 메시지 생성
+                NotificationDTO payload = notificationMessageFactory.createNotification(status);
+                if (payload == null) {
+                    skipped++;
+                    continue;
+                }
+
+                // 3) 메타데이터(userId 포함) 구성
+                Map<String, Object> meta = new HashMap<>();
+                if (payload.getMetadata() != null) {
+                    meta.putAll(payload.getMetadata());
+                }
+                meta.put("userId", userId);   // subscriber가 이걸로 SSE 보냄
+
+                // 4) DB insert용 엔티티 구성
+                NotificationJpaEntity entity = NotificationJpaEntity.create(
+                        userId,
+                        payload.getType(),
+                        payload.getMessage(),
+                        meta
+                );
+                entities.add(entity);
+
+                // 5) Redis publish용 DTO도 같이 적재
+                NotificationDTO publishDto = new NotificationDTO(
+                        payload.getType(),
+                        payload.getMessage(),
+                        meta
+                );
+                publishDtos.add(publishDto);
+
+                sent++;
+
+            } catch (Exception e) {
+                log.error("Error processing user {} during JDBC batch", user.getUserId(), e);
+                errors.add("userId=" + user.getUserId() + ", err=" + e.getMessage());
+            }
+        }
+
+        // 6) JDBC 배치 INSERT (entities가 있을 때만)
+        if (!entities.isEmpty()) {
+            long saveStart = System.nanoTime();
+            notificationJdbcRepository.saveAllBatch(entities);
+            long saveEnd = System.nanoTime();
+            perfMonitor.addDbInsert(saveEnd - saveStart);
+
+            // 7) 커밋 후 Async로 Redis publish
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    long pubStart = System.nanoTime();
+                    asyncNotificationPublisher.publishAllAsync(publishDtos);
+                    long pubEnd = System.nanoTime();
+                    perfMonitor.addRedisPublish(pubEnd - pubStart);
+                }
+            });
+        }
+
+        long batchEnd = System.currentTimeMillis();
+        log.info("[BATCH][JDBC] size={} took={}ms, sent={}, skipped={}",
+                batch.size(), (batchEnd - batchStart), sent, skipped);
+
+        return new BatchResult(sent, skipped, errors);
+    }
 
     // V3 실험 B: Redis GET + DB insert만 (publish 제거) //TODO :테스트용
     @Transactional(propagation = Propagation.REQUIRES_NEW)

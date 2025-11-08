@@ -36,6 +36,71 @@ public class NotificationTestService {
     private static final int BATCH_SIZE = 1000;
 
     @Transactional(readOnly = false)
+    public NotifyTestResult triggerV6(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
+
+        perfMonitor.reset();
+        long totalStartMs = System.currentTimeMillis();
+
+        long dbReadStart = System.nanoTime();
+        List<UserNotificationPreferenceJpaEntity> targets;
+        if (onlyUserIds != null && !onlyUserIds.isEmpty()) {
+            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTimeAndUserIdIn(testTime, onlyUserIds);
+        } else {
+//            targets = prefRepo.findByEnableAlarmsTrueAndAlarmTime(testTime);
+            targets = prefRepo.findByEnableAlarmsTrue();
+        }
+        if (limit != null && limit > 0 && targets.size() > limit) {
+            targets = targets.subList(0, limit);
+        }
+        long dbReadEnd = System.nanoTime();
+        perfMonitor.addDbRead(dbReadEnd - dbReadStart);
+
+        int total = targets.size();
+        int sent = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        // === 1000개씩 끊어서 Batch 처리 ===
+        for (int i = 0; i < targets.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, targets.size());
+            List<UserNotificationPreferenceJpaEntity> batch = targets.subList(i, end);
+
+            try {
+                long batchStart = System.currentTimeMillis();
+
+                // JDBC 버전 호출
+                BatchResult r = notificationService.processBatchWithJdbc(batch);
+                sent += r.getSent();
+                skipped += r.getSkipped();
+                errors.addAll(r.getErrors());
+
+                long batchEnd = System.currentTimeMillis();
+                log.info("[BATCH][V6-JDBC] size={} took={}ms, sent={}, skipped={}",
+                        batch.size(), (batchEnd - batchStart), r.getSent(), r.getSkipped());
+                if (end < targets.size()) {
+                    try {
+                        Thread.sleep(300L); // Todo : TEST용
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.warn("Batch pause interrupted", e);
+                    }
+                }
+            } catch (Exception e) {
+                // 이 배치(1000개) 전체가 롤백된 경우
+                errors.add("batch[" + i + "~" + (end - 1) + "] failed : " + e.getMessage());
+                log.error("Error processing batch {}-{}", i, end - 1, e);
+            }
+
+        }
+
+        long totalEndMs = System.currentTimeMillis();
+        long totalMs = totalEndMs - totalStartMs;
+
+        perfMonitor.logSummary("V6", totalMs, total, sent, skipped);
+        return new NotifyTestResult(testTime, total, sent, skipped, errors);
+    }
+
+    @Transactional(readOnly = false)
     public NotifyTestResult triggerV3(LocalTime testTime, Integer limit, List<Integer> onlyUserIds) {
 
         perfMonitor.reset();
@@ -378,6 +443,8 @@ public class NotificationTestService {
         perfMonitor.logSummary("V3", totalMs, total, sent, skipped);
         return new NotifyTestResult(testTime, total, sent, skipped, errors);
     }
+
+
 
     /**
      * 📊 테스트 결과 요약 DTO

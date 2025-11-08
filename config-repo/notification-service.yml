@@ -14,8 +14,8 @@ spring:
       auto-offset-reset: earliest
     listener:
       missing-topics-fatal: false
-  datasource:
-    url: jdbc:mysql://mysql_notification:3306/notification_db?useSSL=false&allowPublicKeyRetrieval=true
+  datasource: # batch 처리
+    url: jdbc:mysql://mysql_notification:3306/notification_db?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=999999
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: notification_user
     password: thisisnotification
