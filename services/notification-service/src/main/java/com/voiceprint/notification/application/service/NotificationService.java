@@ -5,6 +5,7 @@ import com.voiceprint.notification.adapter.in.web.dto.NotificationListWithCursor
 import com.voiceprint.notification.adapter.out.AsyncNotificationPublisher;
 import com.voiceprint.notification.adapter.out.RedisPublisher;
 import com.voiceprint.notification.adapter.out.persistence.*;
+import com.voiceprint.notification.adapter.out.redis.SessionStatusReader;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.notification.domain.Notification;
 import com.voiceprint.notification.application.port.in.NotificationCommandPort;
@@ -40,8 +41,9 @@ public class NotificationService implements NotificationCommandPort, Notificatio
     private final RedisTemplate<String, Object> redisTemplate;            // Redis 상태 조회용 (세션 상태 등)
     private final NotificationMessageFactory notificationMessageFactory;  // status 기반 알림 메시지 생성
     private final NotificationJdbcRepository notificationJdbcRepository;
-    private final AsyncNotificationPublisher asyncNotificationPublisher; // @Async로 Redis publish
+    private final AsyncNotificationPublisher asyncNotificationPublisher;  // @Async로 Redis publish
     private final NotificationPerfMonitor perfMonitor;                    // 성능 측정용
+    private final SessionStatusReader sessionStatusReader;                //
 
     private static final String SESSION_KEY_PREFIX = "session";
 
@@ -62,21 +64,21 @@ public class NotificationService implements NotificationCommandPort, Notificatio
 
         long batchStart = System.currentTimeMillis();
 
+        // userId 리스트 생성
+        List<Integer> userIds = batch.stream()
+                .map(UserNotificationPreferenceJpaEntity::getUserId)
+                .toList();
+
+        // Redis Pipeline 활용.
+        long rStart = System.nanoTime();
+        Map<Integer, String> statusMap = sessionStatusReader.getStatusesWithPipeline(userIds);
+        long rEnd = System.nanoTime();
+        perfMonitor.addRedisGet(rEnd - rStart);
+
         for (UserNotificationPreferenceJpaEntity user : batch) {
             try {
                 Integer userId = user.getUserId();
-                String sessionKey = SESSION_KEY_PREFIX + ":" + userId;
-
-                // 1) Redis에서 상태 조회
-                long rStart = System.nanoTime();
-
-                // Hget은 key가 없을 경우, null 반환.
-                Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
-                String status = (statusObj != null)
-                        ? statusObj.toString().replace("\"", "")
-                        : "NOT_EXIST";
-                long rEnd = System.nanoTime();
-                perfMonitor.addRedisGet(rEnd - rStart);
+                String status = statusMap.getOrDefault(userId, "NOT_EXIST");
 
                 // 2) status 기반으로 알림 메시지 생성
                 NotificationDTO payload = notificationMessageFactory.createNotification(status);
