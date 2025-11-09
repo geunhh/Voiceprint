@@ -69,12 +69,12 @@ public class NotificationService implements NotificationCommandPort, Notificatio
 
                 // 1) Redis에서 상태 조회
                 long rStart = System.nanoTime();
-                String status = "NOT_EXIST";
-                Boolean hasStatus = redisTemplate.opsForHash().hasKey(sessionKey, "status");
-                if (Boolean.TRUE.equals(hasStatus)) {
-                    Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
-                    status = statusObj != null ? statusObj.toString().replace("\"", "") : "NOT_EXIST";
-                }
+
+                // Hget은 key가 없을 경우, null 반환.
+                Object statusObj = redisTemplate.opsForHash().get(sessionKey, "status");
+                String status = (statusObj != null)
+                        ? statusObj.toString().replace("\"", "")
+                        : "NOT_EXIST";
                 long rEnd = System.nanoTime();
                 perfMonitor.addRedisGet(rEnd - rStart);
 
