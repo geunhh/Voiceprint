@@ -180,6 +180,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      redis-pubsub:
+        condition: service_healthy # pubsub용 추가
     environment: # Todo : 제거하기.
       - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
       - SPRING_JWT_SECRET=vmfhaltmskdlstkfkdgodyrolroqkfwkalskdjqwkjdnkasjlqsssa
@@ -229,7 +231,24 @@ services:
       retries: 10
     restart: unless-stopped
 
-  # Redis Service (from docker-compose.yml)
+  # notificationDB exporter
+  mysql-notification-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-notification-exporter
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: "exporter_password_notif"
+    command:
+      - "--mysqld.address=mysql_notification:3306"
+      - "--mysqld.username=exporter"
+    depends_on:
+      mysql_notification:
+        condition: service_healthy
+    ports:
+      - "9105:9104"
+    networks: [voiceprint_net]
+    restart: unless-stopped
+
+  # Redis Service (session / hget 전용)
   redis:
     container_name: redis
     image: redis:8
@@ -249,6 +268,46 @@ services:
       interval: 5s
       retries: 10
     restart: unless-stopped
+
+  # Redis Service (pub/sub 전용)
+  redis-pubsub:
+    container_name: redis-pubsub
+    image: redis:8
+    ports:
+      - "6380:6379"   # 호스트에선 6380, 컨테이너 안은 그대로 6379
+    env_file:
+      - ./redis/.env  # 비번 재사용하면 이걸로 충분
+    volumes:
+      - ./redis-pubsub.conf:/usr/local/etc/redis/redis.conf:ro  # 필요하면 별도 conf, 아니면 기존 거 써도 됨
+    command:
+      - /bin/sh
+      - -c
+      - redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    networks: [ voiceprint_net ]
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" -p 6379 ping" ]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    container_name: redis-exporter
+    env_file:
+      - ./redis/.env
+    command:
+      - '--web.listen-address=:9121'
+      - '--web.telemetry-path=/metrics'
+      - '--redis.addr=redis://:redis_pw123@redis:6379' # 왜 .env에서 안 가져와지냐
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
+    restart: unless-stopped
+
 
   # Prometheus
   prometheus:

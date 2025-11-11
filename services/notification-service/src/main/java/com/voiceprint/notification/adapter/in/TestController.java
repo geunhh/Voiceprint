@@ -1,14 +1,138 @@
 package com.voiceprint.notification.adapter.in;
 
+import com.voiceprint.notification.application.service.NotificationTestService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
+
 @RestController
 @Slf4j
-@RequestMapping("/")
+@RequestMapping("/test")
+@RequiredArgsConstructor
 public class TestController {
+
+    private final NotificationTestService testService;
+
+    /**
+     * 예:
+     * POST /api/notifications/test?time=06:30&limit=500
+     * POST /api/notifications/test?time=06:30&userIds=1,2,3
+     */
+    @PostMapping("/alarmV2")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger2(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV2(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/alarmV1")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger1(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV1(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/alarmV3")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger3(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV3(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/alarmV4")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger4(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV4(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/alarmV5")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger5(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV5(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * JDBC Batch.
+     */
+    @PostMapping("/alarmV6")
+    public ResponseEntity<NotificationTestService.NotifyTestResult> trigger6(
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "userIds", required = false) String userIdsCsv
+    ) {
+        LocalTime testTime = (time == null || time.isBlank())
+                ? LocalTime.now().withSecond(0).withNano(0)                       // 기본: 현재 분
+                : LocalTime.parse(time);                                          // "HH:mm" 형식 기대
+
+        List<Integer> onlyUserIds = parseCsvToInts(userIdsCsv);
+
+        var result = testService.triggerV6(testTime, limit, onlyUserIds);
+        return ResponseEntity.ok(result);
+    }
+
+    private List<Integer> parseCsvToInts(String csv) {
+        if (csv == null || csv.isBlank()) return List.of();
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Integer::parseInt)
+                .toList();
+    }
+
+
 
     /**
      * 알림 테스트용 API

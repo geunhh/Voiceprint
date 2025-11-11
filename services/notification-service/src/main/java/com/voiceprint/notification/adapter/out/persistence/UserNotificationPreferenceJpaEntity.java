@@ -27,7 +27,7 @@ public class UserNotificationPreferenceJpaEntity {
     private Integer userId;
 
     @Column(nullable = false)
-    private Boolean enableAlarms;
+    private Boolean enableAlarms = false;
 
     private LocalTime alarmTime;
 

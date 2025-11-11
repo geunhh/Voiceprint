@@ -29,7 +29,6 @@ public class RedisSubscriber implements MessageListener {
         String json = new String(message.getBody(), StandardCharsets.UTF_8);        // 메시지 본문 추출
         log.debug("message.body:{}",message.getBody());
 
-
         // 파싱 : 앞 뒤 \" \" 로 인해 에러 발생. -> 제거
         if (json.startsWith("\"") && json.endsWith("\"")) {
             json = json.substring(1, json.length() -1);
@@ -38,46 +37,28 @@ public class RedisSubscriber implements MessageListener {
 
         NotificationDTO dto = objectMapper.readValue(json, NotificationDTO.class);  // JSON -> DTO
         log.debug("notification dto: {}",dto.getMetadata());
-        log.debug("notification dto: {}",dto.getMessage());
 
-
-        Long notificationId = Long.valueOf(dto.getMetadata().get("notificationId").toString());
-
-        // 재시도 로직 - 없으면 인식을 못함
-        Notification notification = notificationRepositoryPort.findById(notificationId).orElse(null);
-
-        if (notification == null) {
-            log.warn("[RedisSubscriber] 해당 알림 없음: {}", notificationId);
-
-            // 재시도 로직 (100ms * 3회)
-            for (int i = 0; i < 3; i++) {
-                Thread.sleep(100);
-                notification = notificationRepositoryPort.findById(notificationId).orElse(null);
-                log.warn("{}차 조회 : [RedisSubscriber] 해당 알림 없음: {}",i+1, notification);
-
-                if (notification != null) break;
-            }
-            if (notification == null) {
-                log.error("[RedisSubscriber] 재시도 후에도 알림 조회 실패: {}", notificationId);
-                return;
-            }
-        }
-
-        log.info("notificiation : {}",notification);
-        if (notification == null) {
-            log.warn("[RedisSubscriber] 해당 알림 없음: {}", notificationId);
+        // 그냥 메타에서 userId 꺼내 쓰기
+        Object userIdRaw = dto.getMetadata().get("userId");
+        if (userIdRaw == null) {
+            log.error("[RedisSubscriber] userId 메타데이터 없음: {}", dto.getMetadata());
             return;
         }
 
-        Integer userId = notification.getUserId();
-        log.debug("현재 접속중인 emitter : {} ",emitterManager.getAllEmitterIds());
+        Integer userId;
+        if (userIdRaw instanceof Number num) {
+            userId = num.intValue();
+        } else {
+            userId = Integer.valueOf(userIdRaw.toString());
+        }
+
+        log.debug("현재 접속중인 emitter : {} ", emitterManager.getAllEmitterIds());
 
         if (emitterManager.hasEmitter(userId)) {
             emitterManager.sendTo(userId, dto.getType(), dto); // SSE 전송
-            log.info("[RedisSubscriber] 실시간 알림 전송 완료: userId={}, type={}", userId, dto.getType());
-        }
-        else {
-            log.info("알림을 전달할 구독자가 접속중이 아닙니다. {}",userId);
+            log.debug("[RedisSubscriber] 실시간 알림 전송 완료: userId={}, type={}", userId, dto.getType());
+        } else {
+            log.debug("알림을 전달할 구독자가 접속중이 아닙니다. {}", userId);
         }
     }
 }

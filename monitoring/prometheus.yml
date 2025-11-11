@@ -3,20 +3,37 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
+  # Gateway (Edge Layer)
   - job_name: 'gateway-service' # 쿼리에서 필터할 이름
     metrics_path: /actuator/prometheus  # SpringBoot Actuator가 노출하는 엔드포인트
     static_configs:
       - targets: ['gateway-service:8000']
         labels: { app: 'gateway', tier: 'edge' }
 
+  # Backend Core Service
   - job_name: 'backend-msa'
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['backend-msa:8080']
         labels: { app: 'core', tier: 'svc' }
 
+  # Notification Service
   - job_name: 'notification-service'
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['notification-service:8081']
         labels: { app: 'alarm', tier: 'svc' }
+
+  # MySQL (Notification DB Exporter)
+  - job_name: 'mysql-notification'
+    static_configs:
+      - targets: ['mysql-notification-exporter:9104']
+        labels: { db: 'notification', role: 'primary' }
+
+  # Redis Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          db: 'redis'
+          role: 'cache'

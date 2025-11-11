@@ -5,7 +5,7 @@ COPY --chown=gradle:gradle . .
 RUN ./gradlew :services:notification-service:build -x test --no-daemon
 
 # Final App Stage
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 COPY --from=build /home/gradle/src/services/notification-service/build/libs/notification-service-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java","-jar","/app/app.jar"]
