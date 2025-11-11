@@ -7,6 +7,12 @@ spring:
       host: redis
       port: 6379
       password: redis_pw123
+      lettuce:
+        pool:
+          max-active: 50   # 스레드풀 max(8) * 여유(6배)
+          max-idle: 20
+          min-idle: 10
+          max-wait: 3000ms # 커넥션 대기 최대 3초
   kafka:
     consumer:
       bootstrap-servers: kafka:9092
@@ -51,3 +57,16 @@ session:
   key: "dummy-session-key"
 message:
   key: "dummy-message-key"
+
+# pub/sub 전용 Redis (새 인스턴스: redis-pubsub)
+notification:
+  redis:
+    pubsub:
+      host: redis-pubsub   # docker-compose 에 추가할 그 이름
+      port: 6379
+      password: redis_pw123
+      pool:
+        max-active: 50
+        max-idle: 20
+        min-idle: 10
+        max-wait: 3000ms
