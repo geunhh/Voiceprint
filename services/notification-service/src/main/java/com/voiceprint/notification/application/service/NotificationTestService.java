@@ -77,14 +77,6 @@ public class NotificationTestService {
                 long batchEnd = System.currentTimeMillis();
                 log.info("[BATCH][V6-JDBC] size={} took={}ms, sent={}, skipped={}",
                         batch.size(), (batchEnd - batchStart), r.getSent(), r.getSkipped());
-                if (end < targets.size()) {
-                    try {
-                        Thread.sleep(300L); // Todo : TEST용
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        log.warn("Batch pause interrupted", e);
-                    }
-                }
             } catch (Exception e) {
                 // 이 배치(1000개) 전체가 롤백된 경우
                 errors.add("batch[" + i + "~" + (end - 1) + "] failed : " + e.getMessage());
