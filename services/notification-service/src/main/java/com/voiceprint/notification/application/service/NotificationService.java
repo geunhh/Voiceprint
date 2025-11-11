@@ -131,7 +131,7 @@ public class NotificationService implements NotificationCommandPort, Notificatio
                 @Override
                 public void afterCommit() {
                     long pubStart = System.nanoTime();
-                    asyncNotificationPublisher.publishAllAsync(publishDtos);
+                    asyncNotificationPublisher.publishAllAsyncWithPipeline(publishDtos);
                     long pubEnd = System.nanoTime();
                     perfMonitor.addRedisPublish(pubEnd - pubStart);
                 }

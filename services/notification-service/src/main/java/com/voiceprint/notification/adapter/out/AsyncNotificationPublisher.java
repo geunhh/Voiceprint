@@ -17,6 +17,7 @@ public class AsyncNotificationPublisher {
 
     @Async("notificationExecutor")
     public void publishAllAsync(List<NotificationDTO> dtos) {
+        long pubStart = System.nanoTime();
         for (NotificationDTO dto : dtos) {
             try {
                 redisPublisher.publishNotification(dto);
@@ -24,5 +25,23 @@ public class AsyncNotificationPublisher {
                 log.error("[AsyncNotificationPublisher] publish failed: {}", dto, e);
             }
         }
+        long pubEnd = System.nanoTime();
+        double elapsedMs = (pubEnd - pubStart) / 1_000_000.0;
+        commonLog(elapsedMs);
+    }
+
+    @Async("notificationExecutor")
+    public void publishAllAsyncWithPipeline(List<NotificationDTO> dtos) {
+        long pubStart = System.nanoTime();
+        redisPublisher.publishBatchWithPipeline(dtos);
+        long pubEnd = System.nanoTime();
+        double elapsedMs = (pubEnd - pubStart) / 1_000_000.0;
+
+        commonLog(elapsedMs);
+    }
+
+    private static void commonLog(double elapsedMs) {
+        log.info("[AsyncPublisher] Done. elapsed={}ms, thread={}",
+                String.format("%.2f", elapsedMs), Thread.currentThread().getName());
     }
 }
