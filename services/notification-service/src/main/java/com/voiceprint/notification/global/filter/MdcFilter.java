@@ -20,6 +20,7 @@ import java.util.UUID;
 public class MdcFilter extends OncePerRequestFilter {
 
     private static final String TRACE_ID = "traceId";
+    private static final String TRACE_HEADER = "X-Trace-Id";
 
     /**
      * 실제 필터 로직.
@@ -29,12 +30,23 @@ public class MdcFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            String traceId = MDC.get(TRACE_ID);
-            if (traceId == null) {
-                // UUID에서 앞 8자리 사용. - 만약 header를 통해 traceId가 들어온다면 해당 친구 사용.
-                traceId = UUID.randomUUID().toString().substring(0,8);
-                MDC.put(TRACE_ID, traceId);
+            // 1) 먼저 헤더에서 traceId를 찾는다 (서비스 간 전파용)
+            String traceId = request.getHeader(TRACE_HEADER);
+
+            // 2) 헤더에 없으면 MDC에서 한 번 더 확인 (이미 세팅된 경우)
+            if (traceId == null || traceId.isBlank()) {
+                traceId = MDC.get(TRACE_ID);
             }
+
+            // 3) 그래도 없으면 새로 생성 (이 서비스가 최초 진입점일 수도 있으니까)
+            if (traceId == null || traceId.isBlank()) {
+                traceId = UUID.randomUUID().toString().substring(0, 8);
+            }
+            // 4) put.
+            MDC.put(TRACE_ID, traceId);
+
+            // 응답 헤더에도 넣어줌.
+            response.setHeader(TRACE_HEADER, traceId);
 
             filterChain.doFilter(request, response);
         } finally {

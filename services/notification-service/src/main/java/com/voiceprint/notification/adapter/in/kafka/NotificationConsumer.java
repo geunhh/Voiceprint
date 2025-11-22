@@ -11,7 +11,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -54,9 +56,16 @@ public class NotificationConsumer {
      */
 
     @KafkaListener(topics = "user-events", groupId = "voiceprint-notification")
-    public void consumeUserEvents(ConsumerRecord<String, String> record) {
+    public void consumeUserEvents(
+            ConsumerRecord<String, String> record,
+            @Header(name = "X-Trace-Id", required = false) String traceId // ★ 추가
+    ) {
+        // Kafka 메시지 페이로드
         String message = record.value();
+
         try {
+            MDC.put("traceId", traceId);
+
             Map<String, Object> eventMap = objectMapper.readValue(
                     message,
                     new TypeReference<Map<String, Object>>() {}
@@ -74,18 +83,23 @@ public class NotificationConsumer {
                 log.debug("이미 처리된 user-event: {}", eventId);
                 return;
             }
+            log.info("user-event received: eventId={}, userId={}", eventId, userId);
 
             switch (eventType) {
                 // 유저 등록
                 case "USER_REGISTERED":
                     String nickname = (String) eventMap.get("nickname");
                     String email = (String) eventMap.get("email");
+                    log.info("Handling USER_REGISTERED: userId={}, nickname={}, email={}",
+                            userId, nickname, email);
                     notificationEventHandlerPort.handleUserRegisteredEvent(userId, nickname, email);
                     break;
                 // 유저 프로필 업데이트
                 case "USER_PROFILE_UPDATED":
                     String updatedNickname = (String) eventMap.get("nickname");
                     String updatedEmail = (String) eventMap.get("email");
+                    log.info("Handling USER_PROFILE_UPDATED: userId={}, nickname={}, email={}",
+                            userId, updatedNickname, updatedEmail);
                     notificationEventHandlerPort.handleUserProfileUpdatedEvent(userId, updatedNickname, updatedEmail);
                     break;
                 // 유저 알람 정보 갱신
@@ -96,6 +110,8 @@ public class NotificationConsumer {
                     if (alarmTimeString != null) {
                         alarmTime = LocalTime.parse(alarmTimeString);
                     }
+                    log.info("Handling USER_NOTIFICATION_PREFERENCES_UPDATED: userId={}, enableAlarms={}, alarmTime={}",
+                            userId, enableAlarms, alarmTime);
                     notificationEventHandlerPort.handleUserNotificationPreferencesUpdatedEvent(userId, enableAlarms, alarmTime);
                     break;
                 default:
@@ -107,6 +123,8 @@ public class NotificationConsumer {
             log.error("Failed to deserialize user event message: {}", message, e);
         } catch (Exception e) {
             log.error("Failed to process user event: {}", message, e);
+        } finally {
+            MDC.clear();
         }
     }
 

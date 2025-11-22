@@ -5,7 +5,11 @@ import com.voiceprint.backend.global.event.UserEvent;
 import com.voiceprint.backend.user.application.port.out.UserEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -36,8 +40,19 @@ public class UserEventKafkaAdapter implements UserEventPort {
     private void send(UserEvent event, String key) {
         try {
             String jsonMessage = objectMapper.writeValueAsString(event);
-            log.info("Sending message to topic '{}' with key: {}", TOPIC, key);
-            kafkaTemplate.send(TOPIC, key, jsonMessage);
+            String traceId = MDC.get("traceId"); // 스케줄러에서 세팅해둔 값
+
+            log.info("Sending message to topic='{}' key={} userId={} traceId={}",
+                    TOPIC, key, event.getUserId(), traceId);
+
+            Message<String> message = MessageBuilder
+                    .withPayload(jsonMessage)
+                    .setHeader(KafkaHeaders.TOPIC, TOPIC)
+                    .setHeader(KafkaHeaders.KEY, key)
+                    .setHeader("X-Trace-Id", traceId) // ★ traceId를 헤더로 전달
+                    .build();
+
+            kafkaTemplate.send(message);
         } catch (Exception e) {
             log.error("Failed to send message to kafka topic '{}'", TOPIC, e);
         }
