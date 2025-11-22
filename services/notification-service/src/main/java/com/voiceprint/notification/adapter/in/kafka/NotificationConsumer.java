@@ -6,6 +6,7 @@ import com.voiceprint.notification.adapter.out.persistence.ProcessedEventJPARepo
 import com.voiceprint.notification.application.port.in.NotificationEventHandlerPort;
 import java.time.LocalTime;
 import java.util.Map;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +52,67 @@ public class NotificationConsumer {
     /**
      * 유저 생성 및 데이터 변경에 대한 이벤트를 수신하는 Listener
      */
+
     @KafkaListener(topics = "user-events", groupId = "voiceprint-notification")
-    public void consumeUserEvents(String message) {
+    public void consumeUserEvents(ConsumerRecord<String, String> record) {
+        String message = record.value();
+        try {
+            Map<String, Object> eventMap = objectMapper.readValue(
+                    message,
+                    new TypeReference<Map<String, Object>>() {}
+            );
+
+            String eventType = (String) eventMap.get("eventType");
+            Integer userId = (Integer) eventMap.get("userId");
+
+            String eventId = (String) eventMap.get("eventId");
+            if (eventId == null || eventId.isBlank()) {
+                throw new IllegalArgumentException("missing eventId");
+            }
+
+            if (processedEventRepository.existsById(eventId)) {
+                log.debug("이미 처리된 user-event: {}", eventId);
+                return;
+            }
+
+            switch (eventType) {
+                // 유저 등록
+                case "USER_REGISTERED":
+                    String nickname = (String) eventMap.get("nickname");
+                    String email = (String) eventMap.get("email");
+                    notificationEventHandlerPort.handleUserRegisteredEvent(userId, nickname, email);
+                    break;
+                // 유저 프로필 업데이트
+                case "USER_PROFILE_UPDATED":
+                    String updatedNickname = (String) eventMap.get("nickname");
+                    String updatedEmail = (String) eventMap.get("email");
+                    notificationEventHandlerPort.handleUserProfileUpdatedEvent(userId, updatedNickname, updatedEmail);
+                    break;
+                // 유저 알람 정보 갱신
+                case "USER_NOTIFICATION_PREFERENCES_UPDATED":
+                    Boolean enableAlarms = (Boolean) eventMap.get("enableAlarms");
+                    String alarmTimeString = (String) eventMap.get("alarmTime");
+                    LocalTime alarmTime = null;
+                    if (alarmTimeString != null) {
+                        alarmTime = LocalTime.parse(alarmTimeString);
+                    }
+                    notificationEventHandlerPort.handleUserNotificationPreferencesUpdatedEvent(userId, enableAlarms, alarmTime);
+                    break;
+                default:
+                    log.warn("Unknown user event type: {}", eventType);
+                    break;
+            }
+            log.info("Successfully processed user event: {}", eventType);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize user event message: {}", message, e);
+        } catch (Exception e) {
+            log.error("Failed to process user event: {}", message, e);
+        }
+    }
+
+    @Deprecated
+//    @KafkaListener(topics = "user-events", groupId = "voiceprint-notification")
+    public void consumeUserEventsD(String message) {
         log.info("Consumed user event message: {}", message);
         try {
             Map<String, Object> eventMap = objectMapper.readValue(message, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
