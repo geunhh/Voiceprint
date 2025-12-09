@@ -6,6 +6,7 @@ import com.voiceprint.backend.global.event.UserEvent;
 import com.voiceprint.backend.user.application.port.out.UserEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Outbox 테이블을 주기적으로 폴링하여 저장된 이벤트를 실제 메시지 브로커로 발행하는 스케줄러
@@ -40,8 +42,14 @@ public class OutboxEventScheduler {
         List<OutboxEventJpaEntity> events = outboxEventRepository
             .findByStatusOrderByOccurredAtAsc(OutboxEventJpaEntity.EventStatus.PENDING, PageRequest.of(0, 100));
 
+
         for (OutboxEventJpaEntity event : events) {
+            // 이벤트 하나 처리 단위로 traceId 생성
+            String traceId = UUID.randomUUID().toString().substring(0, 8);
+
             try {
+                MDC.put("traceId",traceId);
+
                 // 발행 시도 횟수 증가 -
                 event.incrementAttempts();
 
@@ -85,6 +93,8 @@ public class OutboxEventScheduler {
                     event.markAsFailed();
                     log.warn("Event id: {} has failed {} times and will be marked as FAILED.", event.getId(), event.getAttempts());
                 }
+            } finally {
+                MDC.clear(); // clear
             }
         }
     }

@@ -107,6 +107,9 @@ public class NotificationEventService implements NotificationEventHandlerPort {
         if (enableAlarms != null && Boolean.TRUE.equals(enableAlarms) && alarmTime == null) {
             throw new IllegalArgumentException("alarmTime is required when enableAlarms=true");
         }
+
+        log.info("Handling notification preference update: userId={}, enableAlarms={}, alarmTime={}",
+                userId, enableAlarms, alarmTime);
         // 2) 조회 & 사용자 알림 설정 업데이트
         UserNotificationPreferenceJpaEntity preference = userNotificationPreferenceRepository.findByUserId(userId)
                 .orElseGet(() -> {
@@ -120,10 +123,12 @@ public class NotificationEventService implements NotificationEventHandlerPort {
         // 3) 변경사항만 반영
         boolean changed = false;
         if (enableAlarms != null && !enableAlarms.equals(preference.getEnableAlarms())) {
+            log.debug("Updating enableAlarms: {} -> {}", preference.getEnableAlarms(), enableAlarms);
             preference.setEnableAlarms(enableAlarms);
             changed = true;
         }
         if (alarmTime != null && !alarmTime.equals(preference.getAlarmTime())) {
+            log.debug("Updating alarmTime: {} -> {}", preference.getAlarmTime(), alarmTime);
             preference.setAlarmTime(alarmTime);
             changed = true;
         }
@@ -136,12 +141,15 @@ public class NotificationEventService implements NotificationEventHandlerPort {
         // 4) 저장 + 예외 분류
         try {
             userNotificationPreferenceRepository.save(preference);
-            log.info("User notification preferences updated event handled: userId={}, enableAlarms={}, alarmTime={}", userId, enableAlarms, alarmTime);
+            log.info("User notification preferences updated: userId={}, enableAlarms={}, alarmTime={}",
+                    userId, preference.getEnableAlarms(), preference.getAlarmTime());
         } catch (DataIntegrityViolationException e) {
+            log.error("Preference violates constraints: userId={}", userId, e);
             //스키마/제약 위반
             throw new IllegalArgumentException("Preference violates constraints", e);
         } catch (TransientDataAccessException e) {
             // 연결/타임아웃/락 등 일시장애 -> 재시도 대상
+            log.error("Transient DB error while updating preference: userId={}", userId, e);
             throw e;
         }    }
 }
