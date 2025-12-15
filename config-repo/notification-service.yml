@@ -1,6 +1,9 @@
 server:
   port: 8081
   forward-headers-strategy: framework
+  tomcat:
+    max-connections: 20000   # 목표 동접보다 여유 있게
+    accept-count: 1000       # backlog 대기열 (기본 100)
 spring:
   data:
     redis:
@@ -29,6 +32,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         format_sql: false
@@ -57,6 +61,11 @@ session:
   key: "dummy-session-key"
 message:
   key: "dummy-message-key"
+
+loadtest:
+  token:
+    secret: "voiceprint-loadtest-secret"
+
 
 # pub/sub 전용 Redis (새 인스턴스: redis-pubsub)
 notification:

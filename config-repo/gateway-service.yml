@@ -9,6 +9,8 @@ logging:
 spring:
   cloud:
     gateway:
+      httpclient:
+        response-timeout: 120s
       # 게이트웨이 자체 메트릭 활성화
       metrics:
         enabled: true

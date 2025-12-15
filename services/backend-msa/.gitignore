@@ -37,7 +37,6 @@ out/
 .vscode/
 
 ### xml ###
-*.xml
 
 ### Environment Variables ###
 .env

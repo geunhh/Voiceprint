@@ -8,6 +8,9 @@ eureka:
         fetch-registry: true
 
 server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
   forward-headers-strategy: framework
 
 spring:
@@ -20,3 +23,8 @@ spring:
 logging:
   file:
     path: /app/logs
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}

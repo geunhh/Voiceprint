@@ -26,5 +26,22 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "sseSendExecutor")
+    public ThreadPoolTaskExecutor sseSendExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("sse-send-");
+        executor.setCorePoolSize(8);
+        executor.setMaxPoolSize(16);
+        executor.setQueueCapacity(2000);
+        executor.setKeepAliveSeconds(60);
+
+        executor.setRejectedExecutionHandler(
+                new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy()
+        );
+
+        executor.initialize();
+        return executor;
+    }
 }
 

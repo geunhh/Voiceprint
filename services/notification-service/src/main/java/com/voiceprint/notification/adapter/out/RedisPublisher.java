@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,16 +18,16 @@ import java.util.List;
 public class RedisPublisher {
 
     @Qualifier("pubsubRedisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
     // 단건 버전 publisher
     public void publishNotification(NotificationDTO dto) {
         try {
             String json = objectMapper.writeValueAsString(dto);
-            log.debug("mapper 후 : {}",json);
+//            log.debug("mapper 후 : {}",json);
             redisTemplate.convertAndSend("notification-channel", json);
-            log.debug("[RedisPublisher] 알림 publish 완료 → {}", json);
+//            log.debug("[RedisPublisher] 알림 publish 완료 → {}", json);
 
         } catch (JsonProcessingException e) {
             log.error("[RedisPublisher] 직렬화 실패", e);
