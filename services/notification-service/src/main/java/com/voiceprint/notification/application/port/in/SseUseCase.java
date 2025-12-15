@@ -8,5 +8,9 @@ import java.util.Set;
 public interface SseUseCase {
     SseEmitter subscribe(Integer userId);
     void sendNotification(Integer userId, String eventName, NotificationDTO payload);
+    void redisPublishFloodAsync(int count);
+
     Set<Integer> getSubscribedUserIds();
+
+    void broadcast(String eventName, Object payload);
 }
