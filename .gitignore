@@ -78,3 +78,6 @@ HELP.md
 
 # Monitoring Data
 monitoring/loki/data/
+
+/zanti_chat
+*.png
