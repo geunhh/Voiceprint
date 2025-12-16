@@ -46,7 +46,7 @@ spring:
         - id: backend-msa-oauth2-callback
           uri: lb://backend-msa
           predicates:
-            - Path=/backend-msa/login/oauth2/code/**
+            - Path=/login/oauth2/code/**
 
       # 전역 CQRS
       globalcors: # Added global CORS configuration
