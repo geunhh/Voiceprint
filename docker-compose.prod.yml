@@ -1,0 +1,67 @@
+services:
+  # In PROD, we might not expose databases and internal services to the host.
+  # Only the Entry Points (Nginx, maybe Gateway if direct access needed) should be exposed.
+
+  frontend:
+    # If Nginx is handling this, we might not even need to expose this port to host,
+    # but for now keeping it as per variables or could be removed if Nginx proxies via network.
+    # Ports removed for security, access via Nginx only
+    restart: always
+
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+
+  kafka:
+    restart: always
+
+  kafka-ui:
+    # Optional in PROD
+    ports:
+      - "${KAFKA_UI_PORT}:8080"
+    restart: always
+
+  discovery-service:
+    restart: always
+
+  config-service:
+    restart: always
+
+  gateway-service:
+    restart: always
+
+  backend-msa:
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: always
+
+  notification-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: always
+
+  mysql:
+    restart: always
+
+  mysql_notification:
+    restart: always
+
+  redis:
+    restart: always
+
+  redis-pubsub:
+    restart: always
+
+  # Monitoring
+  grafana:
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    restart: always
+
+  loki:
+    restart: always
+
+  promtail:
+    restart: always

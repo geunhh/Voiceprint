@@ -55,6 +55,7 @@ spring:
           '[/**]':
             allowedOrigins:
               # 로컬 프론트가 81포트로 뜸(도커에서 81:80 매핑) → 정확히 이 Origin 허용
+              - "${CORS_ALLOWED_ORIGIN:http://localhost}"
               - "http://localhost:81"
             allowedMethods:
               - GET

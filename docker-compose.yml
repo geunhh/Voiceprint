@@ -16,6 +16,18 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks: [ voiceprint_net ]
 
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - gateway-service
+    networks:
+      - voiceprint_net
+
   # 1. Kafka (KRaft mode)
   kafka:
     image: confluentinc/cp-kafka:${KAFKA_IMAGE_TAG}
@@ -141,6 +153,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_JWT_SECRET: ${SPRING_JWT_SECRET}
+      JWT_REDIRECT_URL: ${JWT_REDIRECT_URL}
       LOADTEST_TOKEN_SECRET: ${LOADTEST_TOKEN_SECRET}
     volumes:
       - ./logs/backend:/app/logs
@@ -170,6 +183,30 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
       - SPRING_JWT_SECRET=${SPRING_JWT_SECRET}
       - LOADTEST_TOKEN_SECRET=${LOADTEST_TOKEN_SECRET}
+      # Database
+      - MYSQL_NOTIFICATION_HOST=${MYSQL_NOTIFICATION_HOST}
+      - MYSQL_NOTIFICATION_PORT=${MYSQL_NOTIFICATION_PORT}
+      - MYSQL_NOTIFICATION_DATABASE=${MYSQL_NOTIFICATION_DATABASE}
+      - MYSQL_NOTIFICATION_USER=${MYSQL_NOTIFICATION_USER}
+      - MYSQL_NOTIFICATION_PASSWORD=${MYSQL_NOTIFICATION_PASSWORD}
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PUBSUB_HOST=redis-pubsub
+      # Kafka
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      # Database
+      - MYSQL_NOTIFICATION_HOST=${MYSQL_NOTIFICATION_HOST}
+      - MYSQL_NOTIFICATION_PORT=${MYSQL_NOTIFICATION_PORT}
+      - MYSQL_NOTIFICATION_DATABASE=${MYSQL_NOTIFICATION_DATABASE}
+      - MYSQL_NOTIFICATION_USER=${MYSQL_NOTIFICATION_USER}
+      - MYSQL_NOTIFICATION_PASSWORD=${MYSQL_NOTIFICATION_PASSWORD}
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PUBSUB_HOST=redis-pubsub
+      # Kafka
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     volumes:
       - ./logs/notification:/app/logs
     networks:
@@ -220,6 +257,34 @@ services:
       timeout: 5s
       retries: 10
 
+  # Main MySQL exporter
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-exporter
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    command:
+      - "--mysqld.address=mysql:3306"
+      - "--mysqld.username=root"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
+
+  # notificationDB exporter
+  mysql-notification-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-notification-exporter
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: "${MYSQL_NOTIFICATION_EXPORTER_PASSWORD}"
+    command:
+      - "--mysqld.address=mysql_notification:3306"
+      - "--mysqld.username=exporter"
+    depends_on:
+      mysql_notification:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
+
   # Redis Service
   redis:
     container_name: redis
@@ -254,6 +319,32 @@ services:
       test: [ "CMD-SHELL", "redis-cli -a \"${REDIS_PASSWORD}\" -p 6379 ping" ]
       interval: 5s
       retries: 10
+
+  # Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:${REDIS_EXPORTER_IMAGE_TAG}
+    container_name: redis-exporter
+    command:
+      - '--web.listen-address=:9121'
+      - '--web.telemetry-path=/metrics'
+      - '--redis.addr=redis://:${REDIS_PASSWORD}@redis:6379'
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
+
+  # Redis PubSub Exporter
+  redis-pubsub-exporter:
+    image: oliver006/redis_exporter:${REDIS_EXPORTER_IMAGE_TAG}
+    container_name: redis-pubsub-exporter
+    command:
+      - '--web.listen-address=:9121'
+      - '--web.telemetry-path=/metrics'
+      - '--redis.addr=redis://:${REDIS_PASSWORD}@redis-pubsub:6379'
+    depends_on:
+      redis-pubsub:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
 
   # Monitoring (Prometheus, Grafana, Loki, etc.) could be kept here or moved to a monitoring compose file.
   # Keeping them here for simplicity but removing ports from base.

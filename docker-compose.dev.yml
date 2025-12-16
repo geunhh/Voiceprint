@@ -1,7 +1,13 @@
 services:
+  # Frontend: Restore direct port access (81)
   frontend:
     ports:
       - "${FRONTEND_PORT}:80"
+    restart: unless-stopped
+
+  nginx:
+    ports:
+      - "80:80"
     restart: unless-stopped
 
   kafka:
@@ -56,6 +62,26 @@ services:
   redis-pubsub:
     ports:
       - "${REDIS_PUBSUB_PORT}:6379"
+    restart: unless-stopped
+
+  mysql-notification-exporter:
+    ports:
+      - "${MYSQL_NOTIFICATION_EXPORTER_PORT}:9104"
+    restart: unless-stopped
+
+  mysql-exporter:
+    ports:
+      - "${MYSQL_EXPORTER_PORT}:9104"
+    restart: unless-stopped
+
+  redis-exporter:
+    ports:
+      - "${REDIS_EXPORTER_PORT}:9121"
+    restart: unless-stopped
+
+  redis-pubsub-exporter:
+    ports:
+      - "${REDIS_PUBSUB_EXPORTER_PORT}:9121"
     restart: unless-stopped
 
   prometheus:

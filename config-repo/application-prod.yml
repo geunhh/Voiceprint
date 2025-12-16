@@ -1,0 +1,18 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO
+    com.voiceprint: INFO
+    org.springframework.web: INFO
+    # Disable SQL logging in prod for performance
+    org.hibernate.SQL: OFF
+
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never

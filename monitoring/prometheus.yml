@@ -30,6 +30,12 @@ scrape_configs:
       - targets: ['mysql-notification-exporter:9104']
         labels: { db: 'notification', role: 'primary' }
 
+  # MySQL (Main DB Exporter)
+  - job_name: 'mysql-main'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+        labels: { db: 'main', role: 'primary' }
+
   # Redis Exporter
   - job_name: 'redis'
     static_configs:
@@ -37,3 +43,11 @@ scrape_configs:
         labels:
           db: 'redis'
           role: 'cache'
+
+  # Redis PubSub Exporter
+  - job_name: 'redis-pubsub'
+    static_configs:
+      - targets: ['redis-pubsub-exporter:9121']
+        labels:
+          db: 'redis-pubsub'
+          role: 'pubsub'
