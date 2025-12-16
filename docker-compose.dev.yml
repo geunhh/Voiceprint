@@ -1,0 +1,73 @@
+services:
+  frontend:
+    ports:
+      - "${FRONTEND_PORT}:80"
+    restart: unless-stopped
+
+  kafka:
+    ports:
+      - "${KAFKA_PORT}:9092"
+    restart: unless-stopped
+
+  kafka-ui:
+    ports:
+      - "${KAFKA_UI_PORT}:8080"
+    restart: unless-stopped
+
+  discovery-service:
+    ports:
+      - "${DISCOVERY_SERVICE_PORT}:8761"
+
+  config-service:
+    ports:
+      - "${CONFIG_SERVICE_PORT}:8888"
+
+  gateway-service:
+    ports:
+      - "${GATEWAY_SERVICE_PORT}:8000"
+
+  backend-msa:
+    ports:
+      - "${BACKEND_SERVICE_PORT}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+  notification-service:
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+  mysql:
+    ports:
+      - "${MYSQL_PORT}:3306"
+    restart: unless-stopped
+
+  mysql_notification:
+    ports:
+      - "${MYSQL_NOTIFICATION_PORT}:3306"
+    restart: unless-stopped
+
+  redis:
+    ports:
+      - "${REDIS_PORT}:6379"
+    restart: unless-stopped
+
+  redis-pubsub:
+    ports:
+      - "${REDIS_PUBSUB_PORT}:6379"
+    restart: unless-stopped
+
+  prometheus:
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+
+  loki:
+    ports:
+      - "${LOKI_PORT}:3100"
+    restart: unless-stopped
+
+  grafana:
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    restart: unless-stopped
