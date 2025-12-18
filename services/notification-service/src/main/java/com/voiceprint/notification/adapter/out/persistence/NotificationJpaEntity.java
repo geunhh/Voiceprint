@@ -11,7 +11,15 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Entity(name = "Notification")
-@Table(name = "notifications")
+@Table(
+        name = "notifications",
+        indexes = {
+            @Index(
+                    name = "idx_notification_user_read_id",
+                    columnList = "user_id, is_read, id"
+            )
+        }
+)
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
