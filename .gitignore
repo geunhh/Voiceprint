@@ -81,3 +81,9 @@ monitoring/loki/data/
 
 /zanti_chat
 *.png
+
+# duckdns
+duckdns-update.sh
+ssl-setup.sh
+
+ssl/*

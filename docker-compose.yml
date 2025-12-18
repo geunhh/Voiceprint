@@ -1,31 +1,36 @@
 services:
-  # FE (from docker-compose.yml)
+  # FE
   frontend:
     container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "81:80"
-    env_file:
-      - ./frontend/.env
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8001}
     environment:
-      - TZ=Asia/Seoul
+      - TZ=${TZ}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-    networks: [voiceprint_net]
-    restart: unless-stopped
+    networks: [ voiceprint_net ]
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - gateway-service
+    networks:
+      - voiceprint_net
 
   # 1. Kafka (KRaft mode)
   kafka:
-    #image: bitnami/kafka:latest # 지원 종료.
-    image: confluentinc/cp-kafka:7.7.5
+    image: confluentinc/cp-kafka:${KAFKA_IMAGE_TAG}
     container_name: kafka
-    restart: unless-stopped
-    ports:
-      - "9093:9092" # 9092 안티그라비티 사용.
+    # Ports moved to overrides
     environment:
-      # === KRaft 모드 설정 ===
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_NODE_ID: "1"
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
@@ -33,29 +38,20 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-
-      # === 단일 브로커 설정 ===
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
-
-      # === 로깅 및 안정성 ===
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_NUM_PARTITIONS: 1
       KAFKA_MIN_INSYNC_REPLICAS: 1
-
-      # === (선택) 클러스터 ID 고정 ===
       CLUSTER_ID: FpsANus9RYqj6SpEpTSjSA
-    #      KAFKA_CLUSTER_ID: pXkmGirYT7yKp5sO5DJ5Dg
     volumes:
       - kafka_data:/var/lib/kafka/data
     networks:
       - voiceprint_net
     healthcheck:
-      # 토픽 리스트 명령이 성공하면 healthy
-      #      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
       test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 10s
@@ -64,28 +60,24 @@ services:
 
   # Kafka UI
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:${KAFKA_UI_IMAGE_TAG}
     container_name: kafka-ui
-    ports:
-      - "8082:8080"
+    # Ports moved to overrides
     environment:
-      - KAFKA_CLUSTERS_0_NAME=voiceprint
+      - KAFKA_CLUSTERS_0_NAME=${PROJECT_NAME}
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
       - KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=PLAINTEXT
     depends_on:
       kafka:
-        condition: service_healthy # 브로커 헬스체크 성공 후 UI 띄움
+        condition: service_healthy
     networks:
       - voiceprint_net
-    restart: unless-stopped
 
   # 2. Discovery Service (Eureka)
   discovery-service:
     build: ./services/discovery-service
-    ports:
-      - "8762:8761"
+    # Ports moved to overrides
     environment:
-      # Todo: 제거해!
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
       - EUREKA_CLIENT_FETCH_REGISTRY=false
       - SERVER_PORT=8761
@@ -96,16 +88,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s # Modified from 30s
+      start_period: 60s
 
   # 3. Config Service
   config-service:
     build: ./services/config-service
-    ports:
-      - "8889:8888"
+    # Ports moved to overrides
     environment:
       - SPRING_PROFILES_ACTIVE=native
-      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo #Todo: git으로 관리하는 것도 고려해보자 언젠가
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo
     volumes:
       - ./config-repo:/config-repo
     networks:
@@ -115,13 +106,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s # Modified from 30s
+      start_period: 60s
 
   # 4. Gateway Service
   gateway-service:
     build: ./services/gateway-service
-    ports:
-      - "8001:8000"
+    # Ports moved to overrides
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -139,8 +129,7 @@ services:
     build:
       context: .
       dockerfile: ./services/backend-msa/Dockerfile
-    ports:
-      - "8080:8080"
+    # Ports moved to overrides
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -155,12 +144,14 @@ services:
     env_file:
       - ./services/backend-msa/.env
     environment:
-      # Todo: 제거하기.
       MYSQL_HOST: mysql_vp
       MYSQL_PORT: 3306
-      MYSQL_DATABASE: voiceprint_db
-      MYSQL_USER: voiceprint_user
-      MYSQL_PASSWORD: thisisneverthat
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_JWT_SECRET: ${SPRING_JWT_SECRET}
+      JWT_REDIRECT_URL: ${JWT_REDIRECT_URL}
+      LOADTEST_TOKEN_SECRET: ${LOADTEST_TOKEN_SECRET}
     volumes:
       - ./logs/backend:/app/logs
     networks:
@@ -171,8 +162,7 @@ services:
     build:
       context: .
       dockerfile: ./services/notification-service/Dockerfile
-    ports:
-      - "8083:8080" # Direct access from host for testing
+    # Ports moved to overrides
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -185,47 +175,75 @@ services:
       redis:
         condition: service_healthy
       redis-pubsub:
-        condition: service_healthy # pubsub용 추가
+        condition: service_healthy
     environment:
-      # Todo : 제거하기.
       - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
-      - SPRING_JWT_SECRET=vmfhaltmskdlstkfkdgodyrolroqkfwkalskdjqwkjdnkasjlqsssa
-      - LOADTEST_TOKEN_SECRET=voiceprint-loadtest-secret
+      - SPRING_JWT_SECRET=${SPRING_JWT_SECRET}
+      - LOADTEST_TOKEN_SECRET=${LOADTEST_TOKEN_SECRET}
+      # Database
+      - MYSQL_NOTIFICATION_HOST=${MYSQL_NOTIFICATION_HOST}
+      - MYSQL_NOTIFICATION_PORT=${MYSQL_NOTIFICATION_PORT}
+      - MYSQL_NOTIFICATION_DATABASE=${MYSQL_NOTIFICATION_DATABASE}
+      - MYSQL_NOTIFICATION_USER=${MYSQL_NOTIFICATION_USER}
+      - MYSQL_NOTIFICATION_PASSWORD=${MYSQL_NOTIFICATION_PASSWORD}
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PUBSUB_HOST=redis-pubsub
+      # Kafka
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      # Database
+      - MYSQL_NOTIFICATION_HOST=${MYSQL_NOTIFICATION_HOST}
+      - MYSQL_NOTIFICATION_PORT=${MYSQL_NOTIFICATION_PORT}
+      - MYSQL_NOTIFICATION_DATABASE=${MYSQL_NOTIFICATION_DATABASE}
+      - MYSQL_NOTIFICATION_USER=${MYSQL_NOTIFICATION_USER}
+      - MYSQL_NOTIFICATION_PASSWORD=${MYSQL_NOTIFICATION_PASSWORD}
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PUBSUB_HOST=redis-pubsub
+      # Kafka
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     volumes:
       - ./logs/notification:/app/logs
     networks:
       - voiceprint_net
 
-  # MySQL Service (from docker-compose.yml)
+  # MySQL Service
   mysql:
     container_name: mysql_vp
     build:
       context: ./mysql
       dockerfile: Dockerfile
-    ports:
-      - "3307:3306" #로컬에서 3306 이미 사용중.
-    env_file:
-      - ./mysql/.env
+    # Ports moved to overrides
+    # env_file removed
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./mysql/init:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
-    networks: [ voiceprint_net ] # Changed network
+    networks: [ voiceprint_net ]
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping" ] # mysql이 healthy 한 지 판단
+      test: [ "CMD", "mysqladmin", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 10
-    restart: unless-stopped
 
   mysql_notification:
     container_name: mysql_notification
     build:
       context: ./mysql_notification
       dockerfile: Dockerfile
-    ports:
-      - "3308:3306"
-    env_file:
-      - ./mysql_notification/.env
+    # Ports moved to overrides
+    # env_file removed
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_NOTIFICATION_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_NOTIFICATION_DATABASE}
+      MYSQL_USER: ${MYSQL_NOTIFICATION_USER}
+      MYSQL_PASSWORD: ${MYSQL_NOTIFICATION_PASSWORD}
     volumes:
       - ./mysql_notification/init:/docker-entrypoint-initdb.d
       - mysql_notification-data:/var/lib/mysql
@@ -235,138 +253,138 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    restart: unless-stopped
+
+  # Main MySQL exporter
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-exporter
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    command:
+      - "--mysqld.address=mysql:3306"
+      - "--mysqld.username=root"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
 
   # notificationDB exporter
   mysql-notification-exporter:
     image: prom/mysqld-exporter:latest
     container_name: mysql-notification-exporter
     environment:
-      MYSQLD_EXPORTER_PASSWORD: "exporter_password_notif"
+      MYSQLD_EXPORTER_PASSWORD: "${MYSQL_NOTIFICATION_EXPORTER_PASSWORD}"
     command:
       - "--mysqld.address=mysql_notification:3306"
       - "--mysqld.username=exporter"
     depends_on:
       mysql_notification:
         condition: service_healthy
-    ports:
-      - "9105:9104"
     networks: [ voiceprint_net ]
-    restart: unless-stopped
 
-  # Redis Service (session / hget 전용)
+  # Redis Service
   redis:
     container_name: redis
-    image: redis:8
-    ports:
-      - "6379:6379"
-    env_file:
-      - ./redis/.env
+    image: redis:${REDIS_IMAGE_TAG}
+    # Ports moved to overrides
+    # env_file removed
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command:
       - /bin/sh
       - -c
-      - redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
-    networks: [ voiceprint_net ] # Changed network
+      - redis-server /usr/local/etc/redis/redis.conf --requirepass "${REDIS_PASSWORD}"
+    networks: [ voiceprint_net ]
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" ping" ]
+      test: [ "CMD-SHELL", "redis-cli -a \"${REDIS_PASSWORD}\" ping" ]
       interval: 5s
       retries: 10
-    restart: unless-stopped
 
-  # Redis Service (pub/sub 전용)
   redis-pubsub:
     container_name: redis-pubsub
-    image: redis:8
-    ports:
-      - "6380:6379" # 호스트에선 6380, 컨테이너 안은 그대로 6379
-    env_file:
-      - ./redis/.env # 비번 재사용하면 이걸로 충분
+    image: redis:${REDIS_IMAGE_TAG}
+    # Ports moved to overrides
+    # env_file removed
     volumes:
-      - ./redis-pubsub.conf:/usr/local/etc/redis/redis.conf:ro # 필요하면 별도 conf, 아니면 기존 거 써도 됨
+      - ./redis-pubsub.conf:/usr/local/etc/redis/redis.conf:ro
     command:
       - /bin/sh
       - -c
-      - redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+      - redis-server /usr/local/etc/redis/redis.conf --requirepass "${REDIS_PASSWORD}"
     networks: [ voiceprint_net ]
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" -p 6379 ping" ]
+      test: [ "CMD-SHELL", "redis-cli -a \"${REDIS_PASSWORD}\" -p 6379 ping" ]
       interval: 5s
       retries: 10
-    restart: unless-stopped
 
   # Redis Exporter
   redis-exporter:
-    image: oliver006/redis_exporter:v1.62.0
+    image: oliver006/redis_exporter:${REDIS_EXPORTER_IMAGE_TAG}
     container_name: redis-exporter
-    env_file:
-      - ./redis/.env
     command:
       - '--web.listen-address=:9121'
       - '--web.telemetry-path=/metrics'
-      - '--redis.addr=redis://:redis_pw123@redis:6379' # 왜 .env에서 안 가져와지냐
-    ports:
-      - "9121:9121"
+      - '--redis.addr=redis://:${REDIS_PASSWORD}@redis:6379'
     depends_on:
       redis:
         condition: service_healthy
     networks: [ voiceprint_net ]
-    restart: unless-stopped
 
-  # Prometheus
+  # Redis PubSub Exporter
+  redis-pubsub-exporter:
+    image: oliver006/redis_exporter:${REDIS_EXPORTER_IMAGE_TAG}
+    container_name: redis-pubsub-exporter
+    command:
+      - '--web.listen-address=:9121'
+      - '--web.telemetry-path=/metrics'
+      - '--redis.addr=redis://:${REDIS_PASSWORD}@redis-pubsub:6379'
+    depends_on:
+      redis-pubsub:
+        condition: service_healthy
+    networks: [ voiceprint_net ]
+
+  # Monitoring (Prometheus, Grafana, Loki, etc.) could be kept here or moved to a monitoring compose file.
+  # Keeping them here for simplicity but removing ports from base.
+
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:${PROMETHEUS_IMAGE_TAG}
     container_name: prometheus
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro # 스크랩 타입 정의
-      - prom_data:/prometheus # TSDB 보존.
-    ports:
-      - "9090:9090"
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
     networks:
       - voiceprint_net
 
-  # Loki
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:${LOKI_IMAGE_TAG}
     container_name: loki
     command: -config.file=/etc/loki/local-config.yml
     volumes:
-      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yml:ro # 저장소/인덱스 설정 포함
-      - ./monitoring/loki/data:/loki # 로컬 디스크 저장 (개발)
-    ports:
-      - "3100:3100" # Grafana → Loki 연결 및 로컬 디버그용
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yml:ro
+      - ./monitoring/loki/data:/loki
     networks: [ voiceprint_net ]
-    restart: unless-stopped
 
-  # Promtail
   promtail:
-    image: grafana/promtail:2.9.0
+    image: grafana/promtail:${PROMTAIL_IMAGE_TAG}
     container_name: promtail
     command: -config.file=/etc/promtail/config.yml
     volumes:
       - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
-      - ./logs:/var/log # 호스트의 앱 로그를 모아두는 디렉터리. 각 서비스가 여기에 파일로그를 쓰도록 마운트.
+      - ./logs:/var/log
     depends_on:
       - loki
     networks: [ voiceprint_net ]
-    restart: unless-stopped
 
-  # Grafana
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:${GRAFANA_IMAGE_TAG}
     container_name: grafana
     environment:
-      - GF_SECURITY_ADMIN_USER=admin # 초기 관리자 계정.
+      - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - grafana_data:/var/lib/grafana # 데이터(대시보드/사용자) 영구화
-      # 프로비저닝: 컨테이너 시작 시 자동으로 DataSource/Dashboard를 불러옴.
+      - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
       - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
     networks:
       - voiceprint_net
 
@@ -383,4 +401,3 @@ volumes:
 networks:
   voiceprint_net:
     driver: bridge
-    # external : true

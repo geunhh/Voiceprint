@@ -7,9 +7,9 @@ server:
 spring:
   data:
     redis:
-      host: redis
+      host: ${REDIS_HOST:redis}
       port: 6379
-      password: redis_pw123
+      password: ${REDIS_PASSWORD}
       lettuce:
         pool:
           max-active: 50   # 스레드풀 max(8) * 여유(6배)
@@ -18,16 +18,16 @@ spring:
           max-wait: 3000ms # 커넥션 대기 최대 3초
   kafka:
     consumer:
-      bootstrap-servers: kafka:9092
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
       group-id: voiceprint-notification
       auto-offset-reset: earliest
     listener:
       missing-topics-fatal: false
   datasource: # batch 처리
-    url: jdbc:mysql://mysql_notification:3306/notification_db?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=999999
+    url: jdbc:mysql://${MYSQL_NOTIFICATION_HOST}:${MYSQL_NOTIFICATION_PORT}/${MYSQL_NOTIFICATION_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=999999
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: notification_user
-    password: thisisnotification
+    username: ${MYSQL_NOTIFICATION_USER}
+    password: ${MYSQL_NOTIFICATION_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -64,16 +64,16 @@ message:
 
 loadtest:
   token:
-    secret: "voiceprint-loadtest-secret"
+    secret: ${LOADTEST_TOKEN_SECRET}
 
 
 # pub/sub 전용 Redis (새 인스턴스: redis-pubsub)
 notification:
   redis:
     pubsub:
-      host: redis-pubsub   # docker-compose 에 추가할 그 이름
+      host: ${REDIS_PUBSUB_HOST:redis-pubsub}
       port: 6379
-      password: redis_pw123
+      password: ${REDIS_PASSWORD}
       pool:
         max-active: 50
         max-idle: 20

@@ -13,6 +13,10 @@ RUN npm ci
 # 전체 소스 복사
 COPY . .
 
+# 빌드 시점 변수 설정
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # react 빌드
 RUN npm run build
 

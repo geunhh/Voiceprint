@@ -1,0 +1,64 @@
+services:
+
+  frontend:
+    build:
+      args:
+        VITE_API_BASE_URL: https://myvoiceprint.duckdns.org # 프로덕션용
+    env_file:
+      - ./frontend/.env.prod
+    restart: always
+
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro # prod nginx config 사용.
+      - ./ssl:/etc/nginx/ssl:ro
+    restart: always
+
+  kafka:
+    restart: always
+
+  discovery-service:
+    restart: always
+
+  config-service:
+    restart: always
+
+  gateway-service:
+    restart: always
+
+  backend-msa:
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: always
+
+  notification-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: always
+
+  mysql:
+    restart: always
+
+  mysql_notification:
+    restart: always
+
+  redis:
+    restart: always
+
+  redis-pubsub:
+    restart: always
+
+  # Monitoring
+  grafana:
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    restart: always
+
+  loki:
+    restart: always
+
+  promtail:
+    restart: always
