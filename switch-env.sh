@@ -12,7 +12,7 @@ if [ "$ENV" = "dev" ]; then
     
     # Docker Compose 재시작
     docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
-    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+    docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.resources.yml up -d
     
     echo "✅ 개발 환경 시작 (http://localhost:81)"
     
@@ -28,7 +28,7 @@ elif [ "$ENV" = "prod" ]; then
     
     # Docker Compose 재시작
     docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.resources.yml up -d
     
     echo "✅ 프로덕션 환경 시작 (https://myvoiceprint.duckdns.org)"
     
