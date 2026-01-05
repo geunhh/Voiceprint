@@ -104,3 +104,8 @@ services:
     ports:
       - "${GRAFANA_PORT}:3000"
     restart: unless-stopped
+
+  alertmanager:
+    ports:
+      - "${ALERTMANAGER_PORT:-9095}:9093"
+    restart: unless-stopped

@@ -351,6 +351,7 @@ services:
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prom_data:/prometheus
     networks:
       - voiceprint_net
@@ -387,6 +388,26 @@ services:
       - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
     networks:
       - voiceprint_net
+
+  # Alertmanager
+  alertmanager:
+    image: prom/alertmanager:${ALERTMANAGER_IMAGE_TAG:-latest}
+    container_name: alertmanager
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - voiceprint_net
+    # depends_on:
+    #   - alertmanager-discord-bridge
+    # Discord Bridge
+    # alertmanager-discord-bridge:
+    #   build:
+    #     context: ./monitoring/discord-bridge
+    #     dockerfile: Dockerfile
+    #   container_name: alertmanager-discord-bridge
+    #   # DISCORD_WEBHOOK_URL은 docker-compose override 파일(dev/prod)에서 설정
+    #   networks:
+    #     - voiceprint_net
 
 volumes:
   kafka_data:
