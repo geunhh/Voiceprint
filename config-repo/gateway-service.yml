@@ -17,7 +17,7 @@ spring:
         # 커넥션 풀 설정 (10K VU 대응)
         pool:
           type: ELASTIC
-          max-connections: 1000  # 최대 커넥션 수 확대
+          max-connections: 20000  # SSE 연결 수(4K) + API 여유분 확보
       
       # 게이트웨이 메트릭
       metrics:
