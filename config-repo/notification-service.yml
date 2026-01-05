@@ -3,7 +3,7 @@ server:
   forward-headers-strategy: framework
   tomcat:
     max-connections: 20000   # 목표 동접보다 여유 있게
-    accept-count: 1000       # backlog 대기열 (기본 100)
+    accept-count: 10000       # backlog 대기열 (기본 100)
 spring:
   data:
     redis:
@@ -16,6 +16,16 @@ spring:
           max-idle: 20
           min-idle: 10
           max-wait: 3000ms # 커넥션 대기 최대 3초
+
+  # 부하테스트 최적화: 로그 최소화로 CPU 5-15% 절감
+  logging:
+    level:
+      root: WARN
+      com.voiceprint.notification: WARN
+      com.voiceprint.notification.adapter.out: ERROR  # DB 관련 로그 최소화
+      org.springframework: ERROR
+      org.hibernate: ERROR
+
   kafka:
     consumer:
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
@@ -24,10 +34,18 @@ spring:
     listener:
       missing-topics-fatal: false
   datasource: # batch 처리
-    url: jdbc:mysql://${MYSQL_NOTIFICATION_HOST}:${MYSQL_NOTIFICATION_PORT}/${MYSQL_NOTIFICATION_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=999999
+    url: jdbc:mysql://${MYSQL_NOTIFICATION_HOST}:${MYSQL_NOTIFICATION_PORT}/${MYSQL_NOTIFICATION_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    # url: jdbc:mysql://${MYSQL_NOTIFICATION_HOST}:${MYSQL_NOTIFICATION_PORT}/${MYSQL_NOTIFICATION_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=999999
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_NOTIFICATION_USER}
     password: ${MYSQL_NOTIFICATION_PASSWORD}
+    hikari:
+      # 커넥션 풀 크기 (부하테스트 중 200개 스레드가 대기하는 병목 해결)
+      maximum-pool-size: 50         # 최대 커넥션 수 (기본값 10)
+      minimum-idle: 30               # 유휴 커넥션 최소값
+      connection-timeout: 30000      # 커넥션 획득 타임아웃 (30초)
+      idle-timeout: 600000           # 유휴 커넥션 유지 시간 (10분)
+      max-lifetime: 1800000          # 커넥션 최대 생명주기 (30분)
   jpa:
     hibernate:
       ddl-auto: update

@@ -16,7 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@RestController
+// @RestController
+@Deprecated
 @RequestMapping("/api/v1/voice")
 @RequiredArgsConstructor
 public class VoiceController {
@@ -26,15 +27,16 @@ public class VoiceController {
     private final VoiceChatService voiceChatService;
     @Value("${back-websocket.url}")
     private String websocket_url;
+
     /**
      * 음성 대화 세션 정보를 반환합니다.
      * 웹소켓 연결에 필요한 토큰과 URL을 제공합니다.
      */
     @GetMapping("/session")
     public ResponseEntity<VoiceSessionResponseDto> getVoiceSession(HttpServletRequest HttpRequest,
-                                                                   @RequestParam("chatbotId") Byte chatbotId) {
+            @RequestParam("chatbotId") Byte chatbotId) {
         String token = jwtUtil.extractTokenFromHeader(HttpRequest.getHeader("Authorization"));
-        log.info("챗봇 id!!!= "+chatbotId);
+        log.info("챗봇 id!!!= " + chatbotId);
 
         if (token == null) {
             throw new UserNotFoundException("토큰이 없습니다.");
@@ -43,10 +45,10 @@ public class VoiceController {
         Integer userId = authService.getUserIdFromRequest(HttpRequest);
 
         if (userId == null) {
-            throw new  UserNotFoundException("해당 유저가 없습니다.");
+            throw new UserNotFoundException("해당 유저가 없습니다.");
         }
         if (chatbotId == null) {
-            throw new  UserNotFoundException("설정한 챗봇이 없습니다.");
+            throw new UserNotFoundException("설정한 챗봇이 없습니다.");
         }
 
         // 웹소켓 연결 정보 생성
@@ -55,8 +57,8 @@ public class VoiceController {
                 .userId(userId)
                 .build();
 
-        System.out.printf("웹소켓 생성:"+ websocket_url + token);
-        voiceChatService.startSession(userId,chatbotId);
+        System.out.printf("웹소켓 생성:" + websocket_url + token);
+        voiceChatService.startSession(userId, chatbotId);
         return ResponseEntity.ok(responseDto);
     }
 }

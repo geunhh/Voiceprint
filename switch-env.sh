@@ -10,25 +10,34 @@ if [ "$ENV" = "dev" ]; then
     cp .env.dev .env
     cp services/backend-msa/.env.dev services/backend-msa/.env
     
-    # Docker Compose 재시작
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
-    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+    # 2. 기존 컨테이너 중지
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.resources.yml down 
+    
+    # 3. Frontend 재빌드 (dev 환경변수 반영)
+    echo "📦 Frontend 빌드 중..."
+    docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.resources.yml build frontend
+    
+    # 4. 개발 환경 시작
+    docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.resources.yml up -d
     
     echo "✅ 개발 환경 시작 (http://localhost:81)"
     
 elif [ "$ENV" = "prod" ]; then
     echo "🚀 프로덕션 환경으로 전환..."
     
-    # 환경변수 교체
+    # 1. 환경변수 교체
     cp .env.prod .env
     cp services/backend-msa/.env.prod services/backend-msa/.env
     
-    # Frontend 재빌드
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml build frontend
+    # 2. 기존 컨테이너 중지
+    docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.resources.yml down 
     
-    # Docker Compose 재시작
-    docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    # 3. Frontend 재빌드 (prod 환경변수 반영)
+    echo "📦 Frontend 빌드 중..."
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.resources.yml build frontend
+    
+    # 4. 프로덕션 환경 시작
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.resources.yml up -d
     
     echo "✅ 프로덕션 환경 시작 (https://myvoiceprint.duckdns.org)"
     

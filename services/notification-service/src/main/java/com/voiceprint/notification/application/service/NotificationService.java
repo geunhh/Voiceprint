@@ -442,15 +442,15 @@ public class NotificationService implements NotificationCommandPort, Notificatio
     @Override
     @Transactional(readOnly = true)
     public NotificationListWithCursorDTO getUnreadNotifications(Integer userId, Long cursor, Integer size) {
-        List<Notification> notifications = notificationPort.findMyNotifications(userId, cursor, size + 1);
+        List<Notification> notifications = notificationPort.findMyNotificationsV2(userId, cursor, size + 1);
 
         boolean hasNext = notifications.size() > size;
 
         if (hasNext) {
             notifications = notifications.subList(0, size);
-            log.info("다음 알림 존재");
+            log.debug("다음 알림 존재");
         } else {
-            log.info("마지막 알람입니다.");
+            log.debug("마지막 알람입니다.");
         }
 
         Long nextCursor = hasNext ? notifications.get(notifications.size() - 1).getId() : null;

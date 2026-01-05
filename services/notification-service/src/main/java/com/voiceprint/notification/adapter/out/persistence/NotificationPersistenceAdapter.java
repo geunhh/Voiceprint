@@ -32,9 +32,17 @@ public class NotificationPersistenceAdapter implements NotificationRepositoryPor
     }
 
     @Override
-    public List<Notification> findMyNotifications(Integer userId, Long cursor, int limit) {
+    public List<Notification> findMyNotificationsV1(Integer userId, Long cursor, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         List<NotificationJpaEntity> entities = notificationRepository.findMyNotifications(userId, cursor, pageable);
+        return entities.stream()
+                .map(notificationMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Notification> findMyNotificationsV2(Integer userId, Long cursor, int limit) {
+        List<NotificationJpaEntity> entities = notificationRepository.findMyNotificationsWithQueryDsl(userId, cursor, limit);
         return entities.stream()
                 .map(notificationMapper::toDomain)
                 .collect(Collectors.toList());

@@ -1,0 +1,180 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # 비즈니스 로직 서비스
+  # ========================================
+
+  backend-msa:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
+
+  notification-service:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 1.5G
+
+  gateway-service:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.7'
+          memory: 1.5G
+
+  # ========================================
+  # 데이터베이스 & 캐시
+  # ========================================
+
+  mysql:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2.5G
+
+  mysql_notification:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 2G
+
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  redis-pubsub:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # ========================================
+  # 메시지 큐
+  # ========================================
+
+  kafka:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.7'
+          memory: 1.5G
+
+  # ========================================
+  # Spring Cloud 인프라
+  # ========================================
+
+  discovery-service:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 768M
+
+  config-service:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 768M
+
+  # ========================================
+  # 프론트엔드
+  # ========================================
+
+  frontend:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+
+  nginx:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M
+
+  # ========================================
+  # 모니터링
+  # ========================================
+
+  prometheus:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.1'
+          memory: 256M
+
+  grafana:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 768M
+
+  loki:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 768M
+
+  promtail:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+
+  kafka-ui:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M
+
+  # ========================================
+  # Exporters
+  # ========================================
+
+  mysql-exporter:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+  mysql-notification-exporter:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+  redis-exporter:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+  redis-pubsub-exporter:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M

@@ -72,7 +72,7 @@ public class NotificationController {
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") Integer size) {
         Integer userId = getUserIdFromRequest(request);
-        log.info("userid : {}, 알림 조회 ", userId);
+//        log.info("userid : {}, 알림 조회 ", userId);
         NotificationListWithCursorDTO response = notificationQueryPort.getUnreadNotifications(userId, cursor, size);
 
         return ResponseEntity.ok(new CommonResponse<>(

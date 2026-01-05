@@ -10,8 +10,16 @@ spring:
   cloud:
     gateway:
       httpclient:
+        # 타임아웃 설정
         response-timeout: 120s
-      # 게이트웨이 자체 메트릭 활성화
+        connect-timeout: 30000  # 30초
+        
+        # 커넥션 풀 설정 (10K VU 대응)
+        pool:
+          type: ELASTIC
+          max-connections: 20000  # SSE 연결 수(4K) + API 여유분 확보
+      
+      # 게이트웨이 메트릭
       metrics:
         enabled: true
         
