@@ -79,4 +79,14 @@ public class RedisConfig {
     public MessageListenerAdapter messageListenerAdapter(RedisSubscriber subscriber) {
         return new MessageListenerAdapter(subscriber);
     }
+
+    /**
+     * PUBLISH용 StringRedisTemplate (단일 Redis 인스턴스 - Lettuce Pool 적용)
+     */
+    @Bean
+    @Primary
+    public org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate(
+            RedisConnectionFactory sessionRedisConnectionFactory) {
+        return new org.springframework.data.redis.core.StringRedisTemplate(sessionRedisConnectionFactory);
+    }
 }

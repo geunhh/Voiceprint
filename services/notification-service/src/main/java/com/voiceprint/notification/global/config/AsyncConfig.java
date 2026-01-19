@@ -15,9 +15,9 @@ public class AsyncConfig {
     @Bean(name = "notificationExecutor")
     public Executor notificationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(40);        // 기본 스레드
-        executor.setMaxPoolSize(50);         // 최대 스레드
-        executor.setQueueCapacity(10_000);  // 실행 대기 중인 큐 용량
+        executor.setCorePoolSize(8); // 기본 스레드
+        executor.setMaxPoolSize(8); // 최대 스레드
+        executor.setQueueCapacity(10_000); // 실행 대기 중인 큐 용량
         executor.setThreadNamePrefix("notification-async-"); // 디버깅 로그
 
         // 요청 스레드의 MDC (traceId)를 비동기 스레드로 전파

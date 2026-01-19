@@ -10,19 +10,19 @@ spring:
       host: ${REDIS_HOST:redis}
       port: 6379
       password: ${REDIS_PASSWORD}
-      lettuce:
-        pool:
-          max-active: 50   # 스레드풀 max(8) * 여유(6배)
-          max-idle: 20
-          min-idle: 10
-          max-wait: 3000ms # 커넥션 대기 최대 3초
+#      lettuce:
+#        pool:
+#          max-active: 50   # 스레드풀 max(8) * 여유(6배)
+#          max-idle: 20
+#          min-idle: 10
+#          max-wait: 3000ms # 커넥션 대기 최대 3초
 
   # 부하테스트 최적화: 로그 최소화로 CPU 5-15% 절감
   logging:
     level:
       root: WARN
       com.voiceprint.notification: WARN
-      com.voiceprint.notification.adapter.out: ERROR  # DB 관련 로그 최소화
+      com.voiceprint.notification.adapter.out: INFO   # RedisPublisher 로그 확인을 위해 INFO로 변경
       org.springframework: ERROR
       org.hibernate: ERROR
 
@@ -89,7 +89,7 @@ loadtest:
 notification:
   redis:
     pubsub:
-      host: ${REDIS_PUBSUB_HOST:redis-pubsub}
+      host: ${REDIS_HOST:redis}  # 단일 인스턴스 테스트: redis-pubsub → redis
       port: 6379
       password: ${REDIS_PASSWORD}
       pool:
