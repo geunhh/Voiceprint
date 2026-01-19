@@ -22,6 +22,8 @@ public class MdcTaskDecorator implements TaskDecorator {
                     // 부모에 MDC가 없을 경우, 자식에서도 [traceId =] 이게 맞다.
                     MDC.clear();
                 }
+                // 실제 작업 실행
+                runnable.run();
             } finally {
                 // Runnable 단위의 clear()
                 MDC.clear();
