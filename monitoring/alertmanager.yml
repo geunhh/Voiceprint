@@ -1,0 +1,79 @@
+global:
+  resolve_timeout: 5m
+
+# 알람 템플릿
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# 알람 라우팅
+route:
+  # 기본 그룹핑 설정
+  group_by: ['alertname', 'job', 'severity']
+  
+  # 첫 알람은 즉시 전송
+  group_wait: 10s
+  
+  # 같은 그룹의 추가 알람은 30초 후 전송
+  group_interval: 30s
+  
+  # 같은 알람 재전송 간격 (12시간)
+  repeat_interval: 12h
+  
+  # 기본 수신자
+  receiver: 'discord'
+  
+  # 우선순위별 라우팅
+  routes:
+    # CRITICAL 알람은 즉시 전송
+    - match:
+        severity: critical
+      receiver: 'discord-critical'
+      group_wait: 5s
+      repeat_interval: 4h
+    
+    # WARNING 알람은 조금 더 여유있게
+    - match:
+        severity: warning
+      receiver: 'discord-warning'
+      group_wait: 30s
+      repeat_interval: 24h
+
+# 수신자 설정
+receivers:
+  # 기본 Discord
+  - name: 'discord'
+    discord_configs:
+      - webhook_url: '__DISCORD_WEBHOOK_URL__'
+        send_resolved: true
+        title: '{{ .GroupLabels.alertname }}'
+        message: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  # Critical 전용
+  - name: 'discord-critical'
+    discord_configs:
+      - webhook_url: '__DISCORD_WEBHOOK_URL__'
+        send_resolved: true
+        title: '🔴 CRITICAL: {{ .GroupLabels.alertname }}'
+        message: |-
+          **{{ range .Alerts }}{{ .Annotations.summary }}**
+          {{ .Annotations.description }}
+          Job: {{ .Labels.job }}
+          {{ end }}
+
+  # Warning 전용
+  - name: 'discord-warning'
+    discord_configs:
+      - webhook_url: '__DISCORD_WEBHOOK_URL__'
+        send_resolved: true
+        title: '🟠 WARNING: {{ .GroupLabels.alertname }}'
+        message: '{{ range .Alerts }}{{ .Annotations.summary }} \n {{ .Annotations.description }}{{ end }}'
+
+# 알람 억제 규칙 (중복 방지)
+inhibit_rules:
+  # ServiceDown 발생 시 다른 성능 알람 억제
+  - source_match:
+      severity: 'critical'
+      category: 'availability'
+    target_match:
+      severity: 'warning'
+    equal: ['job']

@@ -62,3 +62,10 @@ services:
 
   promtail:
     restart: always
+
+  alertmanager:
+    env_file:
+      - .env.prod
+    ports:
+      - "${ALERTMANAGER_PORT:-9095}:9093"
+    restart: always

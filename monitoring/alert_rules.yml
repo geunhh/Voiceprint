@@ -1,0 +1,247 @@
+groups:
+  # ==========================================
+  # CRITICAL: 서비스 다운 감지
+  # ==========================================
+  - name: service_down_alerts
+    interval: 30s
+    rules:
+      # Spring Boot Services Down
+      - alert: ServiceDown
+        expr: up{job=~"gateway-service|backend-msa|notification-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "🔴 서비스 다운: {{ $labels.job }} \n"
+          description: "서비스 {{ $labels.job }}가 1분 이상 응답하지 않습니다.\n현재 상태: DOWN\n인스턴스: {{ $labels.instance }}"
+
+      # MySQL Down
+      - alert: MySQLExporterDown
+        expr: up{job=~"mysql-main|mysql-notification"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "🔴 MySQL 다운: {{ $labels.db }} \n"
+          description: "MySQL 데이터베이스 {{ $labels.db }}가 30초 이상 응답하지 않습니다.\n⚠️ 데이터 저장 불가 상태!"
+
+      # Redis Down
+      - alert: RedisExporterDown
+        expr: up{job=~"redis|redis-pubsub"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: cache
+        annotations:
+          summary: "🔴 Redis 다운: {{ $labels.db }} \n"
+          description: "Redis {{ $labels.db }}가 30초 이상 응답하지 않습니다.\n⚠️ 캐시 및 세션 저장 불가!"
+
+  # ==========================================
+  # 🟠 WARNING: JVM & 애플리케이션 부하
+  # ==========================================
+  - name: application_performance_alerts
+    interval: 1m
+    rules:
+      # JVM Heap 메모리 사용률 높음 (80% 이상)
+      - alert: HighJVMHeapUsage
+        expr: |
+          (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "🟠 JVM Heap 메모리 높음: {{ $labels.job }} \n"
+          description: |
+            서비스: {{ $labels.job }}
+            Heap 사용률: {{ $value | humanizePercentage }}
+            인스턴스: {{ $labels.instance }}
+            📊 5분간 80% 이상 유지 중
+
+      # CPU 사용률 높음 (80% 이상)
+      - alert: HighCPUUsage
+        expr: |
+          (rate(process_cpu_seconds_total[5m]) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "🟠 CPU 사용률 높음: {{ $labels.job }} \n"
+          description: |
+            서비스: {{ $labels.job }}
+            CPU 사용률: {{ $value | humanize }}%
+            인스턴스: {{ $labels.instance }}
+            📊 5분간 80% 이상 유지 중
+
+      # HTTP 요청 에러율 높음 (5% 이상)
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (job) 
+          / 
+          sum(rate(http_server_requests_seconds_count[5m])) by (job)) * 100 > 5
+        for: 3m
+        labels:
+          severity: warning
+          category: reliability
+        annotations:
+          summary: "🟠 HTTP 에러율 높음: {{ $labels.job }} \n"
+          description: |
+            서비스: {{ $labels.job }}
+            에러율: {{ $value | humanize }}%
+            📊 5xx 에러가 3분간 5% 이상 발생 중
+
+      # 응답 시간 느림 (P95 > 3초)
+      - alert: SlowResponseTime
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_server_requests_seconds_bucket[5m])) by (job, le)
+          ) > 3
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "🟠 응답 시간 느림: {{ $labels.job }} \n"
+          description: |
+            서비스: {{ $labels.job }}
+            P95 응답시간: {{ $value | humanizeDuration }}
+            📊 5분간 3초 이상 유지 중
+
+  # ==========================================
+  # 🟡 WARNING: MySQL 성능 & 리소스
+  # ==========================================
+  - name: mysql_alerts
+    interval: 1m
+    rules:
+      # MySQL 커넥션 풀 사용률 높음 (80% 이상)
+      - alert: MySQLHighConnections
+        expr: |
+          (mysql_global_status_threads_connected / mysql_global_variables_max_connections) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "🟡 MySQL 커넥션 높음: {{ $labels.db }} \n"
+          description: |
+            데이터베이스: {{ $labels.db }}
+            커넥션 사용률: {{ $value | humanizePercentage }}
+            현재: {{ with query "mysql_global_status_threads_connected" }}{{ . | first | value }}{{ end }}개
+            최대: {{ with query "mysql_global_variables_max_connections" }}{{ . | first | value }}{{ end }}개
+
+      # MySQL 슬로우 쿼리 증가
+      - alert: MySQLSlowQueries
+        expr: |
+          rate(mysql_global_status_slow_queries[5m]) > 5
+        for: 3m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "🟡 MySQL 슬로우 쿼리 증가: {{ $labels.db }} \n"
+          description: |
+            데이터베이스: {{ $labels.db }}
+            슬로우 쿼리 속도: {{ $value | humanize }}/s
+            📊 5분간 초당 5개 이상 발생 중
+
+      # MySQL 쿼리 대기 중인 스레드
+      - alert: MySQLHighRunningThreads
+        expr: mysql_global_status_threads_running > 50
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "🟡 MySQL 실행 스레드 높음: {{ $labels.db }} \n"
+          description: |
+            데이터베이스: {{ $labels.db }}
+            실행 중인 스레드: {{ $value }}개
+            📊 5분간 50개 이상 유지 중
+
+  # ==========================================
+  # 🟣 WARNING: Redis 성능 & 리소스
+  # ==========================================
+  - name: redis_alerts
+    interval: 1m
+    rules:
+      # Redis 메모리 사용률 높음 (80% 이상)
+      - alert: RedisHighMemoryUsage
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "🟣 Redis 메모리 높음: {{ $labels.db }} \n"
+          description: |
+            Redis: {{ $labels.db }}
+            메모리 사용률: {{ $value | humanizePercentage }}
+            사용 중: {{ with query "redis_memory_used_bytes" }}{{ . | first | value | humanize1024 }}B{{ end }}
+            최대: {{ with query "redis_memory_max_bytes" }}{{ . | first | value | humanize1024 }}B{{ end }}
+
+      # Redis 연결 클라이언트 수 급증 (100개 이상)
+      - alert: RedisHighConnections
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "🟣 Redis 연결 수 높음: {{ $labels.db }} \n"
+          description: |
+            Redis: {{ $labels.db }}
+            연결 클라이언트: {{ $value }}개
+            📊 5분간 100개 이상 유지 중
+
+      # Redis Eviction 발생 (메모리 부족으로 키 삭제)
+      - alert: RedisEviction
+        expr: rate(redis_evicted_keys_total[5m]) > 0
+        for: 3m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "🟣 Redis 키 삭제 발생: {{ $labels.db }} \n"
+          description: |
+            Redis: {{ $labels.db }}
+            초당 삭제율: {{ $value | humanize }}개/s
+            ⚠️ 메모리 부족으로 키가 자동 삭제되고 있습니다!
+
+      # Redis Rejected Connections (최대 연결 수 초과)
+      - alert: RedisRejectedConnections
+        expr: rate(redis_rejected_connections_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: cache
+        annotations:
+          summary: "🔴 Redis 연결 거부 발생: {{ $labels.db }} \n"
+          description: |
+            Redis: {{ $labels.db }}
+            초당 거부율: {{ $value | humanize }}개/s
+            ⚠️ 최대 연결 수를 초과했습니다!
+
+  # ==========================================
+  # 🔵 INFO: 디스크 & 시스템 리소스
+  # ==========================================
+  - name: system_alerts
+    interval: 5m
+    rules:
+      # 디스크 사용률 높음 (단, Docker metrics이 있을 경우만)
+      # 주의: 이 메트릭은 Node Exporter가 필요합니다
+      # 현재는 주석 처리
+      # - alert: HighDiskUsage
+      #   expr: |
+      #     (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} 
+      #     / node_filesystem_size_bytes)) * 100 > 85
+      #   for: 10m
+      #   labels:
+      #     severity: warning
+      #     category: storage
+      #   annotations:
+      #     summary: "🔵 디스크 사용률 높음"
+      #     description: "디스크 사용률: {{ $value | humanizePercentage }}"

@@ -106,6 +106,8 @@ services:
     restart: unless-stopped
 
   alertmanager:
+    env_file:
+      - .env.dev
     ports:
       - "${ALERTMANAGER_PORT:-9095}:9093"
     restart: unless-stopped

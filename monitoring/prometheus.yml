@@ -2,6 +2,16 @@ global:
   scrape_interval: 15s      # 15초마다 데이터 스크랩
   evaluation_interval: 15s
 
+# Alert manager 연동
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# 알람 규칙 파일
+rule_files:
+  - '/etc/prometheus/alert_rules.yml'
+
 scrape_configs:
   # Gateway (Edge Layer)
   - job_name: 'gateway-service' # 쿼리에서 필터할 이름
