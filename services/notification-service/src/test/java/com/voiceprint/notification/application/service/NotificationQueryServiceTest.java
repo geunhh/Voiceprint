@@ -2,8 +2,11 @@ package com.voiceprint.notification.application.service;
 
 import com.voiceprint.notification.adapter.in.web.dto.NotificationDTO;
 import com.voiceprint.notification.adapter.in.web.dto.NotificationListWithCursorDTO;
+import com.voiceprint.notification.adapter.out.RedisPublisher;
+import com.voiceprint.notification.adapter.out.persistence.UserNotificationPreferenceJpaEntity;
 import com.voiceprint.notification.application.port.out.NotificationRepositoryPort;
 import com.voiceprint.notification.domain.Notification;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import static org.assertj.core.api.Assertions.*;
 
 
@@ -33,6 +39,9 @@ public class NotificationQueryServiceTest {
     @Mock
     private NotificationRepositoryPort notificationRepositoryPort;
 
+    @Mock
+    private RedisPublisher redisPublisher;
+
     // ==== 테스트 대상 : 실제로 테스트할 객체 ====
     @InjectMocks
     private NotificationService notificationService;
@@ -45,9 +54,15 @@ public class NotificationQueryServiceTest {
     void setUp() {
         // 모든 test() 직전에 호출되어 리셋
         testUserId = 1001;
+        testNotifications = new ArrayList<>(); // 테스트 알림 리스트는 각 테스트에서 생성
 
-        // 테스트 알림 리스트는 각 테스트에서 생성
-        testNotifications = new ArrayList<>();
+        // 트랜잭션 동기화 매니저 초기화
+        TransactionSynchronizationManager.initSynchronization();
+    }
+
+    @AfterEach
+    void tearDown() {
+        TransactionSynchronizationManager.clearSynchronization();
     }
 
     /**
@@ -330,4 +345,124 @@ public class NotificationQueryServiceTest {
 
     }
 
+    // ============= 알림 발행 테스트 ==============
+    @Test
+    @DisplayName("알림 일괄 발행 - 성공")
+    void publishAllNotifications_Success() {
+        // Given
+        List<Notification> notifications = new ArrayList<>();
+
+        // 알림1
+        Map<String, Object> metadata1 = new HashMap<>();
+        metadata1.put("groupId", 100);
+        metadata1.put("diaryId", 200);
+
+        Notification notification1 = Notification.builder()
+                .id(1L)
+                .type("REMINDER")
+                .message("일기 작성하세요")
+                .metadata(metadata1)
+                .build();
+
+        // 알림 2
+        Map<String, Object> metadata2 = new HashMap<>();
+        metadata2.put("groupId", 101);
+        metadata2.put("diaryId", 201);
+
+        Notification notification2 = Notification.builder()
+                .id(2L)
+                .type("COMMENT")
+                .message("댓글이 달렸습니다")
+                .metadata(metadata2)
+                .build();
+        notifications.add(notification1);
+        notifications.add(notification2);
+
+        // When
+        notificationService.publishAllNotifications(notifications);
+
+        // Then
+        then(redisPublisher).should(times(2))
+                .publishNotification(any(NotificationDTO.class));
+
+        // 첫 번째 발행 검증
+        then(redisPublisher).should()
+                .publishNotification(argThat(dto ->
+                        dto.getType().equals("REMINDER") &&
+                        dto.getMessage().equals("일기 작성하세요") &&
+                        dto.getMetadata().get("notificationId").equals(1L) &&
+                        dto.getMetadata().get("groupId").equals(100)
+                ));
+        // 두 번째 발행 검증
+        then(redisPublisher).should()
+                .publishNotification(argThat(dto ->
+                        dto.getType().equals("COMMENT") &&
+                                dto.getMessage().equals("댓글이 달렸습니다") &&
+                                dto.getMetadata().get("notificationId").equals(2L) &&
+                                dto.getMetadata().get("groupId").equals(101)
+                ));
+    }
+
+    @Test
+    @DisplayName("알림 일괄 발행 - 빈 리스트")
+    void publishAllNotifications_EmptyList() {
+        // Given
+        List<Notification> notifications = new ArrayList<>();
+
+        // When
+        notificationService.publishAllNotifications(notifications);
+
+        // Then: Redis 발행 안 됨.
+        then(redisPublisher).should(never())
+                .publishNotification(any(NotificationDTO.class));
+
+    }
+
+    @Test
+    @DisplayName("알림 일괄 발행 - metadata null 처리")
+    void publishAllNotifications_NullMetadata() {
+        // Given
+        Notification notification = Notification.builder()
+                .id(1L)
+                .type("REMINDER")
+                .message("알림")
+                .metadata(null)  // null!
+                .build();
+
+        List<Notification> notifications = List.of(notification);
+
+        // When
+        notificationService.publishAllNotifications(notifications);
+
+        // Then: NPE 없이 정상 발행
+        then(redisPublisher).should(times(1))
+                .publishNotification(argThat(dto ->
+                        dto.getType().equals("REMINDER") &&
+                                dto.getMetadata().get("notificationId").equals(1L) &&
+                                dto.getMetadata().get("groupId") == null &&
+                                dto.getMetadata().get("diaryId") == null
+                ));
+    }
+
+    @Test
+    @DisplayName("알림 일괄 발행 - 단일 알림")
+    void publishAllNotifications_SingleNotification() {
+        // Given
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("groupId", 100);
+
+        Notification notification = Notification.builder()
+                .id(1L)
+                .type("REMINDER")
+                .message("알림")
+                .metadata(metadata)
+                .build();
+
+        // When
+        notificationService.publishAllNotifications(List.of(notification));
+
+        // Then: 정확히 1번 발행
+        then(redisPublisher).should(times(1))
+                .publishNotification(any(NotificationDTO.class));
+    }
 }
